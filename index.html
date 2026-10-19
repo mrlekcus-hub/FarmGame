@@ -1,0 +1,1252 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>晨露農場</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chiron+GoRound+TC:wght@400;600;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+/* 版面：單欄遊戲機。上方圓角狀態列，中間粉彩農場畫布，下方工具列；手機另有十字鍵與動作鈕。 */
+:root{
+  --ground:#d3efe3;
+  --panel:#fffaf0;
+  --edge:#f3c3a6;
+  --ink:#6b4848;
+  --muted:#a07f7a;
+  --pink:#ff8fa8;
+  --pink-deep:#e26b88;
+  --sun:#ffc857;
+  --sun-deep:#e0a12e;
+  --sky:#5fb8e6;
+  --leaf:#7fd08a;
+  --f-display:'Chiron GoRound TC','Noto Sans TC',system-ui,sans-serif;
+  --f-body:'Noto Sans TC',system-ui,-apple-system,'PingFang TC','Microsoft JhengHei',sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0}
+body{
+  background:var(--ground);
+  color:var(--ink);
+  font-family:var(--f-body);
+  padding-block:14px 22px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+.app{max-width:980px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px}
+.top h1{margin:0;font:800 26px/1.1 var(--f-display);letter-spacing:.08em;color:var(--pink-deep);text-shadow:0 2px 0 #fff,0 0 0 #fff;text-wrap:balance}
+.stats{display:flex;flex-wrap:wrap;gap:6px}
+.chip{
+  font:600 14px/1 var(--f-display);
+  background:var(--panel);color:var(--ink);
+  padding:8px 13px;border-radius:999px;
+  border:2px solid var(--edge);
+  box-shadow:0 3px 0 var(--edge);
+  font-variant-numeric:tabular-nums;white-space:nowrap;
+}
+.chip.gold{color:#b9791a;border-color:var(--sun);box-shadow:0 3px 0 var(--sun-deep)}
+.chip.late{color:#fff;background:var(--pink);border-color:var(--pink-deep);box-shadow:0 3px 0 var(--pink-deep)}
+.chip.rain{color:#fff;background:var(--sky);border-color:#3f98c8;box-shadow:0 3px 0 #3f98c8}
+.stage{position:relative;line-height:0;background:#a8dc7a;border-radius:22px;overflow:hidden;border:5px solid #fff;box-shadow:0 5px 0 var(--edge),0 10px 18px rgba(107,72,72,.16)}
+canvas#game{display:block;width:100%;height:auto;aspect-ratio:10/7;image-rendering:pixelated}
+.toast{
+  position:absolute;left:50%;top:10px;transform:translateX(-50%);
+  max-width:92%;line-height:1.5;font-size:13px;font-weight:500;text-align:center;
+  background:var(--panel);color:var(--ink);border:3px solid var(--pink);border-radius:16px;
+  padding:7px 14px;pointer-events:none;box-shadow:0 3px 0 var(--pink-deep);
+}
+.tip{background:var(--panel);border:2px solid var(--edge);border-radius:14px;padding:8px 14px;font-size:14px;line-height:1.5;min-height:40px}
+.auth-card .tabs{display:flex;gap:8px}
+.auth-card .tabs .cb{flex:1;padding:11px}
+.auth-card label{display:flex;flex-direction:column;gap:6px;font:600 12px/1 var(--f-display);letter-spacing:.14em;color:var(--muted)}
+.auth-msg{margin:0;min-height:20px;font-size:13px;line-height:1.5;color:var(--pink-deep);text-align:center}
+.auth-note{margin:0;font-size:12px;line-height:1.6;color:var(--muted);text-align:center}
+.fade{position:absolute;inset:0;background:#2b2140;opacity:0;pointer-events:none;transition:opacity .6s}
+.fade.on{opacity:1}
+.shop{position:absolute;inset:0;background:rgba(80,50,60,.45);display:flex;align-items:center;justify-content:center;padding:10px;line-height:1.4}
+.card{
+  width:min(500px,100%);max-height:100%;overflow:auto;
+  background:var(--panel);padding:16px;border-radius:20px;border:4px solid var(--edge);
+  display:flex;flex-direction:column;gap:8px;color:var(--ink);
+}
+.card:focus{outline:none}
+.shop-h{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.card h2{margin:0;font:800 21px/1.2 var(--f-display);color:var(--pink-deep);letter-spacing:.08em}
+.card h3{margin:6px 0 0;font:600 12px/1 var(--f-display);letter-spacing:.14em;color:var(--muted)}
+.row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:2px dotted var(--edge)}
+.meta{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.meta b{font-weight:700;font-size:14px}
+.meta small{color:var(--muted);font-size:12px}
+.dot{display:inline-block;width:14px;height:14px;border-radius:50%;background:var(--c,#fff);box-shadow:inset -2px -2px 0 rgba(0,0,0,.14);flex:none}
+.empty{margin:4px 0;color:var(--muted);font-size:13px}
+.btn{
+  font:600 14px/1 var(--f-display);color:#fff;background:var(--pink);
+  border:0;padding:10px 16px;min-height:40px;cursor:pointer;border-radius:999px;
+  box-shadow:0 4px 0 var(--pink-deep);
+}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--pink-deep)}
+.btn[disabled]{background:#d9cbc4;color:#fff;box-shadow:0 4px 0 #bdada5;cursor:not-allowed}
+.btn.wide{width:100%;margin-top:8px}
+.btn.ghost{background:#fff;color:var(--ink);border:2px solid var(--edge);box-shadow:0 4px 0 var(--edge)}
+.bar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between}
+.hotbar{display:flex;flex-wrap:wrap;gap:8px}
+.slot{
+  position:relative;width:60px;height:60px;padding:0;cursor:pointer;color:var(--ink);
+  background:var(--panel);border:3px solid var(--edge);border-radius:16px;
+  box-shadow:0 4px 0 var(--edge);
+}
+.slot canvas{width:36px;height:36px;image-rendering:pixelated;position:absolute;left:10px;top:7px}
+.slot .k{position:absolute;left:6px;top:3px;font:600 10px/1 var(--f-display);color:var(--muted)}
+.slot .n{position:absolute;right:5px;bottom:3px;font:600 10px/1 var(--f-display);font-variant-numeric:tabular-nums}
+.slot.sel{border-color:var(--pink);box-shadow:0 4px 0 var(--pink-deep);background:#fff0f3}
+.slot.empty canvas{opacity:.35}
+button:focus-visible{outline:3px solid var(--sky);outline-offset:2px}
+.bag{display:flex;flex-wrap:wrap;gap:6px}
+.bagchip{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;padding:7px 11px;background:var(--panel);border:2px solid var(--edge);border-radius:999px;font-variant-numeric:tabular-nums}
+.pad{display:none;align-items:center;justify-content:space-between;gap:16px;padding:4px 4px 8px;touch-action:none;user-select:none;-webkit-user-select:none}
+.dpad{display:grid;grid-template-columns:repeat(3,58px);grid-template-rows:repeat(3,58px);gap:4px}
+.dpad button{
+  background:var(--panel);color:var(--pink-deep);border:3px solid var(--edge);font:800 18px/1 var(--f-display);border-radius:18px;touch-action:none;
+  box-shadow:0 4px 0 var(--edge);
+}
+.dpad button:active{transform:translateY(3px);box-shadow:0 1px 0 var(--edge)}
+.dpad [data-d=up]{grid-column:2;grid-row:1}
+.dpad [data-d=left]{grid-column:1;grid-row:2}
+.dpad [data-d=right]{grid-column:3;grid-row:2}
+.dpad [data-d=down]{grid-column:2;grid-row:3}
+.act{
+  width:100px;height:100px;border-radius:50%;border:0;touch-action:none;
+  font:800 20px/1 var(--f-display);color:#fff;background:var(--pink);
+  box-shadow:0 6px 0 var(--pink-deep),inset 0 -6px 0 rgba(0,0,0,.06);
+}
+.act:active{transform:translateY(4px);box-shadow:0 2px 0 var(--pink-deep)}
+.foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px;color:var(--muted);font-size:13px;line-height:1.7}
+.foot p{margin:0;min-width:0}
+kbd{font:600 12px/1 var(--f-display);color:var(--ink);background:var(--panel);padding:3px 7px;border-radius:7px;border:2px solid var(--edge)}
+.foot .btn{min-height:34px;padding:8px 13px;font-size:12px}
+.footbtns{display:flex;flex-wrap:wrap;gap:8px}
+.village{background:var(--panel);border:3px solid var(--edge);border-radius:20px;padding:12px 14px;display:flex;flex-direction:column;gap:10px;box-shadow:0 4px 0 var(--edge)}
+.v-head{display:flex;align-items:center;gap:10px;min-width:0}
+.v-head b{font:800 16px/1 var(--f-display);color:var(--pink-deep);letter-spacing:.08em;flex:none}
+.v-count{font:600 12px/1 var(--f-display);color:var(--muted);flex:none}
+.v-last{flex:1;min-width:0;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.v-head .btn{min-height:30px;padding:6px 11px;font-size:12px;flex:none}
+.v-body{display:flex;flex-direction:column;gap:10px}
+.v-list{display:flex;flex-wrap:wrap;gap:6px;font-size:13px;color:var(--muted);line-height:1.6}
+.pchip{display:inline-flex;align-items:center;gap:6px;padding:4px 4px 4px 10px;border-radius:999px;background:#fff;border:2px solid var(--edge);font-size:13px;font-weight:500;color:var(--ink)}
+.tbtn{font:600 12px/1 var(--f-display);color:#fff;background:var(--sky);border:0;border-radius:999px;padding:6px 10px;cursor:pointer;box-shadow:0 2px 0 #3f98c8}
+.v-log{height:104px;overflow:auto;background:#fff;border:2px solid var(--edge);border-radius:14px;padding:8px 10px;font-size:13px;line-height:1.55;overflow-wrap:anywhere}
+.vline b{color:var(--pink-deep);font-weight:700}
+.vline.me b{color:#3f98c8}
+.v-send{display:flex;gap:8px}
+.v-send .nameinput{flex:1;min-width:0}
+.v-quick{display:flex;flex-wrap:wrap;gap:6px}
+.qbtn{font:600 13px/1 var(--f-display);color:var(--ink);background:#fff;border:2px solid var(--edge);border-radius:999px;padding:8px 12px;cursor:pointer}
+.qbtn:active{transform:translateY(1px)}
+.trrow{display:flex;gap:8px}
+.sel{flex:1;min-width:0;font:500 15px/1.2 var(--f-body);color:var(--ink);background:#fff;border:3px solid var(--edge);border-radius:14px;padding:10px 12px}
+.num{width:92px;font:500 15px/1.2 var(--f-body);color:var(--ink);background:#fff;border:3px solid var(--edge);border-radius:14px;padding:10px 12px}
+.offer{background:#fff;border:2px dashed var(--edge);border-radius:14px;padding:10px 14px;display:flex;flex-direction:column;gap:4px;font-size:15px}
+.offer p{margin:0}
+.tmsg{margin:0;font-size:15px;line-height:1.6;text-align:center}
+.maker{
+  position:fixed;inset:0;z-index:30;overflow:auto;background:var(--ground);display:flex;
+  padding-block:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-bottom,0px));
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+.maker-card{
+  width:min(580px,100%);margin:auto;background:var(--panel);border:4px solid var(--edge);border-radius:26px;
+  padding:18px;display:flex;flex-direction:column;gap:16px;box-shadow:0 6px 0 var(--edge);
+}
+.maker-card h2{margin:0;text-align:center;font:800 24px/1.2 var(--f-display);color:var(--pink-deep);letter-spacing:.08em}
+.maker-top{display:flex;flex-wrap:wrap;justify-content:center;gap:18px}
+.preview{flex:none;display:flex;flex-direction:column;align-items:center;gap:10px}
+.pvbox{width:156px;height:204px;display:grid;place-items:center;background:#bfe9a8;border:4px solid #fff;border-radius:22px;box-shadow:0 0 0 3px var(--edge)}
+.pvbox canvas{width:128px;height:176px;image-rendering:pixelated}
+.opts{flex:1 1 250px;min-width:0;display:flex;flex-direction:column;gap:12px}
+.optrow{display:flex;flex-direction:column;gap:6px}
+.optlabel{font:600 12px/1 var(--f-display);letter-spacing:.14em;color:var(--muted)}
+.sws,.chips{display:flex;flex-wrap:wrap;gap:8px}
+.sw{width:34px;height:34px;padding:0;border-radius:50%;border:3px solid #fff;background:var(--c);box-shadow:0 0 0 2px var(--edge);cursor:pointer}
+.sw[aria-pressed=true]{box-shadow:0 0 0 4px var(--pink-deep);transform:scale(1.08)}
+.cb{font:600 13px/1 var(--f-display);padding:9px 13px;border-radius:999px;border:2px solid var(--edge);background:#fff;color:var(--ink);cursor:pointer}
+.cb[aria-pressed=true]{background:var(--pink);color:#fff;border-color:var(--pink-deep)}
+.nameinput{font:500 15px/1.2 var(--f-body);color:var(--ink);background:#fff;border:3px solid var(--edge);border-radius:14px;padding:10px 14px;width:100%;min-width:0}
+.nameinput:focus{outline:3px solid var(--sky);outline-offset:1px}
+.maker-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:10px}
+@media (pointer:coarse),(max-width:700px){
+  .pad{display:flex}
+  .keys{display:none}
+}
+@media (prefers-reduced-motion:reduce){.fade{transition:none}}
+</style>
+</head><body>
+
+
+<div class="app">
+  <header class="top">
+    <h1>晨露農場</h1>
+    <div class="stats">
+      <span class="chip" id="day">第 1 天</span>
+      <span class="chip" id="clock">06:00</span>
+      <span class="chip" id="wx">晴天</span>
+      <span class="chip gold" id="gold">100 G</span>
+      <span class="chip" id="who">未登入</span>
+    </div>
+  </header>
+
+  <div class="stage">
+    <canvas id="game"></canvas>
+    <div class="toast" id="toast" hidden></div>
+    <div class="shop" id="shop" hidden><div class="card" id="shopcard" tabindex="-1"></div></div>
+    <div class="fade" id="fade"></div>
+  </div>
+
+  <div class="bar">
+    <div class="hotbar" id="hotbar"></div>
+    <div class="bag" id="bag"></div>
+  </div>
+  <div class="tip" id="tip" aria-live="polite">走到田邊，面向一塊草地，按動作鍵。</div>
+
+  <div class="pad" id="pad">
+    <div class="dpad">
+      <button type="button" data-d="up" aria-label="往上">▲</button>
+      <button type="button" data-d="left" aria-label="往左">◀</button>
+      <button type="button" data-d="right" aria-label="往右">▶</button>
+      <button type="button" data-d="down" aria-label="往下">▼</button>
+    </div>
+    <button type="button" class="act" id="actbtn">動作</button>
+  </div>
+
+  <div class="foot">
+    <p><span class="keys"><kbd>←↑↓→</kbd> 或 <kbd>WASD</kbd> 移動　<kbd>空白</kbd> 或 <kbd>E</kbd> 動作　<kbd>1</kbd>–<kbd>5</kbd> 換工具<br></span>翻土、播種、澆水之後，作物會依真實時間慢慢長大——就算你關掉遊戲也會繼續長（要保持土壤濕潤）。站在房子門前按動作鍵可以換造型。</p>
+    <div class="footbtns">
+      <button type="button" class="btn ghost" id="restyle">換造型</button>
+      <button type="button" class="btn ghost" id="logout">登出</button>
+    </div>
+  </div>
+</div>
+
+<div class="maker" id="maker" hidden>
+  <div class="maker-card">
+    <h2>捏出你的農夫</h2>
+    <div class="maker-top">
+      <div class="preview">
+        <div class="pvbox"><canvas id="pv" width="16" height="22"></canvas></div>
+        <button type="button" class="btn ghost" id="pvturn">轉身看看</button>
+      </div>
+      <div class="opts" id="opts">
+        <div class="optrow">
+          <label class="optlabel" for="mk-name">名字</label>
+          <input class="nameinput" id="mk-name" type="text" maxlength="8" autocomplete="off" placeholder="最多 8 個字">
+        </div>
+      </div>
+    </div>
+    <div class="maker-actions">
+      <button type="button" class="btn ghost" id="mk-rand">隨機</button>
+      <button type="button" class="btn ghost" id="mk-cancel" hidden>取消</button>
+      <button type="button" class="btn" id="mk-ok">開始農場生活</button>
+    </div>
+  </div>
+</div>
+
+<div class="maker" id="auth" hidden>
+  <form class="maker-card auth-card" id="auth-form" autocomplete="on">
+    <h2>晨露農場</h2>
+    <div class="tabs" role="tablist">
+      <button type="button" class="cb" id="tab-in" aria-pressed="true">登入</button>
+      <button type="button" class="cb" id="tab-up" aria-pressed="false">註冊新帳號</button>
+    </div>
+    <label>帳號<input class="nameinput" id="au-user" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="16" placeholder="3–16 個小寫英文字母、數字或底線"></label>
+    <label>密碼<input class="nameinput" id="au-pass" type="password" autocomplete="current-password" maxlength="64" placeholder="至少 6 個字元"></label>
+    <p class="auth-msg" id="au-msg" aria-live="polite"></p>
+    <button type="submit" class="btn" id="au-go">登入</button>
+    <p class="auth-note">這是獨立的農場帳號，和其他遊戲不通用。請記住密碼，目前沒有找回密碼功能。</p>
+  </form>
+</div>
+
+<div class="maker" id="boot" hidden><div class="maker-card"><h2 id="boot-t">載入中…</h2><p class="auth-note" id="boot-m"></p></div></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
+<script>
+(() => {
+'use strict';
+const T = 16, W = 20, H = 14, S = 3;
+const $ = id => document.getElementById(id);
+const cv = $('game'), ctx = cv.getContext('2d');
+cv.width = W * T * S; cv.height = H * T * S;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const idx = (x, y) => y * W + x;
+const hash = (x, y, s = 0) => {
+  let n = (Math.imul(x, 374761393) + Math.imul(y, 668265263) + Math.imul(s, 2147483647)) | 0;
+  n = Math.imul(n ^ (n >>> 13), 1274126177);
+  return ((n ^ (n >>> 16)) >>> 0) / 4294967296;
+};
+let g = ctx;
+const r = (col, x, y, w, h) => { g.fillStyle = col; g.fillRect(x, y, w, h); };
+/* 圓角塊與帶描邊的圓角塊：可愛風的基本形狀 */
+const rr = (col, x, y, w, h) => { r(col, x + 1, y, w - 2, h); r(col, x, y + 1, w, h - 2); };
+const ob = (col, out, x, y, w, h) => { rr(out, x, y, w, h); rr(col, x + 1, y + 1, w - 2, h - 2); };
+const INK = '#7a4a4a';
+
+/* ---------- 資料 ---------- */
+const CROPS = {
+  radish:  { n: '蘿蔔', days: 3, buy: 10, sell: 25,  c: '#ff8fa8' },
+  tomato:  { n: '番茄', days: 5, buy: 20, sell: 55,  c: '#ff6b5e' },
+  pumpkin: { n: '南瓜', days: 8, buy: 40, sell: 130, c: '#ffab4a' }
+};
+const KEYS = ['radish', 'tomato', 'pumpkin'];
+const TOOLS = [
+  { id: 'hoe', n: '鋤頭' },
+  { id: 'can', n: '水壺' },
+  { id: 'seed', crop: 'radish', n: '蘿蔔種子' },
+  { id: 'seed', crop: 'tomato', n: '番茄種子' },
+  { id: 'seed', crop: 'pumpkin', n: '南瓜種子' }
+];
+const CAN_MAX = 12;
+
+/* ---------- 地圖 ---------- */
+const G = 0, P = 1, WA = 2, TR = 3, HO = 4, DR = 5, SH = 6;
+const kind = Array.from({ length: H }, () => Array(W).fill(G));
+for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+  if (x === 0 || y === 0 || x === W - 1 || y === H - 1) kind[y][x] = TR;
+}
+for (let y = 1; y <= 3; y++) for (let x = 2; x <= 6; x++) kind[y][x] = HO;
+kind[3][4] = DR;
+for (let y = 1; y <= 2; y++) for (let x = 12; x <= 15; x++) kind[y][x] = SH;
+kind[4][4] = P;
+for (let x = 4; x <= 14; x++) kind[5][x] = P;
+for (let y = 3; y <= 5; y++) { kind[y][13] = P; kind[y][14] = P; }
+for (let y = 8; y <= 12; y++) for (let x = 14; x <= 18; x++) {
+  const dx = (x - 16) / 2.7, dy = (y - 10) / 2.7;
+  if (dx * dx + dy * dy + hash(x, y, 9) * 0.25 <= 1) kind[y][x] = WA;
+}
+[[9, 2], [18, 4], [1, 7], [11, 12], [9, 7]].forEach(([x, y]) => { if (kind[y][x] === G) kind[y][x] = TR; });
+const isWater = (x, y) => x >= 0 && y >= 0 && x < W && y < H && kind[y][x] === WA;
+
+/* ---------- 圖塊 ---------- */
+function drawGrass(px, py, tx, ty) {
+  r((tx + ty) % 2 ? '#aadd7d' : '#a3d876', px, py, T, T);
+  const a = hash(tx, ty, 1), b = hash(tx, ty, 2), c = hash(tx, ty, 3);
+  r('#8ac860', px + (a * 12 | 0) + 1, py + (b * 10 | 0) + 4, 1, 2);
+  r('#8ac860', px + (a * 12 | 0) + 3, py + (b * 10 | 0) + 5, 1, 1);
+  r('#8ac860', px + (b * 12 | 0) + 1, py + (c * 10 | 0) + 8, 1, 2);
+  r('#c8ee9c', px + (c * 13 | 0), py + (a * 13 | 0), 1, 1);
+  const f = hash(tx, ty, 4);
+  if (f > 0.9) {
+    const pc = ['#ffffff', '#ffc2d4', '#fff0a0', '#d6c2ff'][(f * 1000 | 0) % 4];
+    const fx0 = 4 + (hash(tx, ty, 5) * 8 | 0), fy0 = 4 + (hash(tx, ty, 6) * 8 | 0);
+    r(pc, px + fx0, py + fy0 - 1, 1, 1); r(pc, px + fx0 - 1, py + fy0, 1, 1);
+    r(pc, px + fx0 + 1, py + fy0, 1, 1); r(pc, px + fx0, py + fy0 + 1, 1, 1);
+    r('#ffd34d', px + fx0, py + fy0, 1, 1);
+  }
+}
+function drawPath(px, py, tx, ty) {
+  r('#f7e5b8', px, py, T, T);
+  const x1 = px + (hash(tx, ty, 5) * 11 | 0) + 1, y1 = py + (hash(tx, ty, 6) * 11 | 0) + 1;
+  r('#e6cc95', x1, y1, 2, 1); r('#fff6dc', x1, y1 - 1, 1, 1);
+  const x2 = px + (hash(tx, ty, 7) * 11 | 0) + 1, y2 = py + (hash(tx, ty, 8) * 11 | 0) + 1;
+  r('#e6cc95', x2, y2, 2, 1); r('#fff6dc', x2, y2 - 1, 1, 1);
+}
+function drawWater(px, py, tx, ty, now) {
+  r('#86d6f3', px, py, T, T);
+  r('#6cc5e8', px, py + 11, T, 5);
+  const ph = Math.floor(now / 500 + tx * 1.7 + ty * 2.3) % 4;
+  r('#bff0fd', px + 2 + ph * 2, py + 3 + (ph % 2) * 5, 4, 1);
+  r('#bff0fd', px + 9 - ph, py + 9 - (ph % 2) * 4, 3, 1);
+  if ((Math.floor(now / 380) + tx * 3 + ty * 5) % 7 === 0) {
+    r('#ffffff', px + 7, py + 6, 1, 1); r('#ffffff', px + 6, py + 7, 3, 1); r('#ffffff', px + 7, py + 8, 1, 1);
+  }
+  if (hash(tx, ty, 13) > 0.8 && isWater(tx - 1, ty) && isWater(tx + 1, ty) && isWater(tx, ty - 1) && isWater(tx, ty + 1)) {
+    ob('#9fe8a6', '#5fb870', px + 4, py + 5, 8, 6);
+    r('#86d6f3', px + 8, py + 5, 2, 2);
+    r('#ffb3c6', px + 6, py + 6, 2, 2); r('#fff', px + 6, py + 6, 1, 1);
+  }
+  const sand = '#fbeab5';
+  if (!isWater(tx, ty - 1)) r(sand, px, py, T, 2);
+  if (!isWater(tx, ty + 1)) r(sand, px, py + T - 2, T, 2);
+  if (!isWater(tx - 1, ty)) r(sand, px, py, 2, T);
+  if (!isWater(tx + 1, ty)) r(sand, px + T - 2, py, 2, T);
+}
+function drawTree(px, py, tx, ty) {
+  drawGrass(px, py, tx, ty);
+  const pink = hash(tx, ty, 12) > 0.55;
+  r('rgba(107,72,72,.16)', px + 2, py + 13, 12, 3);
+  r('#b98a62', px + 6, py + 10, 4, 6); r('#9a6a4a', px + 9, py + 10, 1, 6);
+  if (pink) {
+    ob('#fbc4d4', '#e58fab', px, py + 1, 16, 12);
+    r('#ffe6ee', px + 3, py + 3, 5, 2); r('#ffe6ee', px + 10, py + 6, 2, 2);
+    r('#e58fab', px + 5, py + 8, 1, 1); r('#e58fab', px + 11, py + 9, 1, 1); r('#f6a5bf', px + 7, py + 5, 1, 1);
+  } else {
+    ob('#86d98f', '#4fa968', px, py + 1, 16, 12);
+    r('#b5f0b5', px + 3, py + 3, 5, 2); r('#b5f0b5', px + 10, py + 6, 2, 2);
+    r('#5fba76', px + 4, py + 9, 4, 1); r('#5fba76', px + 10, py + 10, 3, 1);
+  }
+}
+function drawSoil(px, py, wet) {
+  r(wet ? '#a56f4b' : '#c98f62', px, py, T, T);
+  const f = wet ? '#8d5a3a' : '#b57a4f';
+  for (let i = 3; i < T; i += 4) r(f, px + 1, py + i, T - 2, 1);
+  r(wet ? '#c9e8f7' : '#e1b085', px + 3, py + 1, 2, 1);
+  r(wet ? '#c9e8f7' : '#e1b085', px + 10, py + 9, 2, 1);
+  r(wet ? '#7c4e32' : '#a9724a', px, py + T - 1, T, 1);
+  r(wet ? '#b58260' : '#dba879', px, py, T, 1);
+}
+function face(px, py, ex, ey) {
+  r(INK, px + ex, py + ey, 1, 2); r(INK, px + ex + 3, py + ey, 1, 2);
+  r('rgba(255,90,130,.55)', px + ex - 2, py + ey + 2, 2, 1); r('rgba(255,90,130,.55)', px + ex + 4, py + ey + 2, 2, 1);
+  r(INK, px + ex + 1, py + ey + 2, 2, 1);
+}
+function drawCrop(px, py, c, now) {
+  const stage = c.p >= 1 ? 2 : (c.p >= 0.5 ? 1 : 0);
+  if (stage === 0) {
+    r('#5fbf6a', px + 7, py + 10, 2, 3);
+    rr('#8fe09a', px + 4, py + 8, 4, 3); rr('#8fe09a', px + 8, py + 7, 4, 3);
+  } else if (stage === 1) {
+    r('#5fbf6a', px + 7, py + 7, 2, 7);
+    rr('#7fd08a', px + 2, py + 8, 6, 4); rr('#7fd08a', px + 8, py + 6, 6, 4); rr('#a8ecaa', px + 6, py + 3, 4, 5);
+    r('#c6f5c6', px + 3, py + 9, 2, 1); r('#c6f5c6', px + 10, py + 7, 2, 1);
+  } else if (c.t === 'radish') {
+    rr('#7fd08a', px + 3, py + 1, 4, 5); rr('#7fd08a', px + 9, py + 1, 4, 5); rr('#5fbf6a', px + 6, py + 2, 4, 5);
+    ob('#ff9bb3', '#d4688a', px + 3, py + 6, 10, 9);
+    r('#ffd0dc', px + 5, py + 7, 2, 1);
+    face(px, py, 6, 9);
+  } else if (c.t === 'tomato') {
+    ob('#ff7a6c', '#c4403a', px + 2, py + 5, 12, 10);
+    r('#5fbf6a', px + 4, py + 4, 8, 2); r('#5fbf6a', px + 7, py + 2, 2, 3); r('#8fe09a', px + 5, py + 4, 2, 1);
+    r('#ffc9c2', px + 4, py + 7, 2, 1);
+    face(px, py, 6, 9);
+  } else {
+    ob('#ffb45c', '#d9772a', px + 1, py + 5, 14, 10);
+    r('#f59a38', px + 4, py + 6, 1, 8); r('#f59a38', px + 11, py + 6, 1, 8);
+    r('#6bb86a', px + 7, py + 2, 2, 4); r('#6bb86a', px + 9, py + 3, 3, 1);
+    r('#ffd9a0', px + 3, py + 7, 2, 1);
+    face(px, py, 6, 9);
+  }
+  if (stage === 2 && Math.floor(now / 450) % 2) {
+    r('#fff6a8', px + 13, py + 1, 1, 3); r('#fff6a8', px + 12, py + 2, 3, 1);
+  }
+}
+
+/* ---------- 大型建物 ---------- */
+function drawHouse(lit, now) {
+  const ox = 2 * T, oy = 1 * T;
+  r('rgba(107,72,72,.16)', ox + 2, oy + 46, 78, 3);
+  ob('#e9a98b', '#c97f6a', ox + 58, oy - 3, 9, 11);
+  for (let i = 0; i < 3; i++) {
+    const ph = ((now / 1100) + i / 3) % 1;
+    g.globalAlpha = 0.9 * (1 - ph);
+    rr('#ffffff', (ox + 60 + Math.sin(ph * 6 + i) * 2) | 0, (oy - 5 - ph * 13) | 0, 4 + (ph * 3 | 0), 3 + (ph * 2 | 0));
+  }
+  g.globalAlpha = 1;
+  ob('#fff0d4', '#d9b88a', ox + 3, oy + 21, 74, 27);
+  for (let i = 11; i < 75; i += 8) r('#f6dfb8', ox + i, oy + 24, 1, 20);
+  r('#ecd0a2', ox + 4, oy + 43, 72, 4);
+  ob('#f58fa5', '#d9667f', ox + 8, oy + 1, 64, 10);
+  ob('#f58fa5', '#d9667f', ox, oy + 6, 80, 16);
+  for (let x = 0; x < 80; x += 8) { rr('#d9667f', ox + x, oy + 19, 8, 5); rr('#f58fa5', ox + x + 1, oy + 19, 6, 4); }
+  for (let y = 9; y < 18; y += 5) for (let x = (y % 2) * 4 + 4; x < 76; x += 8) r('#ffd3de', ox + x, oy + y, 2, 2);
+  ob('#c08a62', '#8c5b3c', ox + 32, oy + 31, 16, 17);
+  r('#d9a378', ox + 34, oy + 33, 12, 15);
+  const hp = '#ffd9e2';
+  r(hp, ox + 36, oy + 35, 2, 1); r(hp, ox + 40, oy + 35, 2, 1); r(hp, ox + 36, oy + 36, 6, 1);
+  r(hp, ox + 37, oy + 37, 4, 1); r(hp, ox + 38, oy + 38, 2, 1);
+  r('#ffd34d', ox + 43, oy + 42, 2, 2);
+  rr('#ff9db5', ox + 30, oy + 46, 20, 2);
+  [10, 58].forEach(wx => {
+    ob('#ffffff', '#d9b88a', ox + wx - 1, oy + 28, 14, 13);
+    r(lit ? '#ffe28a' : '#a8defa', ox + wx + 1, oy + 30, 10, 9);
+    r('#ffffff', ox + wx + 5, oy + 30, 2, 9); r('#ffffff', ox + wx + 1, oy + 34, 10, 2);
+    if (!lit) r('#d8f4ff', ox + wx + 2, oy + 31, 2, 1);
+    rr('#c08a62', ox + wx - 1, oy + 41, 14, 3);
+    r('#ff8fa8', ox + wx, oy + 40, 2, 2); r('#ffc857', ox + wx + 5, oy + 40, 2, 2); r('#ff8fa8', ox + wx + 10, oy + 40, 2, 2);
+    r('#7fd08a', ox + wx + 3, oy + 41, 2, 1); r('#7fd08a', ox + wx + 8, oy + 41, 2, 1);
+  });
+}
+function drawShop(lit, now) {
+  const ox = 12 * T, oy = 1 * T;
+  r('rgba(107,72,72,.16)', ox + 2, oy + 30, 62, 3);
+  r('#8a6a62', ox, oy + 8, 64, 24);
+  r('#a58278', ox + 4, oy + 14, 56, 2);
+  const items = ['#ff8fa8', '#ffab4a', '#7fd08a', '#ff6b5e', '#ffc857', '#ff8fa8', '#7fd08a'];
+  items.forEach((c, i) => { rr(c, ox + 6 + i * 8, oy + 11, 4, 3); });
+  for (let i = 0; i < 8; i++) {
+    const c = i % 2 ? '#ffffff' : '#ff8fa8';
+    r(c, ox + i * 8, oy, 8, 9);
+    rr(c, ox + i * 8, oy + 7, 8, 5);
+  }
+  r('#e26b88', ox, oy + 12, 64, 1);
+  r('#c08a62', ox, oy + 12, 3, 20); r('#c08a62', ox + 61, oy + 12, 3, 20);
+  ob('#fff0d4', '#d9b88a', ox + 26, oy + 14, 12, 7);
+  const hp = '#ff8fa8';
+  r(hp, ox + 29, oy + 15, 2, 1); r(hp, ox + 33, oy + 15, 2, 1); r(hp, ox + 29, oy + 16, 6, 1);
+  r(hp, ox + 30, oy + 17, 4, 1); r(hp, ox + 31, oy + 18, 2, 1);
+  ob('#f9d2ae', '#d9a77a', ox + 3, oy + 21, 58, 11);
+  r('#fde6c8', ox + 5, oy + 22, 54, 2);
+  rr('#ff6b5e', ox + 8, oy + 17, 5, 5); rr('#ffab4a', ox + 15, oy + 17, 5, 5);
+  rr('#7fd08a', ox + 44, oy + 17, 5, 5); rr('#ff8fa8', ox + 51, oy + 17, 5, 5);
+  r('#ffffff', ox + 9, oy + 18, 1, 1); r('#ffffff', ox + 16, oy + 18, 1, 1); r('#ffffff', ox + 45, oy + 18, 1, 1); r('#ffffff', ox + 52, oy + 18, 1, 1);
+  if (lit) { g.globalAlpha = 0.5; rr('#ffe28a', ox + 24, oy + 12, 16, 10); g.globalAlpha = 1; }
+}
+
+/* ---------- 角色（外觀可自訂） ---------- */
+const SKINS = ['#ffe0c4', '#f6c9a0', '#e3ab7f', '#bd8560', '#8f5f43'];
+const HAIRS = ['#8a5a44', '#4a3a3a', '#f2d27a', '#ff9bb3', '#8fc8f4', '#b79bf0', '#e9e4de'];
+const OUTFITS = ['#7fb2f0', '#ff9bb3', '#8fe09a', '#ffd27a', '#c9a8f5', '#ff8c7a'];
+const HATCOL = ['#ffe08a', '#ffb3c6', '#a8e6cf', '#a8d8f0', '#d5b8ff', '#ffffff'];
+const STYLES = ['短髮', '雙馬尾', '長髮', '丸子頭'];
+const HATS = ['草帽', '貓耳', '蝴蝶結', '無'];
+const DEF_CHAR = { name: '小農夫', skin: 0, hair: 0, style: 0, hat: 0, hatc: 0, outfit: 0 };
+const shade = (h, f) => {
+  const n = parseInt(h.slice(1), 16);
+  return '#' + [16, 8, 0].map(i => Math.max(0, Math.min(255, Math.round(((n >> i) & 255) * f))).toString(16).padStart(2, '0')).join('');
+};
+function drawPlayer(px, py, face, moving, phase, ch) {
+  ch = ch || DEF_CHAR;
+  const skin = SKINS[ch.skin] || SKINS[0], skinO = shade(skin, 0.82);
+  const hair = HAIRS[ch.hair] || HAIRS[0], hairO = shade(hair, 0.78);
+  const fit = OUTFITS[ch.outfit] || OUTFITS[0], fitO = shade(fit, 0.8);
+  const hc = HATCOL[ch.hatc] || HATCOL[0], hco = shade(hc, 0.82);
+  const band = hc === '#ffb3c6' ? '#ffffff' : '#ff8fa8';
+  const yb = py - 2, x = px, y = yb + (moving && phase ? -1 : 0);
+  const side = face === 'left' || face === 'right', st_ = ch.style | 0;
+  r('rgba(107,72,72,.22)', px + 3, py + 13, 10, 2);
+  r('#8a5a44', px + 5, yb + 13, 2, 3 - (moving && phase ? 1 : 0));
+  r('#8a5a44', px + 9, yb + 13, 2, 3 - (moving && !phase ? 1 : 0));
+  ob(fit, fitO, x + 4, y + 10, 8, 5);
+  r('#ffffff', x + 6, y + 10, 4, 2);
+  if (side) { r(skin, x + 7, y + 12, 2, 2); }
+  else { r(skin, x + 3, y + 12, 1, 2); r(skin, x + 12, y + 12, 1, 2); }
+  /* 頭後面的頭髮（先畫，頭會蓋在上面） */
+  if (st_ === 1) {
+    if (face === 'down' || face === 'up' || face === 'right') { ob(hair, hairO, x, y + 5, 3, 7); r('#ff8fa8', x, y + 6, 3, 1); }
+    if (face === 'down' || face === 'up' || face === 'left') { ob(hair, hairO, x + 13, y + 5, 3, 7); r('#ff8fa8', x + 13, y + 6, 3, 1); }
+  } else if (st_ === 2 && face !== 'up') {
+    ob(hair, hairO, x + 1, y + 5, 14, 8);
+  }
+  /* 頭 */
+  if (face === 'up') {
+    ob(hair, hairO, x + 2, y + 3, 12, 9);
+    if (st_ === 2) ob(hair, hairO, x + 2, y + 9, 12, 5);
+  } else {
+    ob(skin, skinO, x + 2, y + 3, 12, 9);
+    if (face === 'down') {
+      r(hair, x + 3, y + 4, 10, 2); r(hair, x + 3, y + 6, 1, 3); r(hair, x + 12, y + 6, 1, 3);
+      r('#4a2c2c', x + 5, y + 7, 2, 2); r('#4a2c2c', x + 9, y + 7, 2, 2);
+      r('#ffffff', x + 5, y + 7, 1, 1); r('#ffffff', x + 9, y + 7, 1, 1);
+      r('#ffa0b0', x + 3, y + 9, 2, 1); r('#ffa0b0', x + 11, y + 9, 2, 1);
+      r('#c46a6a', x + 7, y + 10, 2, 1);
+    } else if (face === 'left') {
+      r(hair, x + 3, y + 4, 10, 2); r(hair, x + 9, y + 6, 4, 5);
+      r('#4a2c2c', x + 4, y + 7, 2, 2); r('#ffffff', x + 4, y + 7, 1, 1);
+      r('#ffa0b0', x + 3, y + 9, 2, 1); r('#c46a6a', x + 6, y + 10, 2, 1);
+    } else {
+      r(hair, x + 3, y + 4, 10, 2); r(hair, x + 3, y + 6, 4, 5);
+      r('#4a2c2c', x + 10, y + 7, 2, 2); r('#ffffff', x + 10, y + 7, 1, 1);
+      r('#ffa0b0', x + 11, y + 9, 2, 1); r('#c46a6a', x + 8, y + 10, 2, 1);
+    }
+  }
+  /* 丸子頭 */
+  if (st_ === 3) { ob(hair, hairO, x + 5, y - 3, 6, 5); r(shade(hair, 1.25), x + 6, y - 2, 2, 1); }
+  /* 帽子與髮飾 */
+  if (ch.hat === 0) {
+    ob(hc, hco, x + 4, y - 1, 8, 5);
+    ob(hc, hco, x, y + 2, 16, 3);
+    r(band, x + 5, y + 2, 6, 1);
+    r(band, x + 11, y, 2, 2); r('#ffffff', x + 12, y, 1, 1);
+  } else if (ch.hat === 1) {
+    r(hco, x + 4, y, 1, 1); r(hco, x + 3, y + 1, 3, 1); r(hco, x + 2, y + 2, 5, 2);
+    r(hc, x + 4, y + 1, 1, 1); r(hc, x + 3, y + 2, 3, 2); r('#ffc2d2', x + 4, y + 2, 1, 2);
+    r(hco, x + 11, y, 1, 1); r(hco, x + 10, y + 1, 3, 1); r(hco, x + 9, y + 2, 5, 2);
+    r(hc, x + 11, y + 1, 1, 1); r(hc, x + 10, y + 2, 3, 2); r('#ffc2d2', x + 11, y + 2, 1, 2);
+    r(hc, x + 4, y + 3, 8, 1);
+  } else if (ch.hat === 2) {
+    ob(hc, hco, x + 8, y + 1, 4, 5); ob(hc, hco, x + 12, y + 1, 4, 5);
+    r(hco, x + 11, y + 3, 2, 2); r('#ffffff', x + 9, y + 2, 1, 1);
+  }
+}
+
+/* ---------- 工具圖示 ---------- */
+function drawIcon(c2d, i) {
+  g = c2d;
+  g.clearRect(0, 0, 16, 16);
+  if (i === 0) {
+    for (let k = 0; k < 9; k++) { r('#8c5b3c', 2 + k, 14 - k, 2, 2); r('#c08a62', 2 + k, 14 - k, 2, 1); }
+    ob('#dfe7ee', '#8e9db0', 9, 1, 6, 4); ob('#dfe7ee', '#8e9db0', 12, 1, 3, 8);
+  } else if (i === 1) {
+    ob('#8fd3f4', '#4aa3d4', 3, 6, 9, 8);
+    r('#ffffff', 5, 8, 2, 2);
+    r('#4aa3d4', 12, 7, 3, 1); r('#4aa3d4', 14, 7, 1, 5); r('#4aa3d4', 12, 11, 3, 1);
+    r('#4aa3d4', 0, 3, 3, 1); r('#8fd3f4', 1, 4, 2, 1); r('#8fd3f4', 2, 5, 2, 2);
+    r('#ffb3c6', 8, 9, 1, 1); r('#ffb3c6', 10, 9, 1, 1); r('#ffb3c6', 8, 10, 3, 1); r('#ffb3c6', 9, 11, 1, 1);
+  } else {
+    const c = CROPS[TOOLS[i].crop].c;
+    ob('#fffaf0', '#e0b896', 3, 2, 10, 13);
+    rr(c, 5, 6, 6, 6);
+    r(INK, 6, 8, 1, 1); r(INK, 9, 8, 1, 1); r(INK, 7, 10, 2, 1);
+    r('#5fbf6a', 7, 3, 2, 2); r('#8fe09a', 9, 3, 2, 1);
+  }
+  g = ctx;
+}
+
+/* ====== 設定：換成你自己的 Supabase 專案 ====== */
+const SUPABASE_URL = 'https://pzvbqerczorxfqxeohys.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_AXpCghngjhaldiWbFyNvmw_5tl2xZSX';
+const EMAIL_DOMAIN = 'dewfarm.example.com';   // 帳號會轉成 帳號@這個網域（不會寄信）
+/* ============================================ */
+
+const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
+const STEP_MS = 120;
+const EPOCH = Date.UTC(2026, 9, 19);       // 第 1 天的起點
+const DAY_MS = 1440 * 1000;                 // 現實 1 秒 = 遊戲 1 分鐘，一天 24 分鐘
+const clean = (s, n) => {
+  let o = '';
+  for (const ch of String(s == null ? '' : s)) {
+    const c = ch.codePointAt(0);
+    if (c < 32 || (c >= 127 && c <= 159) || (c >= 0x200b && c <= 0x200f) || (c >= 0x2028 && c <= 0x202f) || (c >= 0x2060 && c <= 0x206f) || c === 0xfeff) continue;
+    o += ch;
+    if (o.length >= n) break;
+  }
+  return o;
+};
+
+/* ---------- 狀態（以伺服器為準） ---------- */
+let sb = null;
+let me = null;                    // { username, name, look, coins }
+let inv = {};                     // 's:radish' / 'c:radish' -> 數量
+let plots = new Map();            // 'x,y' -> { crop, grown, tick, wet }
+let cfg = { wet_s: 10800 };
+let tool = 0, offset = 0, ready = false;
+const pl = { x: 4, y: 4, sx: 4, sy: 4, prog: 1, face: 'down', step: 0 };
+const srvNow = () => Date.now() + offset;
+const pk = (x, y) => x + ',' + y;
+
+let shopOpen = false, makerOpen = false, authOpen = true, actQueued = false, firstTime = false;
+const pressed = [];
+const paused = () => shopOpen || makerOpen || authOpen || !ready;
+
+/* ---------- 小提示與特效 ---------- */
+const toastEl = $('toast');
+let toastTimer = 0;
+function toast(msg, ms = 2800) {
+  toastEl.textContent = msg; toastEl.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { toastEl.hidden = true; }, ms);
+}
+const pops = [], fx = [];
+const pop = (x, y, txt, col = '#ffffff') => pops.push({ x: x * T + 8, y: y * T + 2, l: 0, txt, col });
+function burst(x, y, n, cols, vy0, spread) {
+  for (let i = 0; i < n; i++) fx.push({
+    x: x * T + 8 + (Math.random() - 0.5) * spread, y: y * T + 8,
+    vx: (Math.random() - 0.5) * 1.2, vy: vy0 + (Math.random() - 0.5) * 0.6,
+    l: 0, max: 450 + Math.random() * 250, c: cols[(Math.random() * cols.length) | 0]
+  });
+}
+const dust = (x, y) => burst(x, y, 8, ['#8b5e38', '#a37548', '#6e4727'], -0.8, 10);
+const drops = (x, y) => burst(x, y, 7, ['#8fd3ff', '#58b2e6'], 0.3, 10);
+const splash = (x, y) => burst(x, y, 10, ['#8fd3ff', '#ffffff', '#58b2e6'], -1.4, 12);
+const sparkle = (x, y, c) => burst(x, y, 10, [c, '#fff6a8', '#ffffff'], -1.6, 10);
+const rain = Array.from({ length: 70 }, () => ({ x: Math.random() * W * T, y: Math.random() * H * T }));
+
+/* ---------- 世界時間（所有玩家一樣） ---------- */
+function world() {
+  const t = srvNow() - EPOCH;
+  const day = Math.floor(t / DAY_MS) + 1;
+  const min = ((t % DAY_MS) + DAY_MS) % DAY_MS / 1000;     // 0~1440 遊戲分鐘
+  const wet = hash(day, 0, 77) < 0.25;
+  return { day, min, wet };
+}
+function darkness(m) {
+  if (m < 300) return 1;
+  if (m < 360) return 1 - (m - 300) / 60;
+  if (m < 1020) return 0;
+  return clamp((m - 1020) / 270, 0, 1);
+}
+
+/* ---------- 作物成長（和伺服器同一套算法） ---------- */
+const growSec = k => (cropCfg[k] ? cropCfg[k].grow_s : 1800);
+let cropCfg = {};
+function grownNow(p) {
+  if (!p.crop) return 0;
+  let g = p.grown;
+  if (p.wet && p.wet > p.tick) {
+    const end = Math.min(srvNow(), p.wet);
+    if (end > p.tick) g += (end - p.tick) / 1000;
+  }
+  return Math.min(g, growSec(p.crop));
+}
+const progress = p => p.crop ? grownNow(p) / growSec(p.crop) : 0;
+const isWet = p => !!(p.wet && p.wet > srvNow());
+function settleLocal(p) { p.grown = grownNow(p) ; p.tick = srvNow(); }
+const fromServer = j => ({ crop: j.crop || null, grown: +j.grown || 0, tick: +j.tick || 0, wet: j.wet ? +j.wet : null });
+
+function fmtDur(s) {
+  s = Math.max(0, Math.ceil(s));
+  if (s < 60) return '不到 1 分鐘';
+  if (s < 3600) return Math.ceil(s / 60) + ' 分鐘';
+  const h = Math.floor(s / 3600), m = Math.round((s % 3600) / 60);
+  return h + ' 小時' + (m ? ' ' + m + ' 分' : '');
+}
+
+/* ---------- 地圖規則（要和 schema.sql 的 _farmable 一致） ---------- */
+const farmable = (x, y) => x >= 2 && x <= 13 && y >= 6 && y <= 12 && kind[y][x] === G;
+const walkable = (x, y) => x >= 0 && y >= 0 && x < W && y < H &&
+  (kind[y][x] === G || kind[y][x] === P) && !(plots.get(pk(x, y)) || {}).crop;
+function tryMove(dir) {
+  const d = DIRS[dir];
+  pl.face = dir;
+  const nx = pl.x + d[0], ny = pl.y + d[1];
+  if (walkable(nx, ny)) { pl.sx = pl.x; pl.sy = pl.y; pl.x = nx; pl.y = ny; pl.prog = 0; pl.step++; }
+}
+const facing = () => [pl.x + DIRS[pl.face][0], pl.y + DIRS[pl.face][1]];
+
+/* ---------- 與伺服器溝通 ---------- */
+const ERR = {
+  not_authenticated: '登入已過期，請重新登入', no_profile: '還沒建立角色',
+  not_farmable: '這裡不能耕種', too_many_plots: '田地數量到上限了', has_crop: '上面還有作物',
+  not_tilled: '這裡還沒翻土', occupied: '這裡已經有作物', no_seed: '沒有這種種子了',
+  not_ready: '還沒長好', nothing_to_harvest: '這裡沒有作物', not_enough_coins: '金幣不夠',
+  nothing_to_sell: '沒有東西可以賣', bad_qty: '數量不對', bad_crop: '沒有這種作物',
+  bad_name: '名字要 1 到 8 個字', bad_look: '造型資料不對', bad_username: '帳號格式不對', username_taken: '這個帳號已經有人用了'
+};
+const errText = e => {
+  const m = String((e && (e.message || e.msg)) || e || '');
+  for (const k in ERR) if (m.includes(k)) return ERR[k];
+  if (/fetch|network|Failed|timeout/i.test(m)) return '連線不穩，請稍後再試';
+  return '發生錯誤：' + clean(m, 60);
+};
+async function rpc(name, args) {
+  const { data, error } = await sb.rpc(name, args || {});
+  if (error) throw error;
+  return data;
+}
+let chain = Promise.resolve(), pending = 0, resyncWanted = false;
+function enqueue(fn) {
+  pending++;
+  const p = chain.then(fn);
+  chain = p.catch(() => {}).then(() => {
+    pending--;
+    if (pending === 0 && resyncWanted) { resyncWanted = false; resync(); }
+  });
+  return p;
+}
+function applyState(d) {
+  offset = (+d.now_ms || Date.now()) - Date.now();
+  cropCfg = {};
+  (d.crops || []).forEach(c => { cropCfg[c.key] = c; if (CROPS[c.key]) { CROPS[c.key].buy = c.seed; CROPS[c.key].sell = c.sell; } });
+  cfg = { ...cfg, ...(d.cfg || {}) };
+  if (d.profile) {
+    me = { username: d.profile.username, name: d.profile.name, look: d.profile.look || {}, coins: +d.profile.coins || 0 };
+  } else me = null;
+  inv = d.inv || {};
+  plots = new Map();
+  (d.plots || []).forEach(j => plots.set(pk(j.x, j.y), fromServer(j)));
+}
+async function resync() {
+  if (pending > 0) { resyncWanted = true; return; }
+  try { applyState(await rpc('get_state')); refreshHud(); }
+  catch (e) { toast(errText(e)); }
+}
+/* 樂觀更新：畫面先動，伺服器稍後確認；失敗就以伺服器為準重新同步 */
+function act2(name, args, onOk) {
+  enqueue(async () => {
+    const r = await rpc(name, args);
+    if (r && r.plot !== undefined && 'p_x' in args) {
+      if (r.plot) plots.set(pk(args.p_x, args.p_y), fromServer(r.plot)); else plots.delete(pk(args.p_x, args.p_y));
+    }
+    if (r && r.inv) Object.assign(inv, r.inv);
+    if (r && typeof r.coins === 'number') me.coins = r.coins;
+    if (onOk) onOk(r);
+    refreshHud();
+    return r;
+  }).catch(e => { toast(errText(e)); resyncWanted = true; if (pending === 0) { resyncWanted = false; resync(); } });
+}
+const have = k => inv[k] | 0;
+
+/* ---------- 動作 ---------- */
+function act() {
+  const [x, y] = facing();
+  if (x < 0 || y < 0 || x >= W || y >= H) return;
+  const k = kind[y][x], key = pk(x, y), p = plots.get(key), t = TOOLS[tool];
+  if (k === DR) { openMaker(false); return; }
+  if (k === SH) { openShop(); return; }
+  if (k === WA) { pop(x, y, t.id === 'can' ? '水壺永遠是滿的' : '這是池塘', '#cfe8f7'); if (t.id === 'can') splash(x, y); return; }
+  if (k !== G) return;
+  if (p && p.crop && progress(p) >= 1) {
+    const c = p.crop;
+    p.crop = null; p.grown = 0; p.tick = srvNow();
+    inv['c:' + c] = have('c:' + c) + 1;
+    sparkle(x, y, CROPS[c].c); pop(x, y, '+1 ' + CROPS[c].n, '#fff3b0');
+    act2('harvest', { p_x: x, p_y: y }); refreshHud(); return;
+  }
+  if (t.id === 'hoe') {
+    if (!p) {
+      if (!farmable(x, y)) { pop(x, y, '這裡不能耕種', '#ffb3a8'); return; }
+      plots.set(key, { crop: null, grown: 0, tick: srvNow(), wet: null }); dust(x, y);
+      act2('till', { p_x: x, p_y: y });
+    } else if (!p.crop) { plots.delete(key); dust(x, y); act2('untill', { p_x: x, p_y: y }); }
+    else pop(x, y, '還沒長好', '#ffffff');
+  } else if (t.id === 'can') {
+    if (!p) pop(x, y, '先用鋤頭翻土', '#ffffff');
+    else if (isWet(p)) pop(x, y, '土還是濕的', '#cfe8f7');
+    else {
+      settleLocal(p); p.wet = srvNow() + cfg.wet_s * 1000; drops(x, y);
+      act2('water', { p_x: x, p_y: y });
+    }
+  } else {
+    const kk = t.crop;
+    if (!p) pop(x, y, '先用鋤頭翻土', '#ffffff');
+    else if (p.crop) pop(x, y, '這裡已經有作物', '#ffffff');
+    else if (have('s:' + kk) <= 0) pop(x, y, '沒有種子了，去雜貨攤買', '#ffb3a8');
+    else {
+      inv['s:' + kk] = have('s:' + kk) - 1;
+      p.crop = kk; p.grown = 0; p.tick = srvNow();
+      dust(x, y); pop(x, y, '種下' + CROPS[kk].n, '#c9f0a8');
+      act2('plant', { p_x: x, p_y: y, p_crop: kk });
+    }
+  }
+  refreshHud();
+}
+
+/* ---------- 雜貨攤（等伺服器確認才更新） ---------- */
+const shopEl = $('shop'), shopCard = $('shopcard');
+let shopBusy = false;
+function openShop() { shopOpen = true; pressed.length = 0; renderShop(); shopEl.hidden = false; shopCard.focus(); }
+function closeShop() { shopOpen = false; shopEl.hidden = true; }
+function renderShop() {
+  const coins = me ? me.coins : 0;
+  const dis = shopBusy ? ' disabled' : '';
+  const buy = KEYS.map(k => {
+    const c = CROPS[k];
+    return '<div class="row"><i class="dot" style="--c:' + c.c + '"></i><div class="meta"><b>' + c.n + '種子</b><small>' +
+      fmtDur(growSec(k)) + '成熟（要澆水），每個賣 ' + c.sell + ' G · 持有 ' + have('s:' + k) + '</small></div>' +
+      '<button type="button" class="btn" data-a="buy" data-c="' + k + '"' + (shopBusy || coins < c.buy ? ' disabled' : '') + '>' + c.buy + ' G</button></div>';
+  }).join('');
+  const has = KEYS.filter(k => have('c:' + k) > 0);
+  let total = 0;
+  const sell = has.length ? has.map(k => {
+    const c = CROPS[k], n = have('c:' + k); total += n * c.sell;
+    return '<div class="row"><i class="dot" style="--c:' + c.c + '"></i><div class="meta"><b>' + c.n + ' ×' + n + '</b><small>每個 ' + c.sell +
+      ' G</small></div><button type="button" class="btn" data-a="sell" data-c="' + k + '"' + dis + '>賣出 ' + n * c.sell + ' G</button></div>';
+  }).join('') : '<p class="empty">背包裡還沒有作物，收成之後再來。</p>';
+  shopCard.innerHTML = '<div class="shop-h"><h2>雜貨攤</h2><span class="chip gold">' + coins + ' G</span></div>' +
+    '<h3>買種子</h3>' + buy + '<h3>賣作物</h3>' + sell +
+    (has.length > 1 ? '<button type="button" class="btn wide" data-a="sellall"' + dis + '>全部賣出 ' + total + ' G</button>' : '') +
+    '<button type="button" class="btn ghost wide" data-a="close">離開</button>';
+}
+shopCard.addEventListener('click', async e => {
+  const b = e.target.closest('button[data-a]');
+  if (!b || b.disabled) return;
+  const a = b.dataset.a, k = b.dataset.c;
+  if (a === 'close') { closeShop(); return; }
+  shopBusy = true; renderShop();
+  try {
+    const r = await enqueue(async () => {
+      if (a === 'buy') return rpc('buy_seed', { p_crop: k, p_qty: 1 });
+      if (a === 'sell') return rpc('sell_crop', { p_crop: k });
+      return rpc('sell_all');
+    });
+    if (r.inv) Object.assign(inv, r.inv);
+    if (typeof r.coins === 'number') me.coins = r.coins;
+    if (r.earned) toast('賣出得到 ' + r.earned + ' G');
+  } catch (err) { toast(errText(err)); await resync(); }
+  shopBusy = false;
+  if (shopOpen) renderShop();
+  refreshHud();
+});
+
+/* ---------- 介面 ---------- */
+const slots = [];
+TOOLS.forEach((tl, i) => {
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'slot'; b.setAttribute('aria-label', tl.n);
+  b.innerHTML = '<span class="k">' + (i + 1) + '</span><canvas width="16" height="16"></canvas><span class="n"></span>';
+  $('hotbar').appendChild(b);
+  drawIcon(b.querySelector('canvas').getContext('2d'), i);
+  b.addEventListener('click', () => { selectTool(i); if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); });
+  slots.push({ el: b, n: b.querySelector('.n') });
+});
+function selectTool(i) {
+  if (paused()) return;
+  tool = i; refreshHud();
+  pop(pl.x, pl.y - 1, TOOLS[i].n, '#fff3b0');
+}
+let lastClock = '';
+function updateClock() {
+  const w = world();
+  const h = Math.floor(w.min / 60), m = Math.floor((w.min % 60) / 10) * 10;
+  const s = String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
+  const sig = s + '|' + w.day + '|' + w.wet;
+  if (sig === lastClock) return;
+  lastClock = sig;
+  $('clock').textContent = s;
+  $('clock').classList.toggle('late', darkness(w.min) > 0.5);
+  $('day').textContent = '第 ' + w.day + ' 天';
+  const wx = $('wx');
+  wx.textContent = w.wet ? '雨天' : '晴天';
+  wx.classList.toggle('rain', w.wet);
+}
+function refreshHud() {
+  $('gold').textContent = (me ? me.coins : 0) + ' G';
+  $('who').textContent = me ? me.name : '未登入';
+  slots.forEach((s, i) => {
+    const tl = TOOLS[i];
+    s.el.classList.toggle('sel', tool === i);
+    if (tl.id === 'seed') { const n = have('s:' + tl.crop); s.n.textContent = '×' + n; s.el.classList.toggle('empty', n <= 0); }
+    else s.n.textContent = '';
+  });
+  $('bag').innerHTML = KEYS.map(k => '<span class="bagchip"><i class="dot" style="--c:' + CROPS[k].c + '"></i>' + CROPS[k].n + ' ×' + have('c:' + k) + '</span>').join('');
+  lastClock = ''; updateClock();
+}
+let lastTip = '';
+function updateTip() {
+  const [x, y] = facing();
+  let s = '走到田邊，面向一塊草地，按動作鍵。';
+  if (x >= 0 && y >= 0 && x < W && y < H) {
+    const p = plots.get(pk(x, y)), k = kind[y][x];
+    if (p && p.crop) {
+      const need = growSec(p.crop) - grownNow(p);
+      const nm = CROPS[p.crop].n;
+      if (need <= 0) s = nm + '成熟了，按動作鍵收成！';
+      else {
+        const wl = p.wet && p.wet > srvNow() ? (p.wet - srvNow()) / 1000 : 0;
+        const pct = Math.floor(progress(p) * 100);
+        if (wl <= 0) s = nm + ' ' + pct + '%　土是乾的，要澆水才會繼續長。';
+        else if (wl >= need) s = nm + ' ' + pct + '%　還要約 ' + fmtDur(need) + '成熟。';
+        else s = nm + ' ' + pct + '%　水撐不到成熟（還能長 ' + fmtDur(wl) + '），記得再澆水。';
+      }
+    } else if (p) s = '已翻好的土' + (isWet(p) ? '，濕的' : '，乾的') + '。可以播種或澆水。';
+    else if (k === DR) s = '房子的門：按動作鍵換造型。';
+    else if (k === SH) s = '雜貨攤：買種子、賣作物。';
+    else if (k === WA) s = '池塘。';
+    else if (k === G) s = farmable(x, y) ? '空地：用鋤頭翻成田。' : '這裡不能耕種，田地在房子下方的草地。';
+  }
+  if (s !== lastTip) { lastTip = s; $('tip').textContent = s; }
+}
+
+/* ---------- 輸入 ---------- */
+const KEYMAP = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right', w: 'up', s: 'down', a: 'left', d: 'right', W: 'up', S: 'down', A: 'left', D: 'right' };
+const press = d => { const i = pressed.indexOf(d); if (i >= 0) pressed.splice(i, 1); pressed.push(d); };
+const release = d => { const i = pressed.indexOf(d); if (i >= 0) pressed.splice(i, 1); };
+window.addEventListener('keydown', e => {
+  const tg = e.target && e.target.tagName;
+  if (tg === 'INPUT' || tg === 'SELECT' || tg === 'TEXTAREA') return;
+  if (e.key === 'Escape' && shopOpen) { closeShop(); return; }
+  if (e.key === 'Escape' && makerOpen && !firstTime) { closeMaker(); return; }
+  if (paused()) return;
+  const d = KEYMAP[e.key];
+  if (d) { e.preventDefault(); press(d); return; }
+  if (e.key === ' ' || e.key === 'e' || e.key === 'E' || e.key === 'Enter') {
+    e.preventDefault();
+    if (!e.repeat) actQueued = true;
+    return;
+  }
+  if (e.key >= '1' && e.key <= '5') selectTool(+e.key - 1);
+});
+window.addEventListener('keyup', e => { const d = KEYMAP[e.key]; if (d) release(d); });
+window.addEventListener('blur', () => { pressed.length = 0; });
+document.querySelectorAll('#pad [data-d]').forEach(b => {
+  const d = b.dataset.d;
+  b.addEventListener('pointerdown', e => { e.preventDefault(); if (!paused()) press(d); });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(t => b.addEventListener(t, () => release(d)));
+});
+$('actbtn').addEventListener('pointerdown', e => { e.preventDefault(); actQueued = true; });
+
+/* ---------- 角色外觀 ---------- */
+const mk = $('maker'), optsEl = $('opts'), pctx = $('pv').getContext('2d');
+let draft = null, pvTimer = 0, pvFace = 0, pvPhase = 0;
+const FACES = ['down', 'right', 'up', 'left'];
+const ROWS = [
+  { k: 'skin', label: '膚色', cols: SKINS },
+  { k: 'hair', label: '髮色', cols: HAIRS },
+  { k: 'style', label: '髮型', names: STYLES },
+  { k: 'hat', label: '帽子與髮飾', names: HATS },
+  { k: 'hatc', label: '帽子顏色', cols: HATCOL },
+  { k: 'outfit', label: '衣服顏色', cols: OUTFITS }
+];
+const LIMIT = { skin: SKINS.length, hair: HAIRS.length, style: STYLES.length, hat: HATS.length, hatc: HATCOL.length, outfit: OUTFITS.length };
+function toChar(name, look) {
+  const c = { ...DEF_CHAR, name: clean(name, 8) || DEF_CHAR.name };
+  for (const k in LIMIT) { const v = look && look[k]; if (Number.isInteger(v) && v >= 0 && v < LIMIT[k]) c[k] = v; }
+  return c;
+}
+const myChar = () => toChar(me && me.name, me && me.look);
+const rowEls = {};
+ROWS.forEach(row => {
+  const wrap = document.createElement('div');
+  wrap.className = 'optrow';
+  wrap.innerHTML = '<span class="optlabel">' + row.label + '</span><div class="' + (row.cols ? 'sws' : 'chips') + '"></div>';
+  const box = wrap.querySelector('div');
+  const btns = [];
+  (row.cols || row.names).forEach((v, i) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    if (row.cols) { b.className = 'sw'; b.style.setProperty('--c', v); b.setAttribute('aria-label', row.label + ' ' + (i + 1)); }
+    else { b.className = 'cb'; b.textContent = v; }
+    b.addEventListener('click', () => { draft[row.k] = i; syncMaker(); });
+    box.appendChild(b); btns.push(b);
+  });
+  optsEl.appendChild(wrap);
+  rowEls[row.k] = { wrap, btns };
+});
+function drawPreview() {
+  g = pctx;
+  pctx.clearRect(0, 0, 16, 22);
+  drawPlayer(0, 6, FACES[pvFace], true, pvPhase, draft);
+  g = ctx;
+}
+function syncMaker() {
+  ROWS.forEach(row => rowEls[row.k].btns.forEach((b, i) => b.setAttribute('aria-pressed', draft[row.k] === i ? 'true' : 'false')));
+  rowEls.hatc.wrap.hidden = draft.hat === 3;
+  drawPreview();
+}
+function openMaker(first) {
+  if (shopOpen || makerOpen) return;
+  makerOpen = true; firstTime = first; pressed.length = 0;
+  draft = first ? { ...DEF_CHAR, name: '' } : myChar();
+  $('mk-name').value = draft.name === DEF_CHAR.name && first ? '' : draft.name;
+  $('mk-cancel').hidden = first;
+  $('mk-ok').textContent = first ? '開始農場生活' : '完成';
+  mk.hidden = false; mk.scrollTop = 0;
+  syncMaker();
+  clearInterval(pvTimer);
+  let n = 0;
+  pvTimer = setInterval(() => { pvPhase = (pvPhase + 1) % 2; if (++n % 6 === 0) pvFace = (pvFace + 1) % 4; drawPreview(); }, 280);
+}
+function closeMaker() { makerOpen = false; mk.hidden = true; clearInterval(pvTimer); }
+let mkBusy = false;
+$('mk-ok').addEventListener('click', async () => {
+  if (mkBusy) return;
+  const name = clean(($('mk-name').value || '').trim(), 8);
+  if (!name) { toast('先幫農夫取個名字吧'); return; }
+  const look = {}; for (const k in LIMIT) look[k] = draft[k];
+  mkBusy = true;
+  try {
+    if (firstTime) {
+      applyState(await rpc('claim_profile', { p_username: authUser, p_name: name, p_look: look }));
+    } else {
+      await enqueue(() => rpc('set_look', { p_name: name, p_look: look }));
+      me.name = name; me.look = look;
+    }
+    closeMaker(); refreshHud();
+    toast(firstTime ? '歡迎，' + name + '！按 1 拿鋤頭，在草地上翻一塊地，再按 3 種下蘿蔔。' : '換好新造型了', firstTime ? 6000 : 2800);
+  } catch (e) { toast(errText(e)); }
+  mkBusy = false;
+});
+$('mk-cancel').addEventListener('click', () => { if (!firstTime) closeMaker(); });
+$('mk-rand').addEventListener('click', () => {
+  const rnd = n => Math.floor(Math.random() * n);
+  for (const k in LIMIT) draft[k] = rnd(LIMIT[k]);
+  syncMaker();
+});
+$('pvturn').addEventListener('click', () => { pvFace = (pvFace + 1) % 4; drawPreview(); });
+$('restyle').addEventListener('click', () => { if (ready && !authOpen) openMaker(false); });
+
+/* ---------- 登入與註冊 ---------- */
+const authEl = $('auth'), bootEl = $('boot');
+let authMode = 'in', authUser = '', authBusy = false;
+const setBoot = (t, m) => { $('boot-t').textContent = t; $('boot-m').textContent = m || ''; bootEl.hidden = false; };
+function setMode(m) {
+  authMode = m;
+  $('tab-in').setAttribute('aria-pressed', m === 'in');
+  $('tab-up').setAttribute('aria-pressed', m === 'up');
+  $('au-go').textContent = m === 'in' ? '登入' : '註冊並開始';
+  $('au-pass').autocomplete = m === 'in' ? 'current-password' : 'new-password';
+  $('au-msg').textContent = '';
+}
+$('tab-in').addEventListener('click', () => setMode('in'));
+$('tab-up').addEventListener('click', () => setMode('up'));
+const emailOf = u => u + '@' + EMAIL_DOMAIN;
+function authErr(e) {
+  const m = String((e && e.message) || e || '');
+  if (/invalid login/i.test(m)) return '帳號或密碼不對';
+  if (/already|registered/i.test(m)) return '這個帳號已經有人用了';
+  if (/password/i.test(m) && /6|short|weak/i.test(m)) return '密碼至少要 6 個字元';
+  if (/rate|too many/i.test(m)) return '嘗試太多次了，請等一下再試';
+  if (/fetch|network/i.test(m)) return '連線不穩，請稍後再試';
+  return '失敗：' + clean(m, 80);
+}
+$('auth-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  if (authBusy) return;
+  const u = $('au-user').value.trim().toLowerCase(), pw = $('au-pass').value;
+  const msg = $('au-msg');
+  if (!/^[a-z0-9_]{3,16}$/.test(u)) { msg.textContent = '帳號要 3–16 個小寫英文字母、數字或底線'; return; }
+  if (pw.length < 6) { msg.textContent = '密碼至少要 6 個字元'; return; }
+  authBusy = true; $('au-go').disabled = true; msg.textContent = '請稍等…';
+  try {
+    let res;
+    if (authMode === 'up') {
+      res = await sb.auth.signUp({ email: emailOf(u), password: pw });
+      if (res.error) throw res.error;
+      if (!res.data.session) {
+        res = await sb.auth.signInWithPassword({ email: emailOf(u), password: pw });
+        if (res.error) throw new Error('註冊成功但無法登入：請到 Supabase 的 Authentication 設定關閉 Confirm email');
+      }
+    } else {
+      res = await sb.auth.signInWithPassword({ email: emailOf(u), password: pw });
+      if (res.error) throw res.error;
+    }
+    $('au-pass').value = '';
+    msg.textContent = '';
+    await enter(u);
+  } catch (err) { msg.textContent = authErr(err); }
+  authBusy = false; $('au-go').disabled = false;
+});
+function showAuth() {
+  ready = false; authOpen = true; closeMaker(); closeShop();
+  bootEl.hidden = true; authEl.hidden = false; me = null; refreshHud();
+}
+async function enter(u) {
+  authUser = u;
+  authEl.hidden = true; setBoot('載入農場…');
+  try {
+    const d = await rpc('get_state');
+    applyState(d);
+    authOpen = false; ready = true; bootEl.hidden = true;
+    pl.x = pl.sx = 4; pl.y = pl.sy = 4; pl.prog = 1; pl.face = 'down';
+    refreshHud();
+    if (!me) openMaker(true);
+    else toast('歡迎回來，' + me.name + '！', 2500);
+  } catch (err) {
+    showAuth(); $('au-msg').textContent = errText(err);
+  }
+}
+$('logout').addEventListener('click', async () => {
+  try { await sb.auth.signOut(); } catch (e) { /* 略過 */ }
+  plots = new Map(); inv = {}; showAuth();
+});
+
+/* ---------- 更新與繪製 ---------- */
+function update(dt) {
+  rain.forEach(d => {
+    d.y += dt * 0.26; d.x -= dt * 0.06;
+    if (d.y > H * T) { d.y = -4; d.x = Math.random() * (W * T + 20); }
+    if (d.x < 0) d.x += W * T;
+  });
+  for (let i = fx.length - 1; i >= 0; i--) {
+    const p = fx[i];
+    p.l += dt; p.x += p.vx * dt / 16; p.y += p.vy * dt / 16; p.vy += 0.05 * dt / 16;
+    if (p.l > p.max) fx.splice(i, 1);
+  }
+  for (let i = pops.length - 1; i >= 0; i--) {
+    const p = pops[i];
+    p.l += dt; p.y -= dt * 0.012;
+    if (p.l > 1100) pops.splice(i, 1);
+  }
+  if (paused()) { actQueued = false; return; }
+  if (pl.prog < 1) pl.prog = Math.min(1, pl.prog + dt / STEP_MS);
+  if (pl.prog >= 1) {
+    const d = pressed[pressed.length - 1];
+    if (d) tryMove(d);
+  }
+  if (actQueued) { actQueued = false; act(); }
+  updateClock(); updateTip();
+}
+
+function draw(now) {
+  g = ctx;
+  ctx.setTransform(S, 0, 0, S, 0, 0);
+  ctx.imageSmoothingEnabled = false;
+  const w = world(), dark = darkness(w.min);
+  for (let ty = 0; ty < H; ty++) for (let tx = 0; tx < W; tx++) {
+    const k = kind[ty][tx], px = tx * T, py = ty * T;
+    if (k === WA) drawWater(px, py, tx, ty, now);
+    else if (k === P) drawPath(px, py, tx, ty);
+    else if (k === TR) drawTree(px, py, tx, ty);
+    else {
+      drawGrass(px, py, tx, ty);
+      if (k === G) {
+        const p = plots.get(pk(tx, ty));
+        if (p) {
+          drawSoil(px, py, isWet(p));
+          if (p.crop) drawCrop(px, py, { t: p.crop, p: progress(p) }, now);
+        } else if (farmable(tx, ty)) r('rgba(255,255,255,.07)', px, py, T, T);
+      }
+    }
+  }
+  drawHouse(dark > 0.15, now);
+  drawShop(dark > 0.15, now);
+
+  const e = pl.prog;
+  const rx = pl.sx + (pl.x - pl.sx) * e, ry = pl.sy + (pl.y - pl.sy) * e;
+  if (ready) {
+    const ch = myChar();
+    drawPlayer(Math.round(rx * T), Math.round(ry * T), pl.face, pl.prog < 1, (Math.floor(pl.prog * 2) + pl.step) % 2, ch);
+    ctx.font = '800 5px "Chiron GoRound TC", "Noto Sans TC", sans-serif';
+    ctx.textAlign = 'center'; ctx.lineJoin = 'round'; ctx.lineWidth = 2; ctx.strokeStyle = 'rgba(122,74,74,.9)';
+    ctx.strokeText(ch.name, Math.round(rx * T) + 8, Math.round(ry * T) - 5);
+    ctx.fillStyle = '#ffffff'; ctx.fillText(ch.name, Math.round(rx * T) + 8, Math.round(ry * T) - 5);
+  }
+
+  fx.forEach(p => {
+    ctx.globalAlpha = clamp(1 - p.l / p.max, 0, 1);
+    r(p.c, p.x | 0, p.y | 0, 2, 2);
+  });
+  ctx.globalAlpha = 1;
+
+  const warm = Math.max(0, 1 - Math.abs(w.min - 1110) / 100) * 0.2;
+  if (warm > 0) r('rgba(255,150,130,' + warm.toFixed(3) + ')', 0, 0, W * T, H * T);
+  if (dark > 0) r('rgba(70,50,130,' + (dark * 0.45).toFixed(3) + ')', 0, 0, W * T, H * T);
+  if (w.wet) {
+    r('rgba(90,110,150,.14)', 0, 0, W * T, H * T);
+    rain.forEach(d => r('rgba(235,245,255,.85)', d.x | 0, d.y | 0, 1, 3));
+  }
+
+  const [fx_, fy_] = facing();
+  if (fx_ >= 0 && fy_ >= 0 && fx_ < W && fy_ < H && !paused()) {
+    ctx.globalAlpha = 0.65 + 0.35 * Math.sin(now / 160);
+    const bx = fx_ * T, by = fy_ * T, c = '#ff5f8a';
+    r(c, bx, by, 3, 1); r(c, bx, by, 1, 3);
+    r(c, bx + T - 3, by, 3, 1); r(c, bx + T - 1, by, 1, 3);
+    r(c, bx, by + T - 1, 3, 1); r(c, bx, by + T - 3, 1, 3);
+    r(c, bx + T - 3, by + T - 1, 3, 1); r(c, bx + T - 1, by + T - 3, 1, 3);
+    ctx.globalAlpha = 1;
+  }
+
+  ctx.font = '800 7px "Chiron GoRound TC", "Noto Sans TC", sans-serif';
+  ctx.textAlign = 'center'; ctx.lineJoin = 'round';
+  pops.forEach(p => {
+    ctx.globalAlpha = clamp(1.6 - p.l / 700, 0, 1);
+    ctx.lineWidth = 2.5; ctx.strokeStyle = 'rgba(122,74,74,.95)';
+    ctx.strokeText(p.txt, p.x, p.y);
+    ctx.fillStyle = p.col; ctx.fillText(p.txt, p.x, p.y);
+  });
+  ctx.globalAlpha = 1;
+}
+
+let last = performance.now();
+function frame(now) {
+  const dt = Math.min(60, now - last);
+  last = now;
+  update(dt);
+  draw(now);
+  requestAnimationFrame(frame);
+}
+
+/* ---------- 啟動 ---------- */
+async function boot() {
+  refreshHud();
+  requestAnimationFrame(frame);
+  const lib = window.supabase;
+  if (!lib || /YOUR-PROJECT/.test(SUPABASE_URL) || /YOUR-PUBLISHABLE/.test(SUPABASE_KEY)) {
+    authEl.hidden = true;
+    setBoot(lib ? '還沒設定連線' : '無法載入連線元件', lib ? '請把 index.html 最上面的 SUPABASE_URL 與 SUPABASE_KEY 換成你自己專案的值。' : '請檢查網路後重新整理頁面。');
+    return;
+  }
+  sb = lib.createClient(SUPABASE_URL, SUPABASE_KEY);
+  setMode('in');
+  setBoot('載入中…');
+  let sess = null;
+  try { sess = (await sb.auth.getSession()).data.session; } catch (e) { /* 當作沒登入 */ }
+  if (sess && sess.user && sess.user.email) {
+    await enter(sess.user.email.split('@')[0]);
+  } else { bootEl.hidden = true; showAuth(); }
+  setInterval(() => { if (ready && !document.hidden) resync(); }, 60000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && ready) resync(); });
+}
+boot();
+})();
+</script>
+</body></html>
