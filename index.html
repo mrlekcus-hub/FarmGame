@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>雷克斯農場</title>
+<meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chiron+GoRound+TC:wght@400;600;800&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap">
@@ -90,6 +91,10 @@ canvas#game.editing{cursor:crosshair}
 .meta{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
 .meta b{font-weight:700;font-size:14px}
 .meta small{color:var(--muted);font-size:12px}
+.qty{display:flex;align-items:center;gap:4px;margin-top:3px}
+.qty button{min-width:28px;height:26px;padding:0 8px;border:2px solid var(--edge);border-radius:8px;background:#fff;color:var(--ink);font:700 13px/1 var(--f-body);cursor:pointer}
+.qty button:disabled{opacity:.4;cursor:default}
+.qty output{min-width:30px;text-align:center;font:700 14px/1 var(--f-body);color:var(--ink)}
 .dot{display:inline-block;width:14px;height:14px;border-radius:50%;background:var(--c,#fff);box-shadow:inset -2px -2px 0 rgba(0,0,0,.14);flex:none}
 .empty{margin:4px 0;color:var(--muted);font-size:13px}
 .btn{
@@ -255,7 +260,16 @@ kbd{font:600 12px/1 var(--f-display);color:var(--ink);background:var(--panel);pa
 .dockbtn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--edge)}
 .dockbtn .di{font-size:20px;line-height:1}
 .dockbtn small{font:600 10px/1 var(--f-display);color:var(--muted)}
-.dbadge{position:absolute;right:-6px;top:-6px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;background:var(--pink-deep);color:#fff;
+.mltabs{display:flex;gap:8px;margin:6px 0}.mllab{display:block;font-weight:800;margin:10px 0 4px}
+.mlgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.mlpick{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px;border:2px solid #f0d0c8;border-radius:12px;background:#fff;cursor:pointer;font:inherit;color:inherit}
+.mlpick.on{border-color:var(--pink-deep);background:#fff0f4}.mlpick canvas,.mlrow canvas{width:100%;image-rendering:pixelated;border-radius:6px}
+.mlpick small{color:#b0764a;font-weight:800}.mltext{width:100%;resize:vertical;font:inherit}
+.mlrow{display:flex;gap:10px;align-items:center;padding:8px;border-radius:12px;border:2px solid #f6e0d8;margin:6px 0;cursor:pointer;background:#fff}
+.mlrow.new{border-color:var(--pink-deep);background:#fff6f8}.mlrow canvas{width:80px;flex:none}.mlrow .meta{display:flex;flex-direction:column;min-width:0}
+.mlbig{border:2px solid #f0d0c8;border-radius:14px;padding:10px;background:#fffaf2;margin:8px 0}.mlbig canvas{width:100%;image-rendering:pixelated;border-radius:8px}
+.mlmsg{margin:10px 2px;line-height:1.7;word-break:break-word}.mlfrom{text-align:right;color:#a07a6a;font-size:13px}
+.dbadge{;top:-6px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;background:var(--pink-deep);color:#fff;
   font:800 11px/18px var(--f-display);font-style:normal;text-align:center;border:2px solid #fff}
 @media (max-width:520px){.dock{right:5px;top:5px;gap:4px}.dockbtn{width:40px;padding:5px 0;border-width:2px;border-radius:13px}.dockbtn .di{font-size:17px}.dockbtn small{display:none}}
 @media (orientation:landscape) and (max-height:560px){.dock{flex-direction:row;right:5px;top:5px}.dockbtn{width:40px}.dockbtn small{display:none}.dockbtn .di{font-size:16px}}
@@ -325,7 +339,7 @@ body{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
   .top h1{display:none}
   .stats{flex-direction:column;gap:4px}
   .chip{font-size:12px;padding:6px 10px;box-shadow:0 2px 0 var(--edge)}
-  #wx,#who{display:none}
+  #wx,#who,#sn{display:none}
   .stage{grid-column:2;grid-row:1;align-self:center;width:min(calc((100dvh - 14px) * 10 / 7),calc(100vw - 290px));border-width:4px;border-radius:16px}
   .hotbar{grid-column:3;grid-row:1;align-self:start;justify-self:center;display:grid;grid-template-columns:repeat(2,50px);gap:6px}
   .slot{width:50px;height:50px;border-width:2px;border-radius:13px}
@@ -371,7 +385,7 @@ body.imm .stage{position:absolute;inset:0;width:100%!important;height:100%!impor
 body.imm canvas#game{position:absolute;inset:0;width:100%;height:100%;aspect-ratio:auto}
 body.imm .dock,body.imm .emobtn{display:none!important}
 body.imm .top{position:fixed;z-index:6;left:max(12px,env(safe-area-inset-left,0px));top:max(12px,env(safe-area-inset-top,0px));display:block;width:auto}
-body.imm .top h1,body.imm #wx,body.imm #who{display:none}
+body.imm .top h1,body.imm #wx,body.imm #who,body.imm #sn{display:none}
 body.imm .stats{flex-wrap:nowrap;flex-direction:row!important;gap:6px}
 body.imm .chip{background:rgba(255,248,239,.86);padding:7px 12px;font-size:13px;box-shadow:0 2px 0 var(--edge)}
 body.imm .chip.gold{box-shadow:0 2px 0 var(--sun-deep)}
@@ -497,6 +511,8 @@ body.imm .immgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;flex:
       <span class="chip" id="wx">晴天</span>
       <span class="chip gold" id="gold">100 G</span>
       <span class="chip" id="who">未登入</span>
+      <span class="chip" id="sn">春</span>
+      <span class="chip" id="buff" style="display:none"></span>
     </div>
   </header>
 
@@ -510,6 +526,7 @@ body.imm .immgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;flex:
       <button type="button" class="dockbtn dockfold" id="dockfold" aria-label="收起快捷列" aria-expanded="true"><span class="di">▸</span><small>收起</small></button>
       <button type="button" class="dockbtn" data-k="bag" aria-label="背包（B）"><span class="di">🎒</span><small>背包</small></button>
       <button type="button" class="dockbtn" data-k="fr" aria-label="好友（F）"><span class="di">👥</span><small>好友</small><i class="dbadge" id="dockbadge" hidden></i></button>
+      <button type="button" class="dockbtn" data-k="mail" aria-label="信箱（M）"><span class="di">✉️</span><small>信箱</small><i class="dbadge" id="mailbadge" hidden></i></button>
       <button type="button" class="dockbtn" data-k="dex" aria-label="圖鑑（G）"><span class="di">📖</span><small>圖鑑</small></button>
       <button type="button" class="dockbtn" data-k="quest" aria-label="每日任務（Q）"><span class="di">📋</span><small>任務</small><i class="dbadge" id="questbadge" hidden></i></button>
       <button type="button" class="dockbtn" data-k="lv" aria-label="等級"><span class="di">⭐</span><small>等級</small></button>
@@ -531,6 +548,7 @@ body.imm .immgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;flex:
   <div class="immgrid" id="immgrid">
     <button type="button" class="imi" data-k="bag"><span class="di">🎒</span>背包</button>
     <button type="button" class="imi" data-k="fr"><span class="di">👥</span>好友<i class="dbadge" id="immfb" hidden></i></button>
+    <button type="button" class="imi" data-k="mail"><span class="di">✉️</span>信箱<i class="dbadge" id="immmb" hidden></i></button>
     <button type="button" class="imi" data-k="dex"><span class="di">📖</span>圖鑑</button>
     <button type="button" class="imi" data-k="quest"><span class="di">📋</span>任務<i class="dbadge" id="immqb" hidden></i></button>
     <button type="button" class="imi" data-k="lv"><span class="di">⭐</span>等級</button>
@@ -623,6 +641,7 @@ body.imm .immgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;flex:
 <div class="maker" id="dexm" hidden><div class="card maker-card" id="dexcard" tabindex="-1"></div></div>
 <div class="maker" id="bagm" hidden><div class="card maker-card" id="bagcard" tabindex="-1"></div></div>
 <div class="maker" id="fshop" hidden><div class="card maker-card" id="fshopcard" tabindex="-1"></div></div>
+<div class="maker" id="mlm" hidden><div class="card maker-card" id="mlcard" tabindex="-1"></div></div>
 <div class="maker" id="frmenu" hidden><div class="card maker-card" id="frcard" tabindex="-1"></div></div>
 <div class="stm" id="stm" hidden><div class="stcard" id="stcard" role="dialog" aria-label="設定" tabindex="-1">
   <h2>設定</h2>
@@ -642,6 +661,11 @@ body.imm .immgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;flex:
 <div class="maker" id="cdm" hidden><div class="card maker-card" id="cdcard" tabindex="-1"></div></div>
 <div class="maker" id="gm" hidden><div class="card maker-card" id="gmcard" tabindex="-1"></div></div>
 <div class="maker" id="dsm" hidden><div class="card maker-card" id="dscard" tabindex="-1"></div></div>
+<div class="maker" id="bdm" hidden><div class="card maker-card" id="bdcard" tabindex="-1"></div></div>
+<div class="maker" id="ckm" hidden><div class="card maker-card" id="ckcard" tabindex="-1"></div></div>
+<div class="maker" id="dgm" hidden><div class="card maker-card" id="dgcard" tabindex="-1"></div></div>
+<div class="maker" id="rcm" hidden><div class="card maker-card" id="rccard" tabindex="-1"></div></div>
+<div class="maker" id="mcm" hidden><div class="card maker-card" id="mccard" tabindex="-1"></div></div>
 
 <div class="maker" id="auth" hidden>
   <form class="maker-card auth-card" id="auth-form" autocomplete="on">
@@ -664,10 +688,11 @@ body.imm .immgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;flex:
 <script>
 (() => {
 'use strict';
-const T = 16, W = 20, H = 14, S = 3;
+const T = 16, BW = 20, BH = 14, S = 3;
+let W = BW, H = BH;   // 目前場景的格數：農場、屋內、廣場是 20×14，雷克斯小村是 32×22
 const $ = id => document.getElementById(id);
 const cv = $('game'), ctx = cv.getContext('2d');
-cv.width = W * T * S; cv.height = H * T * S;
+cv.width = BW * T * S; cv.height = BH * T * S;
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const idx = (x, y) => y * W + x;
 const hash = (x, y, s = 0) => {
@@ -686,9 +711,13 @@ const INK = '#7a4a4a';
 const CROPS = {
   radish:  { n: '蘿蔔', days: 3, buy: 10, sell: 25,  c: '#ff8fa8' },
   tomato:  { n: '番茄', days: 5, buy: 20, sell: 55,  c: '#ff6b5e' },
-  pumpkin: { n: '南瓜', days: 8, buy: 40, sell: 130, c: '#ffab4a' }
+  pumpkin: { n: '南瓜', days: 8, buy: 40, sell: 130, c: '#ffab4a' },
+  beet:    { n: '甜菜', days: 1, buy: 25, sell: 85,  c: '#b0386a', hy: true },
+  corn:    { n: '玉米', days: 3, buy: 45, sell: 170, c: '#ffd84a', hy: true },
+  melon:   { n: '蜜瓜', days: 5, buy: 70, sell: 280, c: '#8fd67a', hy: true }
 };
-const KEYS = ['radish', 'tomato', 'pumpkin'];
+const KEYS = ['radish', 'tomato', 'pumpkin'];            // 雜貨攤買得到的種子
+const ALLK = ['radish', 'tomato', 'pumpkin', 'beet', 'corn', 'melon'];   // 含雜交作物
 const TOOLS = [
   { id: 'hoe', n: '鋤頭' },
   { id: 'can', n: '水壺' },
@@ -696,7 +725,13 @@ const TOOLS = [
   { id: 'seed', crop: 'tomato', n: '番茄種子' },
   { id: 'seed', crop: 'pumpkin', n: '南瓜種子' },
   { id: 'rod', n: '釣竿' },
-  { id: 'net', n: '捕蟲網' }
+  { id: 'net', n: '捕蟲網' },
+  { id: 'seed', crop: 'beet', n: '甜菜種子' },
+  { id: 'seed', crop: 'corn', n: '玉米種子' },
+  { id: 'seed', crop: 'melon', n: '蜜瓜種子' },
+  { id: 'pick', n: '鎬子' },
+  { id: 'fert', n: '肥料' },
+  { id: 'yard', n: '庭院佈置' }
 ];
 const CAN_MAX = 12;
 
@@ -717,18 +752,35 @@ for (let y = 8; y <= 12; y++) for (let x = 14; x <= 18; x++) {
   if (dx * dx + dy * dy + hash(x, y, 9) * 0.25 <= 1) kind[y][x] = WA;
 }
 [[9, 2], [18, 4], [1, 7], [11, 12], [9, 7]].forEach(([x, y]) => { if (kind[y][x] === G) kind[y][x] = TR; });
-const isWater = (x, y) => x >= 0 && y >= 0 && x < W && y < H && kind[y][x] === WA;
+const isWater = (x, y) => x >= 0 && y >= 0 && x < W && y < H && K[y][x] === WA;
+
+/* ---------- 季節（要和 SQL 的 _season 一致：每 7 天換一季，春→夏→秋→冬，以 GMT+8 的日子計算） ---------- */
+const SEASONS = ['spring', 'summer', 'autumn', 'winter'];
+const SEASON_N = { spring: '🌸 春天', summer: '☀️ 夏天', autumn: '🍂 秋天', winter: '❄️ 冬天' };
+const SEA_SHORT = { spring: '春', summer: '夏', autumn: '秋', winter: '冬' };
+const seasonAt = ms => SEASONS[Math.floor(Math.floor((ms + 8 * 3600000) / 86400000) / 7) % 4];
+const inSeason = (s, sea) => !s || s === 'any' || s.split(',').includes(sea);
+let SEA = 'spring';   // 目前這一幀的季節（draw 開頭更新）
+const GRASSP = { spring: ['#aadd7d', '#a3d876'], summer: ['#9fd86d', '#97d266'], autumn: ['#cfd486', '#c7cc7d'], winter: ['#eaf3f7', '#e1edf2'] };
+const GRASSB = { spring: ['#8ac860', '#c8ee9c'], summer: ['#7ec253', '#bfeb8c'], autumn: ['#b9bd66', '#e6e6b0'], winter: ['#cfe0e8', '#ffffff'] };
+const TREEP = {
+  spring: [['#fbc4d4', '#e58fab', '#ffe6ee', '#e58fab'], ['#86d98f', '#4fa968', '#b5f0b5', '#5fba76']],
+  summer: [['#6fcf7e', '#3f9a58', '#a0e8a8', '#4fa968'], ['#6fcf7e', '#3f9a58', '#a0e8a8', '#4fa968']],
+  autumn: [['#f2a26a', '#c46a36', '#ffd3a8', '#c46a36'], ['#f3d36b', '#c79a3a', '#fff0a8', '#c79a3a']],
+  winter: [['#eef6fa', '#9fbccd', '#ffffff', '#b9d0de'], ['#e4eff5', '#9fbccd', '#ffffff', '#b9d0de']]
+};
 
 /* ---------- 圖塊 ---------- */
 function drawGrass(px, py, tx, ty) {
-  r((tx + ty) % 2 ? '#aadd7d' : '#a3d876', px, py, T, T);
+  const gp = GRASSP[SEA], gb = GRASSB[SEA];
+  r((tx + ty) % 2 ? gp[0] : gp[1], px, py, T, T);
   const a = hash(tx, ty, 1), b = hash(tx, ty, 2), c = hash(tx, ty, 3);
-  r('#8ac860', px + (a * 12 | 0) + 1, py + (b * 10 | 0) + 4, 1, 2);
-  r('#8ac860', px + (a * 12 | 0) + 3, py + (b * 10 | 0) + 5, 1, 1);
-  r('#8ac860', px + (b * 12 | 0) + 1, py + (c * 10 | 0) + 8, 1, 2);
-  r('#c8ee9c', px + (c * 13 | 0), py + (a * 13 | 0), 1, 1);
+  r(gb[0], px + (a * 12 | 0) + 1, py + (b * 10 | 0) + 4, 1, 2);
+  r(gb[0], px + (a * 12 | 0) + 3, py + (b * 10 | 0) + 5, 1, 1);
+  r(gb[0], px + (b * 12 | 0) + 1, py + (c * 10 | 0) + 8, 1, 2);
+  r(gb[1], px + (c * 13 | 0), py + (a * 13 | 0), 1, 1);
   const f = hash(tx, ty, 4);
-  if (f > 0.9) {
+  if (f > 0.9 && (SEA === 'spring' || SEA === 'summer' || (SEA === 'autumn' && f > 0.96))) {
     const pc = ['#ffffff', '#ffc2d4', '#fff0a0', '#d6c2ff'][(f * 1000 | 0) % 4];
     const fx0 = 4 + (hash(tx, ty, 5) * 8 | 0), fy0 = 4 + (hash(tx, ty, 6) * 8 | 0);
     r(pc, px + fx0, py + fy0 - 1, 1, 1); r(pc, px + fx0 - 1, py + fy0, 1, 1);
@@ -768,15 +820,11 @@ function drawTree(px, py, tx, ty) {
   const pink = hash(tx, ty, 12) > 0.55;
   r('rgba(107,72,72,.16)', px + 2, py + 13, 12, 3);
   r('#b98a62', px + 6, py + 10, 4, 6); r('#9a6a4a', px + 9, py + 10, 1, 6);
-  if (pink) {
-    ob('#fbc4d4', '#e58fab', px, py + 1, 16, 12);
-    r('#ffe6ee', px + 3, py + 3, 5, 2); r('#ffe6ee', px + 10, py + 6, 2, 2);
-    r('#e58fab', px + 5, py + 8, 1, 1); r('#e58fab', px + 11, py + 9, 1, 1); r('#f6a5bf', px + 7, py + 5, 1, 1);
-  } else {
-    ob('#86d98f', '#4fa968', px, py + 1, 16, 12);
-    r('#b5f0b5', px + 3, py + 3, 5, 2); r('#b5f0b5', px + 10, py + 6, 2, 2);
-    r('#5fba76', px + 4, py + 9, 4, 1); r('#5fba76', px + 10, py + 10, 3, 1);
-  }
+  const pal = TREEP[SEA][pink ? 0 : 1];
+  ob(pal[0], pal[1], px, py + 1, 16, 12);
+  r(pal[2], px + 3, py + 3, 5, 2); r(pal[2], px + 10, py + 6, 2, 2);
+  r(pal[3], px + 4, py + 9, 4, 1); r(pal[3], px + 10, py + 10, 3, 1);
+  if (SEA === 'winter') { r('#ffffff', px + 2, py + 1, 12, 2); r('#dcebf3', px + 1, py + 3, 3, 1); }
 }
 function drawSoil(px, py, wet) {
   r(wet ? '#a56f4b' : '#c98f62', px, py, T, T);
@@ -810,6 +858,18 @@ function drawCrop(px, py, c, now) {
     ob('#ff7a6c', '#c4403a', px + 2, py + 5, 12, 10);
     r('#5fbf6a', px + 4, py + 4, 8, 2); r('#5fbf6a', px + 7, py + 2, 2, 3); r('#8fe09a', px + 5, py + 4, 2, 1);
     r('#ffc9c2', px + 4, py + 7, 2, 1);
+    face(px, py, 6, 9);
+  } else if (c.t === 'beet') {
+    rr('#7fd08a', px + 4, py + 1, 3, 5); rr('#5fbf6a', px + 8, py + 2, 3, 4);
+    ob('#c9457c', '#7a2048', px + 3, py + 6, 10, 9); r('#e98cb2', px + 5, py + 7, 2, 1);
+    face(px, py, 6, 9);
+  } else if (c.t === 'corn') {
+    r('#5fbf6a', px + 7, py + 8, 2, 7); rr('#7fd08a', px + 2, py + 4, 5, 8); rr('#7fd08a', px + 9, py + 5, 5, 7);
+    ob('#ffe27a', '#d9a93a', px + 5, py + 1, 6, 11); r('#fff3b0', px + 6, py + 2, 1, 8); r('#d9a93a', px + 8, py + 3, 1, 8);
+  } else if (c.t === 'melon') {
+    ob('#9bd67a', '#4f8f3a', px + 1, py + 4, 14, 11);
+    r('#6bb86a', px + 4, py + 5, 1, 9); r('#6bb86a', px + 8, py + 5, 1, 9); r('#6bb86a', px + 12, py + 5, 1, 9);
+    r('#6bb86a', px + 7, py + 2, 2, 3); r('#d8f5b8', px + 3, py + 6, 2, 1);
     face(px, py, 6, 9);
   } else {
     ob('#ffb45c', '#d9772a', px + 1, py + 5, 14, 10);
@@ -1047,6 +1107,14 @@ function drawIcon(c2d, i) {
     for (let k = 0; k < 8; k++) { r('#8c5b3c', 2 + k, 14 - k, 2, 2); r('#c08a62', 2 + k, 14 - k, 2, 1); }
     ob('#f4fbff', '#8e9db0', 8, 1, 7, 7);
     r('#cfe3ee', 10, 3, 1, 4); r('#cfe3ee', 12, 3, 1, 4); r('#cfe3ee', 9, 5, 5, 1);
+  } else if (TOOLS[i].id === 'pick') {
+    for (let k = 0; k < 9; k++) { r('#8c5b3c', 3 + k, 14 - k, 2, 2); r('#c08a62', 3 + k, 14 - k, 2, 1); }
+    ob('#dfe7ee', '#6f7f93', 2, 2, 12, 3); r('#6f7f93', 2, 4, 2, 3); r('#6f7f93', 12, 4, 2, 3);
+  } else if (TOOLS[i].id === 'yard') {
+    ob('#e8b27a', '#9b6a44', 1, 7, 14, 3); ob('#e8b27a', '#9b6a44', 1, 12, 14, 3);
+    [2, 7, 12].forEach(x0 => ob('#fff0d4', '#9b6a44', x0, 3, 3, 12)); r('#ff8fa8', 7, 1, 2, 2);
+  } else if (TOOLS[i].id === 'fert') {
+    ob('#c9a15a', '#7a5a3a', 3, 4, 10, 10); r('#7a5a3a', 5, 3, 6, 2); r('#f3e1b0', 5, 8, 6, 3); r('#8c6a44', 6, 9, 4, 1);
   } else {
     const c = CROPS[TOOLS[i].crop].c;
     ob('#fffaf0', '#e0b896', 3, 2, 10, 13);
@@ -1193,6 +1261,48 @@ function drawBug(c2d, key, dim) {
   g = ctx;
 }
 
+/* ====== 自動更新：每隔一段時間抓一次線上的 index.html，和目前執行中的程式比對；不一樣就倒數後自動重新整理 ====== */
+(function () {
+  const isHttp = location.protocol === 'http:' || location.protocol === 'https:';
+  if (!isHttp) return;                                   // 本機直接開檔案時不檢查
+  const sig = (doc) => Array.from(doc.querySelectorAll('script:not([src]), style')).map(e => e.tagName + e.textContent).join('\u0000');
+  let counting = false;
+  async function checkUpdate() {
+    if (counting || document.hidden) return;             // 分頁在背景時不檢查，切回來才檢查
+    try {
+      const r = await fetch(location.pathname, { cache: 'no-cache' });   // 帶 ETag 詢問：檔案沒變時伺服器只回 304，幾乎不耗流量
+      if (!r.ok) return;
+      const remote = new DOMParser().parseFromString(await r.text(), 'text/html');
+      if (!remote.querySelector('script:not([src])')) return;      // 抓到怪東西（例如錯誤頁）就不動作
+      if (sig(remote) !== sig(document)) startUpdate();
+    } catch (e) { /* 離線或暫時失敗，下次再檢查 */ }
+  }
+  function startUpdate() {
+    try {                                                // 防呆：剛重新整理過還是不一樣，就不要無限重整
+      const last = +sessionStorage.getItem('autoUpdateAt') || 0;
+      if (Date.now() - last < 120000) return;
+    } catch (e) {}
+    counting = true;
+    const d = document.createElement('div');
+    d.style.cssText = 'position:fixed;left:50%;top:max(12px,env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:2147483647;background:#fffaf0;border:2px solid #f3c3a6;border-radius:14px;padding:10px 16px;box-shadow:0 4px 16px rgba(0,0,0,.25);color:#6b4848;font:600 14px/1.3 system-ui,sans-serif;max-width:92vw;text-align:center';
+    document.body.appendChild(d);
+    let n = 5;
+    const tick = () => {
+      d.textContent = '🎉 有新版本了！' + n + ' 秒後自動更新…';
+      if (n-- <= 0) {
+        try { sessionStorage.setItem('autoUpdateAt', String(Date.now())); } catch (e) {}
+        location.replace(location.pathname + '?v=' + Date.now());
+        return;
+      }
+      setTimeout(tick, 1000);
+    };
+    tick();
+  }
+  setTimeout(checkUpdate, 3000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) checkUpdate(); });
+  setInterval(checkUpdate, 5 * 60 * 1000);
+})();
+
 /* ====== 設定：換成你自己的 Supabase 專案 ====== */
 const SUPABASE_URL = 'https://pzvbqerczorxfqxeohys.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_AXpCghngjhaldiWbFyNvmw_5tl2xZSX';
@@ -1224,6 +1334,11 @@ const DEFHOT = [0, 1, 2, 3, 4, 5];
 let hot = DEFHOT.slice();
 const curTool = () => TOOLS[hot[tool]] || { id: 'none', n: '空格' };
 let fishCat = [], fishLog = {}, rods = [], bugCat = [], bugLog = {};
+let recipes = [], buffs = {}, toolLv = { hoe: 1, can: 1 }, toolCost = {};   // 料理食譜、buff（種類 -> 結束毫秒）、鋤頭／水壺等級
+let featNeed = { ranch: 2, forage: 2, yard: 2, mine: 3 };
+const FEAT_N = { ranch: '動物牧場', forage: '採集', yard: '庭院佈置', mine: '採礦' };
+let fishRec = {}, yardMap = new Map(), ycat = [], storyDone = 0, yardSel = '', stData = null, bdTab = 'order', stBusy = false;
+let itemMeta = {}, forPool = [], forTaken = new Set(), fgSlot = -1, rocksAt = {}, fgList = [];
 let soldToday = {}, soldDay = 0, bugTaken = new Set(), dexClaims = {};
 /* 收購飽和（要和 SQL 的 _sell_value 一致）：每種魚、蟲每天前 5 隻原價、第 6~10 隻 6 折、之後 3 折（GMT+8 凌晨重置） */
 const sellDayNow = () => Math.floor((srvNow() + 8 * 3600000) / 86400000);
@@ -1241,8 +1356,9 @@ let bagOpen = false, shopOpen = false, makerOpen = false, authOpen = true, actQu
 let pendingInvite = '';
 const pressed = [];
 let frOpen = false;
+let bdOpen = false, ckOpen = false, rcOpen = false, mcOpen = false, dgOpen = false;
 let lvOpen = false, cdOpen = false, dexOpen = false, qOpen = false, dsOpen = false, emOpen = false, stOpen = false, imm = false, sheetOpen = false, trOpen = false;
-const paused = () => lvOpen || cdOpen || dexOpen || qOpen || dsOpen || stOpen || trOpen || (imm && sheetOpen) || frOpen || bagOpen || shopOpen || makerOpen || authOpen || vmOpen || gmOpen || fOpen || !ready;
+const paused = () => bdOpen || ckOpen || rcOpen || mcOpen || dgOpen || lvOpen || cdOpen || dexOpen || qOpen || dsOpen || stOpen || trOpen || (imm && sheetOpen) || frOpen || mlOpen || bagOpen || shopOpen || makerOpen || authOpen || vmOpen || gmOpen || fOpen || !ready;
 
 /* ---------- 小提示與特效 ---------- */
 const toastEl = $('toast');
@@ -1319,6 +1435,13 @@ function drawRim(px, py, tx, ty) {
   r('#d9d1c3', px + 2 + ((tx + ty) % 3) * 3, py + 5, 3, 2);
   r('#d9d1c3', px + 9, py + 10, 3, 2);
 }
+function drawBoard(px, py) {
+  r('rgba(90,60,40,.18)', px + 1, py + 13, 14, 2);
+  r('#9b6a44', px + 3, py + 9, 2, 6); r('#9b6a44', px + 11, py + 9, 2, 6);
+  ob('#e8b27a', '#9b6a44', px + 1, py + 1, 14, 10);
+  r('#fff6dc', px + 3, py + 3, 4, 4); r('#ffd1dc', px + 8, py + 3, 4, 3); r('#cfe8f7', px + 7, py + 7, 5, 3);
+  r('#d4688a', px + 4, py + 3, 1, 1); r('#d4688a', px + 10, py + 3, 1, 1); r('#7aa8c8', px + 9, py + 8, 2, 1);
+}
 function drawBench(px, py) {
   r('rgba(90,60,40,.18)', px + 1, py + 13, 14, 2);
   ob('#e8b27a', '#9b6a44', px + 1, py + 4, 14, 4);
@@ -1331,7 +1454,7 @@ function world() {
   const ms = srvNow();
   const min = (((ms + 8 * 3600000) % 86400000) + 86400000) % 86400000 / 60000;   // 現實時間 GMT+8，0~1440 分鐘
   const hh = Math.floor(ms / 3600000);
-  const wet = precipHour(hh), snow = SNOW_ON && wet && hash(hh, 0, 78) < 0.35;  // 雨雪都算「降水」；降水時作物不用澆水                         // 每個整點小時隨機決定一次天氣
+  const wet = precipHour(hh), snow = wet && (seasonAt(ms) === 'winter' || (SNOW_ON && hash(hh, 0, 78) < 0.35));  // 雨雪都算「降水」；降水時作物不用澆水                         // 每個整點小時隨機決定一次天氣
   return { min, wet, snow };
 }
 /* 下雪開關：false = 降水時一律下雨；接近聖誕想開雪天時，改成 true 即可（不用動資料庫） */
@@ -1363,6 +1486,18 @@ function darkness(m) {
 /* ---------- 作物成長（和伺服器同一套算法） ---------- */
 const growSec = k => (cropCfg[k] ? cropCfg[k].grow_s : 1800);
 let cropCfg = {};
+/* 作物目前賣價：當季 +25%（要和 SQL 的 _crop_price 一致） */
+function cropPrice(k) {
+  const c = CROPS[k], sn = (cropCfg[k] || {}).seasons;
+  return sn && sn !== 'any' && sn.split(',').includes(seasonAt(srvNow())) ? Math.floor((c.sell * 125 + 50) / 100) : c.sell;
+}
+function seasonTag(k) {
+  const sn = (cropCfg[k] || {}).seasons;
+  if (!sn || sn === 'any') return '';
+  return sn.split(',').includes(seasonAt(srvNow())) ? '（當季 +25%）' : '（' + sn.split(',').map(x => SEA_SHORT[x]).join('') + '季 +25%）';
+}
+const buffOn = k => (+buffs[k] || 0) > srvNow();   // 毫秒時間戳超過 32 位元，不能用 | 0
+const toolN = lv => lv >= 3 ? 5 : lv === 2 ? 3 : 1;   // 鋤頭／水壺一次處理幾格（面向方向排成一直線）
 function grownNow(p) {
   if (!p.crop) return 0;
   let g = p.grown;
@@ -1374,7 +1509,7 @@ const progress = p => p.crop ? grownNow(p) / growSec(p.crop) : 0;
 const ripeNow = p => !!(p && p.crop && p.grown + wetSecs(p.tick, srvNow(), p.wet) >= growSec(p.crop) + 3);
 const isWet = p => !!(p.wet && p.wet > srvNow());
 function settleLocal(p) { p.grown = grownNow(p) ; p.tick = srvNow(); }
-const fromServer = j => ({ crop: j.crop || null, grown: +j.grown || 0, tick: +j.tick || 0, wet: j.wet ? +j.wet : null });
+const fromServer = j => ({ crop: j.crop || null, grown: +j.grown || 0, tick: +j.tick || 0, wet: j.wet ? +j.wet : null, fert: j.fert | 0 });
 
 function fmtDur(s) {
   s = Math.max(0, Math.ceil(s));
@@ -1386,9 +1521,55 @@ function fmtDur(s) {
 
 /* ---------- 地圖規則（要和 schema.sql 的 _farmable 一致） ---------- */
 /* 農場右邊多一道村莊大門，通往公共廣場 */
-const GT = 7, FR = 8, BN = 9, TS = 10;   // TS：塔羅小攤（3×2 格，不能走進去，面向它按動作鍵占卜）
+const GT = 7, FR = 8, BN = 9, TS = 10, BD = 11, BR = 12, RK = 13, NP = 14, HB = 15, FG = 16, WL = 17, TG = 18;   // HB 建築 FG 小村通往農場的門 WL 水井 TG 農場通往小村的門
+   // BD：委託布告欄（農場）   // TS：塔羅小攤（3×2 格，不能走進去，面向它按動作鍵占卜）
 for (let x = 15; x <= 18; x++) kind[5][x] = P;
 kind[5][19] = GT;
+/* 穀倉（右上角 2×2）、礦石（順序要和 SQL mine(0~5) 對應）、旅行商人的位置（週五六日才出現） */
+for (let y = 1; y <= 2; y++) for (let x = 16; x <= 17; x++) kind[y][x] = BR;
+const ROCKS = [[1, 9], [1, 11], [16, 3], [17, 6], [18, 7], [8, 1]];
+ROCKS.forEach(([x, y]) => { kind[y][x] = RK; });
+const MXT = 18, MYT = 10;   // 旅行商人在雷克斯小村的攤位
+/* 村民（站在固定位置，面向他們按動作鍵對話；故事任務要找對應的人。位置要避開 SQL _yard_ok 的排除格） */
+const NPCS = [
+  { k: 'oak', n: '橡果村長', x: 14, y: 6, where: '村長家門口' },
+  { k: 'gui', n: '桂花婆婆', x: 6, y: 6, where: '西邊的粉紅小屋門口' },
+  { k: 'li', n: '老鯉叔', x: 10, y: 15, where: '村子西南的池塘邊' },
+  { k: 'luo', n: '阿洛', x: 26, y: 6, where: '東北邊的礦坑入口' },
+  { k: 'mo', n: '小茉', x: 21, y: 6, where: '紅色牧場小屋門口' }
+];
+/* ---------- 雷克斯小村（32×22，鏡頭跟隨）：村民、布告欄、旅行商人都在這裡 ---------- */
+const TW = 32, TH = 22;
+const tkind = Array.from({ length: TH }, () => Array(TW).fill(G));
+for (let y = 0; y < TH; y++) for (let x = 0; x < TW; x++) if (x === 0 || y === 0 || x === TW - 1 || y === TH - 1) tkind[y][x] = TR;
+const TOWN_BLD = [
+  { x: 3, y: 3, w: 5, h: 3, t: 'cottage' },    // 桂花婆婆的家，門在 (5,5)
+  { x: 11, y: 2, w: 5, h: 4, t: 'chief' },     // 村長家，門在 (13,5)
+  { x: 18, y: 3, w: 5, h: 3, t: 'ranch' },     // 牧場小屋，門在 (20,5)
+  { x: 25, y: 2, w: 5, h: 4, t: 'mine' }       // 礦坑入口，在 (27,5)
+];
+TOWN_BLD.forEach(b => { for (let y = b.y; y < b.y + b.h; y++) for (let x = b.x; x < b.x + b.w; x++) tkind[y][x] = HB; });
+for (let x = 1; x <= 30; x++) tkind[11][x] = P;                               // 東西向大路
+[5, 13, 20, 27].forEach(x => { for (let y = 6; y <= 10; y++) tkind[y][x] = P; }); // 各家門前的小路
+for (let y = 10; y <= 14; y++) for (let x = 13; x <= 17; x++) tkind[y][x] = P;   // 中央小廣場
+for (let y = 12; y <= 15; y++) tkind[y][11] = P;                              // 通往池塘的小路
+tkind[12][15] = WL;                                                           // 水井
+for (let y = 14; y <= 19; y++) for (let x = 3; x <= 9; x++) tkind[y][x] = WA; // 西南池塘
+[[2, 8], [2, 13], [10, 8], [11, 18], [12, 20], [19, 15], [21, 17], [24, 13], [26, 16], [28, 19], [22, 19], [17, 17], [8, 12], [29, 8], [23, 9], [6, 12], [15, 18], [28, 13]].forEach(([x, y]) => { tkind[y][x] = TR; });
+tkind[10][9] = BD;                                                            // 委託布告欄
+tkind[11][TW - 1] = FG;                                                       // 村口：回農場
+NPCS.forEach(q => { tkind[q.y][q.x] = NP; });
+kind[5][0] = TG; for (let x = 1; x <= 3; x++) kind[5][x] = P;                 // 農場西邊的出口，通往小村
+const NPC_CH = ['oak', 'gui', 'li', 'luo', 'mo', 'oak'], CH_PL = [1, 2, 2, 3, 4, 5];   // 第幾章找誰、玩家等級（要和 SQL story_chapters 一致；只用來顯示「!」標記）
+const NPC_TALK = {
+  oak: { idle: ['今天的露水特別亮呢。', '有空就來布告欄看看，每週都有新委託。'], after: ['種子需要時間，別急。', '村子能熱鬧起來，多虧有你。'], end: ['祭典真熱鬧，謝謝你。晨露種子就拜託你了。', '花開的那天，我們再見。'] },
+  gui: { idle: ['年紀大了，記性不好，唉。', '廚房的香味最能讓人想起以前。'], after: ['祭典湯的味道，我又想起來了。', '來，喝碗湯暖暖身子。'], end: ['這輩子還能再煮一次祭典湯，真好。'] },
+  li: { idle: ['……噓，魚被你嚇跑了。', '池塘的魚，各有各的脾氣。'], after: ['那條老鯉魚，後來再也沒上鉤。', '鑰匙派上用場，我就放心了。'], end: ['老傢伙，今天也來釣魚吧。'] },
+  luo: { idle: ['礦石敲一敲，就有銅和石頭！', '聽說最深處有水晶，運氣好才挖得到。'], after: ['坑道加固之後，安全多了！', '下次想挖礦，記得帶鎬子。'], end: ['祭典上的礦燈，是我親手掛的！'] },
+  mo: { idle: ['我家的雞和牛今天心情都很好！', '想養動物的話，記得準備乾草。'], after: ['祭典糕大成功！我也想再烤一次。', '牛奶和雞蛋隨時歡迎來拿。'], end: ['下次豐收祭，我們烤更大的糕！'] }
+};
+const merchantDay = () => Math.floor((srvNow() + 8 * 3600000) / 86400000);
+const merchantHere = () => [5, 6, 0].includes((merchantDay() % 7 + 4) % 7);   // 和 SQL _merchant_here 一致
 /* 廣場地圖：中央噴水池、十字步道、長椅，下方是回農場的門 */
 const pkind = Array.from({ length: H }, () => Array(W).fill(G));
 for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (x === 0 || y === 0 || x === W - 1 || y === H - 1) pkind[y][x] = TR;
@@ -1414,7 +1595,7 @@ const plotCap = () => lv ? PLOT_CAP[Math.min(lv.pl, 10) - 1] : 999;
 const nextCap = () => lv && lv.pl < 10 ? PLOT_CAP[lv.pl] : 0;
 const farmable = (x, y) => farmBase(x, y);
 const walkable = (x, y) => x >= 0 && y >= 0 && x < W && y < H &&
-  (K[y][x] === G || K[y][x] === P) && (scene !== 'house' || !houseBlocked(x, y));
+  (K[y][x] === G || K[y][x] === P) && (scene !== 'house' || !houseBlocked(x, y)) && !(scene === 'town' && x === MXT && y === MYT && merchantHere()) && !(scene === 'farm' && yardBlocks(x, y));
 function tryMove(dir) {
   const d = DIRS[dir];
   pl.face = dir;
@@ -1425,7 +1606,7 @@ const facing = () => [pl.x + DIRS[pl.face][0], pl.y + DIRS[pl.face][1]];
 
 /* ---------- 與伺服器溝通 ---------- */
 const ERR = {
-  level_locked: '等級還不夠，還沒解鎖', gift_self: '不能送給自己', bad_gift: '這個東西不能送', gift_limit: '今天送出的禮物已經 3 份了，明天再送吧', gift_empty: '背包裡已經沒有這個了',
+  level_locked: '等級還不夠，還沒解鎖', gift_self: '不能送給自己', bad_gift: '這個東西不能送', gift_limit: '今天送出的禮物已經 3 份了，明天再送吧', claim_first: '先領取附的禮物才能刪除', gift_empty: '背包裡已經沒有這個了',
   quest_not_done: '任務還沒完成', quest_claimed: '這個獎勵已經領過了', bad_quest: '沒有這個任務',
   not_authenticated: '登入已過期，請重新登入', no_profile: '還沒建立角色',
   not_farmable: '這裡不能耕種', too_many_plots: '田地數量到上限了', has_crop: '上面還有作物',
@@ -1434,7 +1615,10 @@ const ERR = {
   nothing_to_sell: '沒有東西可以賣', bad_qty: '數量不對', bad_crop: '沒有這種作物',
   bad_name: '名字要 1 到 8 個字', bad_look: '造型資料不對', bad_username: '帳號格式不對', username_taken: '這個帳號已經有人用了',
   bad_invite: '邀請碼無效或已被使用', not_gm: '只有 GM 可以這樣做', nothing_to_revoke: '這組邀請碼已經被使用或不存在',
-  village_full: '這個村莊已經滿 8 人了', bad_village_code: '村莊邀請碼要 6 個字元', bad_mode: '操作不對', too_fast: '別急，再等一下', max_rod: '已經是最高級的釣竿了', no_user: '找不到這位玩家', friend_self: '不能加自己為好友', already_friends: '已經是好友了', already_sent: '已經送出過申請了，等對方回覆吧', too_many_requests: '送出的申請太多了，先等對方回覆吧', friend_full: '你的好友已經滿了', target_full: '對方的好友已經滿了', no_request: '這個申請已經不存在了', bad_fish: '沒有這種魚', bad_bug: '沒有這種蟲', bug_gone: '這隻已經飛走了', nothing_to_claim: '現在沒有可以領的獎勵', not_friend: '只能拜訪好友的家', bad_slot: '這個格子不能用', no_item: '找不到這個家具', bad_item: '這個家具不能這樣用', cannot_place: '這裡放不下', house_full: '家裡的家具太多了'
+  village_full: '這個村莊已經滿 8 人了', bad_village_code: '村莊邀請碼要 6 個字元', bad_mode: '操作不對', too_fast: '別急，再等一下', max_rod: '已經是最高級的釣竿了', no_user: '找不到這位玩家', friend_self: '不能加自己為好友', already_friends: '已經是好友了', already_sent: '已經送出過申請了，等對方回覆吧', too_many_requests: '送出的申請太多了，先等對方回覆吧', friend_full: '你的好友已經滿了', target_full: '對方的好友已經滿了', no_request: '這個申請已經不存在了', bad_fish: '沒有這種魚', bad_bug: '沒有這種蟲', bug_gone: '這隻已經飛走了', nothing_to_claim: '現在沒有可以領的獎勵', not_friend: '只能拜訪好友的家', bad_slot: '這個格子不能用', bad_msg: '信的內容要 1～200 字', mail_limit: '今天寄太多了，明天再寄吧（一天最多 30 張）', no_item: '找不到這個家具', bad_item: '這個家具不能這樣用', cannot_place: '這裡放不下', house_full: '家裡的家具太多了',
+  no_kitchen: '家裡要先擺一台廚房灶台才能做料理', not_enough_items: '材料不夠', bad_recipe: '沒有這道料理', not_edible: '這道菜不能吃，拿去賣或交委託吧', no_dish: '背包裡沒有這道料理了',
+  order_done: '這張委託已經完成了', bad_order: '沒有這張委託', max_tool: '已經是最高等級了', bad_tool: '沒有這種工具',
+  no_hay: '沒有乾草了，到雜貨攤買', nothing_to_feed: '動物都吃飽了', nothing_to_collect: '現在沒有可以收的', barn_full: '穀倉住滿了（玩家升級會變大）', rock_busy: '這顆礦石還在恢復', sold_out: '今天已經買過或賣滿了', merchant_away: '旅行商人今天不在', already_fert: '已經施過肥了', story_end: '故事暫時告一段落，之後還會有新章節', yard_full: '庭院已經擺滿 60 件了', cannot_sell: '這個不能賣'
 };
 const errText = e => {
   const m = String((e && (e.message || e.msg)) || e || '');
@@ -1468,7 +1652,13 @@ function applyState(d) {
   fishCat = d.fish || []; fishLog = d.fishlog || {}; rods = d.rods || [];
   bugCat = d.bugs || []; bugLog = d.buglog || {};
   soldToday = d.soldtoday || {}; soldDay = d.sell_day | 0;
+  recipes = d.recipes || []; buffs = d.buffs || {}; toolLv = { hoe: 1, can: 1, ...(d.tools || {}) }; toolCost = d.toolcost || {};
   bugTaken = new Set(d.bugtaken || []); dexClaims = d.dexclaims || {};
+  itemMeta = {}; (d.items || []).forEach(m => { itemMeta[m.key] = m; });
+  featNeed = { ...featNeed, ...(d.featneed || {}) };
+  fishRec = d.fishrec || {}; ycat = d.ycat || []; storyDone = d.story | 0;
+  yardMap = new Map(); (d.yard || []).forEach(q => yardMap.set(pk(q.x, q.y), q.k));
+  forPool = d.forage || []; forTaken = new Set(d.foragetaken || []); fgSlot = -1; rocksAt = d.rocks || {};
   inv = d.inv || {};
   plots = new Map();
   (d.plots || []).forEach(j => plots.set(pk(j.x, j.y), fromServer(j)));
@@ -1495,6 +1685,32 @@ function act2(name, args, onOk, onErr) {
 const have = k => inv[k] | 0;
 
 /* ---------- 動作 ---------- */
+/* 從面向的那一格開始，沿著面向方向排成一直線的 n 格（鋤頭、水壺升級後一次處理多格） */
+function lineTiles(x, y, n) {
+  const d = DIRS[pl.face], out = [];
+  for (let i = 0; i < n; i++) { const tx = x + d[0] * i, ty = y + d[1] * i; if (tx >= 0 && ty >= 0 && tx < W && ty < H) out.push([tx, ty]); }
+  return out;
+}
+/* 鋤一格：mode = 'till' 只翻還沒翻的草地、'untill' 只把空田翻回草地（多格時由第一格決定，不會一排裡翻來翻去） */
+function hoeOne(x, y, mode, loud) {
+  if (K[y][x] !== G) return false;
+  const key = pk(x, y), p = plots.get(key);
+  if (mode === 'till' && !p) {
+    if (!farmable(x, y)) { if (loud) pop(x, y, '這裡不能耕種', '#ffb3a8'); return false; }
+    if (plots.size >= plotCap()) { if (loud) pop(x, y, '田地到上限了（玩家升級會增加）', '#ffb3a8'); return false; }
+    plots.set(key, { crop: null, grown: 0, tick: srvNow(), wet: null }); dust(x, y);
+    act2('till', { p_x: x, p_y: y }); tutEvent('till'); return true;
+  }
+  if (mode === 'untill' && p && !p.crop) { plots.delete(key); dust(x, y); act2('untill', { p_x: x, p_y: y }); return true; }
+  return false;
+}
+function canOne(x, y) {
+  if (x < 0 || y < 0 || x >= W || y >= H) return false;
+  const p = plots.get(pk(x, y));
+  if (!p || isWet(p)) return false;
+  settleLocal(p); p.wet = srvNow() + cfg.wet_s * 1000; drops(x, y);
+  act2('water', { p_x: x, p_y: y }); tutEvent('water'); qAdd('water'); return true;
+}
 function act() {
   if (pose) { standUp(); return; }
   const [x, y] = facing();
@@ -1515,15 +1731,24 @@ function act() {
     if (K[y][x] === GT) { leaveHouse(); return; }
     const lx = x - RX, ly = y - RY, hit = house && lx >= 0 && lx < RW && ly >= -2 && ly < RH ? itemAtLocal(lx, ly) : null;
     if (hit && DISP[hit.k]) { if (visiting) visitShowList(hit); else openDisplay(hit.id); }
+    else if (hit && hit.k === 'kitchen' && !edit.on && !visiting) openKitchen();
     else if (hit && STYLER[hit.k] && !edit.on && !visiting) openMaker(false);
     else if (hit && SEAT[hit.k] && !edit.on) takeSeat(hit, x, y);
     else if (hit) pop(x, y, (defOf(hit.k) || {}).name || '', '#fff3b0');
     return;
   }
+  if (scene === 'town') { townAct(x, y); return; }
+  if (scene === 'barn') { barnAct(x, y); return; }
   const k = K[y][x], key = pk(x, y), p = plots.get(key), t = curTool();
   if (k === GT) { openVMenu(); return; }
   if (k === DR) { enterHouse(); return; }
   if (k === SH) { openShop(); tutEvent('shop'); return; }
+  if (k === BD) { openBoard(); return; }
+  if (k === TG) { enterTown(); return; }
+  if (k === BR) { enterBarn(); return; }
+  if (k === RK) { mineRock(x, y); return; }
+  const fgi = yardMap.has(pk(x, y)) ? -1 : fgList.findIndex(f => f.x === x && f.y === y && !forTaken.has(f.slot + ':' + f.i));
+  if (fgi >= 0 && !catchShown && !fishing) { takeForage(fgList[fgi]); return; }
   if (catchShown) { hideCatch(); return; }
   if (fishing) { fishAct(); return; }
   if (k === WA) {
@@ -1534,32 +1759,33 @@ function act() {
   if (t.id === 'net' && !ripeNow(p)) { swingNet(x, y); return; }
   if (ripeNow(p)) {
     const c = p.crop;
-    p.crop = null; p.grown = 0; p.tick = srvNow();
-    inv['c:' + c] = have('c:' + c) + 1;
-    sparkle(x, y, CROPS[c].c); pop(x, y, '+1 ' + CROPS[c].n, '#fff3b0');
-    act2('harvest', { p_x: x, p_y: y }, null, e => {
+    p.crop = null; p.grown = 0; p.tick = srvNow(); p.fert = 0;
+    sparkle(x, y, CROPS[c].c);
+    act2('harvest', { p_x: x, p_y: y }, r => {
+      const q = r ? r.q | 0 : 0;
+      pop(x, y, '+1 ' + (q === 2 ? '金星' : q === 1 ? '銀星' : '') + CROPS[c].n, q === 2 ? '#ffe27a' : q === 1 ? '#e6f0ff' : '#fff3b0');
+      if (r && r.drop && CROPS[r.drop]) { toast('相鄰的作物雜交了！得到「' + CROPS[r.drop].n + '」種子'); sparkle(x, y, CROPS[r.drop].c); }
+    }, e => {
       if (e && /not_ready/.test(String(e.message || e.code || e))) { noPrecip = true; return true; }   // 悄悄以伺服器為準，不再顯示矛盾的提示
     }); qAdd('harvest'); refreshHud(); return;
   }
   if (t.id === 'none') { pop(x, y, '這格是空的，到背包裝備物品', '#ffffff'); return; }
   if (t.id === 'rod') { pop(x, y, '面向池塘才能釣魚', '#cfe8f7'); return; }
   if (t.id === 'net') { swingNet(x, y); return; }
+  if (t.id === 'pick') { pop(x, y, '面向礦石才敲得動', '#ffffff'); return; }
+  if (t.id === 'yard') { yardAct(x, y); return; }
+  if (t.id === 'fert') { fertAct(x, y, p); return; }
   if (t.id === 'hoe') {
-    if (!p) {
-      if (!farmable(x, y)) { pop(x, y, '這裡不能耕種', '#ffb3a8'); return; }
-      if (plots.size >= plotCap()) { pop(x, y, '田地到上限了（玩家升級會增加）', '#ffb3a8'); return; }
-      plots.set(key, { crop: null, grown: 0, tick: srvNow(), wet: null }); dust(x, y);
-      act2('till', { p_x: x, p_y: y }); tutEvent('till');
-    } else if (!p.crop) { plots.delete(key); dust(x, y); act2('untill', { p_x: x, p_y: y }); }
-    else pop(x, y, '還沒長好', '#ffffff');
+    if (p && p.crop) pop(x, y, '還沒長好', '#ffffff');
+    else {
+      const mode = p ? 'untill' : 'till';
+      lineTiles(x, y, toolN(toolLv.hoe)).forEach(([tx, ty], i) => hoeOne(tx, ty, mode, i === 0));
+    }
   } else if (t.id === 'can') {
     if (!p) pop(x, y, '先用鋤頭翻土', '#ffffff');
     else if (world().wet) { pop(x, y, world().snow ? '下雪天不用澆水' : '下雨天不用澆水', '#cfe8f7'); tutEvent('water'); }
     else if (isWet(p)) pop(x, y, '土還是濕的', '#cfe8f7');
-    else {
-      settleLocal(p); p.wet = srvNow() + cfg.wet_s * 1000; drops(x, y);
-      act2('water', { p_x: x, p_y: y }); tutEvent('water'); qAdd('water');
-    }
+    else lineTiles(x, y, toolN(toolLv.can)).forEach(([tx, ty]) => canOne(tx, ty));
   } else {
     const kk = t.crop;
     if (!p) pop(x, y, '先用鋤頭翻土', '#ffffff');
@@ -1568,7 +1794,7 @@ function act() {
     else if (have('s:' + kk) <= 0) pop(x, y, '沒有種子了，去雜貨攤買', '#ffb3a8');
     else {
       inv['s:' + kk] = have('s:' + kk) - 1;
-      p.crop = kk; p.grown = 0; p.tick = srvNow();
+      p.crop = kk; p.grown = 0; p.tick = srvNow(); p.fert = 0;
       dust(x, y); pop(x, y, '種下' + CROPS[kk].n, '#c9f0a8');
       act2('plant', { p_x: x, p_y: y, p_crop: kk }); tutEvent('plant'); qAdd('plant'); loadLevelSoon();
     }
@@ -1579,6 +1805,9 @@ function act() {
 /* ---------- 雜貨攤（等伺服器確認才更新） ---------- */
 const shopEl = $('shop'), shopCard = $('shopcard');
 let shopBusy = false;
+const buyQty = {};                                   // 每種種子想買幾個
+function maxBuy(k) { const c = CROPS[k], coins = me ? me.coins : 0; return Math.max(1, Math.min(99, Math.floor(coins / c.buy))); }
+function qtyOf(k) { return Math.max(1, Math.min(maxBuy(k), buyQty[k] | 0 || 1)); }
 function openShop() { shopOpen = true; pressed.length = 0; renderShop(); shopEl.hidden = false; shopCard.focus(); }
 function closeShop() { shopOpen = false; shopEl.hidden = true; }
 /* 賣出提示：今天已經賣了幾隻、這次賣會不會降價 */
@@ -1590,17 +1819,34 @@ function renderShop() {
   const coins = me ? me.coins : 0;
   const dis = shopBusy ? ' disabled' : '';
   const buy = KEYS.map(k => {
-    const c = CROPS[k];
+    const c = CROPS[k], q = qtyOf(k), mx = maxBuy(k), lock = cropLocked(k), cost = c.buy * q;
+    const qd = shopBusy || lock ? ' disabled' : '';
     return '<div class="row"><i class="dot" style="--c:' + c.c + '"></i><div class="meta"><b>' + c.n + '種子</b><small>' +
-      fmtDur(growSec(k)) + '成熟（晴天要澆水，雨雪天免澆），每個賣 ' + c.sell + ' G · 持有 ' + have('s:' + k) + '</small></div>' +
-      '<button type="button" class="btn" data-a="buy" data-c="' + k + '"' + (shopBusy || coins < c.buy || cropLocked(k) ? ' disabled' : '') + '>' + (cropLocked(k) ? '農耕 Lv.' + CROP_NEED[k] + ' 解鎖' : c.buy + ' G') + '</button></div>';
+      fmtDur(growSec(k)) + '成熟（晴天要澆水，雨雪天免澆），每個賣 ' + cropPrice(k) + ' G' + seasonTag(k) + ' · 持有 ' + have('s:' + k) + '</small>' +
+      (lock ? '' : '<div class="qty"><button type="button" data-a="qdec" data-c="' + k + '"' + (qd || q <= 1 ? ' disabled' : '') + '>－</button><output>' + q + '</output>' +
+        '<button type="button" data-a="qinc" data-c="' + k + '"' + (qd || q >= mx ? ' disabled' : '') + '>＋</button>' +
+        '<button type="button" data-a="qmax" data-c="' + k + '"' + (qd || q >= mx ? ' disabled' : '') + '>最多</button></div>') + '</div>' +
+      '<button type="button" class="btn" data-a="buy" data-c="' + k + '"' + (shopBusy || coins < cost || lock ? ' disabled' : '') + '>' + (lock ? '農耕 Lv.' + CROP_NEED[k] + ' 解鎖' : '買 ' + q + ' 個 ' + cost + ' G') + '</button></div>';
   }).join('');
-  const has = KEYS.filter(k => have('c:' + k) > 0);
+  const miscBuy = ['a:hay', 'x:fert'].filter(k => itemMeta[k] && itemMeta[k].buy > 0).map(k => {
+    const m = itemMeta[k];
+    return '<div class="row"><canvas class="fico" width="16" height="16" data-misc="' + k + '"></canvas><div class="meta"><b>' + esc(m.name) + '</b><small>' + (k === 'a:hay' ? '餵動物用' : '裝備後對作物施肥，更容易出銀星金星') + ' · 持有 ' + have(k) + '</small></div>' +
+      '<button type="button" class="btn small" data-a="buym" data-c="' + k + '" data-n="1"' + (shopBusy || coins < m.buy ? ' disabled' : '') + '>1 個 ' + m.buy + ' G</button>' +
+      '<button type="button" class="btn small" data-a="buym" data-c="' + k + '" data-n="10"' + (shopBusy || coins < m.buy * 10 ? ' disabled' : '') + '>10 個 ' + m.buy * 10 + ' G</button></div>';
+  }).join('');
+  const ybuy = ycat.map(c => '<div class="row"><canvas class="fico" width="16" height="16" data-yard="' + esc(c.key) + '"></canvas><div class="meta"><b>' + esc(c.name) + '</b><small>' + (c.walk ? '可以走上去' : '會擋路') + (c.light ? '，晚上會亮' : '') + ' · 持有 ' + have('y:' + c.key) + '</small></div>' +
+    '<button type="button" class="btn small" data-a="buyy" data-c="' + esc(c.key) + '"' + (shopBusy || coins < c.price || plv() < Math.max(c.need, featNeed.yard) ? ' disabled' : '') + '>' + (plv() < Math.max(c.need, featNeed.yard) ? '玩家 Lv.' + Math.max(c.need, featNeed.yard) + ' 解鎖' : c.price + ' G') + '</button></div>').join('');
+  const mhas = Object.keys(inv).filter(k => /^(q1|q2|a|g|m):/.test(k) && inv[k] > 0 && miscPrice(k) > 0 && k !== 'a:hay').sort();
+  const msell = mhas.map(k => {
+    const n = inv[k], pr = miscPrice(k);
+    return '<div class="row"><canvas class="fico" width="16" height="16" data-misc="' + k + '"></canvas><div class="meta"><b>' + esc(itemName(k)) + ' ×' + n + '</b><small>每個 ' + pr + ' G</small></div><button type="button" class="btn" data-a="sellm" data-c="' + k + '"' + dis + '>賣出 ' + n * pr + ' G</button></div>';
+  }).join('');
+  const has = ALLK.filter(k => have('c:' + k) > 0);
   let total = 0;
   const sell = has.length ? has.map(k => {
-    const c = CROPS[k], n = have('c:' + k); total += n * c.sell;
-    return '<div class="row"><i class="dot" style="--c:' + c.c + '"></i><div class="meta"><b>' + c.n + ' ×' + n + '</b><small>每個 ' + c.sell +
-      ' G</small></div><button type="button" class="btn" data-a="sell" data-c="' + k + '"' + dis + '>賣出 ' + n * c.sell + ' G</button></div>';
+    const c = CROPS[k], n = have('c:' + k), pr = cropPrice(k); total += n * pr;
+    return '<div class="row"><i class="dot" style="--c:' + c.c + '"></i><div class="meta"><b>' + c.n + ' ×' + n + '</b><small>每個 ' + pr +
+      ' G' + seasonTag(k) + '</small></div><button type="button" class="btn" data-a="sell" data-c="' + k + '"' + dis + '>賣出 ' + n * pr + ' G</button></div>';
   }).join('') : '<p class="empty">背包裡還沒有作物，收成之後再來。</p>';
   const fhas = fishCat.filter(f => have('fish:' + f.key) > 0);
   let ftotal = 0;
@@ -1626,42 +1872,806 @@ function renderShop() {
     return '<div class="dexc' + (n ? '' : ' no') + '" title="' + (n ? esc(f.name) : '還沒釣到') + '"><canvas width="16" height="16" data-fish="' + esc(f.key) + '"' + (n ? '' : ' data-dim="1"') + '></canvas><small>' +
       (n ? esc(f.name) + ' ×' + n : '？？？') + '</small></div>';
   }).join('') + '</div>';
+  const dhas = recipes.filter(rc => have('dish:' + rc.key) > 0);
+  const dsell = dhas.map(rc => {
+    const n = have('dish:' + rc.key);
+    return '<div class="row"><i class="dot" style="--c:' + (DISHC[rc.key] || '#f3c77a') + '"></i><div class="meta"><b>' + esc(rc.name) + ' ×' + n + '</b><small>每份 ' + rc.price +
+      ' G（不受收購飽和影響；「全部賣出」不會賣料理）</small></div><button type="button" class="btn" data-a="selld" data-c="' + esc(rc.key) + '"' + dis + '>賣出 ' + n * rc.price + ' G</button></div>';
+  }).join('');
+  const toolRows = ['hoe', 'can'].map(t => {
+    const lvn = toolLv[t] | 0 || 1, nm = t === 'hoe' ? '鋤頭' : '水壺', cst = toolCost[t + (lvn + 1)];
+    const mats = cst ? Object.keys(cst.items || {}).map(k => esc(itemName(k)) + ' ×' + cst.items[k] + '（有 ' + have(k) + '）').join('、') : '';
+    const okMats = cst && Object.keys(cst.items || {}).every(k => have(k) >= cst.items[k]);
+    const locked = cst && plv() < cst.need;
+    return '<div class="row"><div class="meta"><b>' + nm + '（Lv.' + lvn + '）</b><small>一次處理 ' + toolN(lvn) + ' 格' +
+      (cst ? '。升級後 ' + toolN(lvn + 1) + ' 格：' + cst.coins + ' G ＋ ' + mats : '（已是最高等級）') + '</small></div>' +
+      (cst ? '<button type="button" class="btn" data-a="tool" data-c="' + t + '"' + (shopBusy || locked || coins < cst.coins || !okMats ? ' disabled' : '') + '>' + (locked ? '玩家 Lv.' + cst.need + ' 解鎖' : cst.coins + ' G') + '</button>' : '') + '</div>';
+  }).join('');
   const grand = total + ftotal + btotal;
   shopCard.innerHTML = '<div class="shop-h"><h2>雜貨攤</h2><span class="chip gold">' + coins + ' G</span></div>' +
-    '<h3>買種子</h3>' + buy + '<h3>賣作物</h3>' + sell + '<h3>賣魚</h3>' + fsell + '<h3>賣蟲蝶</h3>' + bsell +
+    '<h3>買種子</h3>' + buy + '<h3>乾草與肥料</h3>' + miscBuy + (ybuy ? '<h3>庭院裝飾（裝備「庭院佈置」工具擺在農場）</h3>' + ybuy : '') + '<h3>賣作物</h3>' + sell + (mhas.length ? '<h3>賣畜產、採集物與星級作物</h3>' + msell : '') + '<h3>賣魚</h3>' + fsell + '<h3>賣蟲蝶</h3>' + bsell + (dhas.length ? '<h3>賣料理</h3>' + dsell : '') +
     ((fhas.length || bhas.length) ? '<small class="empty">收購飽和：每種魚、蟲每天前 5 隻原價，第 6～10 隻 6 折，之後 3 折（凌晨 0 點重置）。</small>' : '') +
     ((has.length + fhas.length + bhas.length > 1) ? '<button type="button" class="btn wide" data-a="sellall"' + dis + '>全部賣出 ' + grand + ' G</button>' : '') +
-    '<h3>釣竿</h3>' + rodRow + '<h3>魚類圖鑑 ' + found + '/' + fishCat.length + '</h3>' + dex +
+    '<h3>釣竿</h3>' + rodRow + '<h3>鋤頭與水壺</h3>' + toolRows + '<h3>魚類圖鑑 ' + found + '/' + fishCat.length + '</h3>' + dex +
     '<button type="button" class="btn ghost wide" data-a="close">離開</button>';
   shopCard.querySelectorAll('canvas[data-fish]').forEach(cv => drawFish(cv.getContext('2d'), cv.dataset.fish, !!cv.dataset.dim));
   shopCard.querySelectorAll('canvas[data-bug]').forEach(cv => drawBug(cv.getContext('2d'), cv.dataset.bug, false));
+  shopCard.querySelectorAll('canvas[data-yard]').forEach(cv => yardIcon(cv.getContext('2d'), cv.dataset.yard));
+  shopCard.querySelectorAll('canvas[data-misc]').forEach(cv => (/^q/.test(cv.dataset.misc) ? qcropIcon : miscIcon)(cv.getContext('2d'), cv.dataset.misc));
 }
 shopCard.addEventListener('click', async e => {
   const b = e.target.closest('button[data-a]');
   if (!b || b.disabled) return;
   const a = b.dataset.a, k = b.dataset.c;
   if (a === 'close') { closeShop(); return; }
+  if (a === 'qdec' || a === 'qinc' || a === 'qmax') {
+    if (!CROPS[k]) return;
+    const q = qtyOf(k);
+    buyQty[k] = a === 'qdec' ? q - 1 : a === 'qinc' ? q + 1 : maxBuy(k);
+    renderShop(); return;
+  }
+  const buyN = a === 'buy' && CROPS[k] ? qtyOf(k) : 1;
   shopBusy = true; renderShop();
   try {
     const r = await enqueue(async () => {
-      if (a === 'buy') return rpc('buy_seed', { p_crop: k, p_qty: 1 });
+      if (a === 'buy') return rpc('buy_seed', { p_crop: k, p_qty: buyN });
       if (a === 'sell') return rpc('sell_crop', { p_crop: k });
       if (a === 'sellfish') return rpc('sell_fish', { p_fish: k });
       if (a === 'sellbug') return rpc('sell_bug', { p_bug: k });
       if (a === 'rod') return rpc('rod_upgrade');
+      if (a === 'selld') return rpc('sell_dish', { p_key: k });
+      if (a === 'tool') return rpc('tool_upgrade', { p_tool: k });
+      if (a === 'buyy') return rpc('buy_yard', { p_key: k, p_qty: 1 });
+      if (a === 'buym') return rpc('buy_misc', { p_item: k, p_qty: +b.dataset.n || 1 });
+      if (a === 'sellm') return rpc('sell_item', { p_item: k });
       return rpc('sell_all');
     });
     if (r.inv) Object.assign(inv, r.inv);
     if (r.sold) { if (r.sell_day !== soldDay) { soldToday = {}; soldDay = r.sell_day | 0; } Object.assign(soldToday, r.sold); }
     if (typeof r.coins === 'number') me.coins = r.coins;
     if (typeof r.rod === 'number') { me.rod = r.rod; const rd = rods.find(x => x.lv === r.rod); toast('升級成 ' + (rd ? rd.name : '新釣竿') + '！'); }
+    if (r.tool) { toolLv[r.tool] = r.lv | 0; toast('升級成 ' + (r.tool === 'hoe' ? '鋤頭' : '水壺') + ' Lv.' + r.lv + '，一次處理 ' + toolN(r.lv) + ' 格！'); }
     if (r.earned) toast('賣出得到 ' + r.earned + ' G');
+    if (a === 'buy' && CROPS[k]) toast('買了 ' + buyN + ' 個' + CROPS[k].n + '種子');
+    if (a === 'buyy') toast('買了 1 個' + itemName('y:' + k) + '，裝備「庭院佈置」工具來擺放');
+    if (a === 'buym') toast('買了 ' + (+b.dataset.n || 1) + ' 個' + itemName(k));
   } catch (err) { toast(errText(err)); await resync(); }
   shopBusy = false;
   if (shopOpen) renderShop();
   refreshHud();
 });
 
+
+
+
+/* 功能要玩家幾級才解鎖；還沒到就顯示提示並回傳 true（lx, ly 有給就在那格冒字） */
+function featLocked(k, lx, ly) {
+  if (plv() >= featNeed[k]) return false;
+  const msg = FEAT_N[k] + '要玩家 Lv.' + featNeed[k] + ' 才解鎖（每日任務和布告欄每週委託都能累積玩家經驗）';
+  if (lx != null) pop(lx, ly, FEAT_N[k] + ' Lv.' + featNeed[k] + ' 解鎖', '#ffb3a8');
+  toast(msg); return true;
+}
+
+
+/* ---------- 雷克斯小村：場景切換、建築與水井的畫法 ---------- */
+function enterTown() {
+  if (scene !== 'farm') return;
+  pose = null; scene = 'town'; K = tkind; W = TW; H = TH;
+  critters.length = 0; critSlot = -1;
+  pl.x = pl.sx = TW - 2; pl.y = pl.sy = 11; pl.prog = 1; pl.face = 'left'; pressed.length = 0;
+  view.snap = true; fitView(); toast('來到雷克斯小村');
+}
+function leaveTown(silent) {
+  if (scene !== 'town') return;
+  scene = 'farm'; K = kind; W = BW; H = BH;
+  pl.x = pl.sx = 1; pl.y = pl.sy = 5; pl.prog = 1; pl.face = 'right'; pressed.length = 0;
+  view.snap = true; fitView(); if (!silent) toast('回到農場了');
+}
+function townAct(x, y) {
+  if (x < 0 || y < 0 || x >= W || y >= H) return;
+  const k = K[y][x], t = curTool();
+  if (catchShown) { hideCatch(); return; }
+  if (fishing) { fishAct(); return; }
+  if (k === FG) { leaveTown(); return; }
+  if (k === NP) { openNpc(NPCS.findIndex(q => q.x === x && q.y === y)); return; }
+  if (k === BD) { openBoard(); return; }
+  if (x === MXT && y === MYT && merchantHere()) { openMerchant(); return; }
+  if (k === WL) { pop(x, y, '清涼的井水', '#cfe8f7'); return; }
+  if (k === WA) { if (t.id === 'rod') startFish(x, y); else pop(x, y, '這是池塘（換成釣竿就能釣魚）', '#cfe8f7'); return; }
+}
+function drawWell(px, py, now) {
+  r('rgba(90,60,40,.18)', px + 1, py + 13, 14, 2);
+  ob('#c9c3b8', '#8d877c', px + 2, py + 6, 12, 8); ob('#6fb7e8', '#3f7fae', px + 4, py + 7, 8, 4);
+  r('#9b6a44', px + 2, py + 1, 2, 7); r('#9b6a44', px + 12, py + 1, 2, 7); ob('#e0786a', '#9b3f3a', px + 1, py, 14, 3);
+  if (Math.floor(now / 700) % 2) r('#ffffff', px + 6, py + 8, 2, 1);
+}
+const BLD_PAL = {
+  chief:   { wall: '#fff0d4', wo: '#d9b88a', roof: '#8c5b3c', ro: '#5e3a24', dot: '#a8764d' },
+  cottage: { wall: '#fff0d4', wo: '#d9b88a', roof: '#f58fa5', ro: '#d9667f', dot: '#ffd3de' },
+  ranch:   { wall: '#e0786a', wo: '#9b3f3a', roof: '#9b6a44', ro: '#6e4a2e', dot: '#b88458' },
+  mine:    { wall: '#9a9ca8', wo: '#5e616e', roof: '#8d909b', ro: '#5e616e', dot: '#b4b8c4' }
+};
+function drawBldg(b, now, lit) {
+  const ox = b.x * T, oy = b.y * T, w = b.w * T, h = b.h * T, P_ = BLD_PAL[b.t], dx = ox + (w >> 1);
+  r('rgba(107,72,72,.16)', ox + 2, oy + h - 2, w - 4, 3);
+  if (b.t === 'mine') {
+    ob(P_.roof, P_.ro, ox, oy + 4, w, h - 4);
+    for (let i = 0; i < 9; i++) r(P_.dot, ox + 6 + (i * 9) % (w - 12), oy + 8 + (i * 7) % (h - 24), 3, 2);
+    ob('#2e2a35', '#1c1822', dx - 11, oy + h - 26, 22, 26);
+    r('#9b6a44', dx - 13, oy + h - 28, 3, 28); r('#9b6a44', dx + 10, oy + h - 28, 3, 28); r('#9b6a44', dx - 13, oy + h - 30, 26, 3);
+    ob('#ffe58a', '#c9971a', dx + 14, oy + h - 22, 4, 6); if (lit || Math.floor(now / 500) % 2) { g.globalAlpha = .25; rr('#ffe58a', dx + 8, oy + h - 28, 16, 16); g.globalAlpha = 1; }
+    r('#d98a52', ox + 8, oy + 10, 2, 2); r('#8fd3ff', ox + w - 14, oy + 18, 2, 2);
+    return;
+  }
+  ob(P_.wall, P_.wo, ox + 2, oy + (h >> 1) - 2, w - 4, (h >> 1) + 0);
+  if (b.t === 'ranch') { for (let x = ox + 6; x < ox + w - 4; x += 8) r('#c9584a', x, oy + (h >> 1), 1, (h >> 1) - 3); }
+  ob(P_.roof, P_.ro, ox, oy + 2, w, (h >> 1) + 4);
+  for (let y = 6; y < (h >> 1); y += 5) for (let x = (y % 2) * 4 + 4; x < w - 4; x += 8) r(P_.dot, ox + x, oy + y, 2, 2);
+  ob('#c08a62', '#8c5b3c', dx - 6, oy + h - 16, 12, 16); r('#d9a378', dx - 4, oy + h - 14, 8, 14);
+  if (b.t === 'ranch') { r('#ffffff', dx - 4, oy + h - 9, 8, 1); r('#ffffff', dx - 1, oy + h - 14, 1, 14); }
+  const win = lit ? '#fff3b0' : '#cfe8f7';
+  ob(win, '#7aa8c8', ox + 8, oy + (h >> 1) + 4, 9, 8); ob(win, '#7aa8c8', ox + w - 17, oy + (h >> 1) + 4, 9, 8);
+  if (b.t === 'chief') { ob('#e9a98b', '#c97f6a', ox + w - 14, oy - 4, 7, 9); for (let i = 0; i < 2; i++) { const ph = ((now / 1100) + i / 2) % 1; g.globalAlpha = .8 * (1 - ph); rr('#ffffff', ox + w - 13 + Math.round(Math.sin(ph * 6 + i) * 2), oy - 7 - Math.round(ph * 10), 4, 3); } g.globalAlpha = 1; }
+}
+
+/* ---------- 村民：像素圖與對話 ---------- */
+const NPC_LOOK = {
+  oak:  { hair: '#f4f4f4', hat: '#8c5b3c', cloth: '#6fa56f', beard: true },
+  gui:  { hair: '#cfcfd6', hat: null, cloth: '#f2a3b8', bun: true },
+  li:   { hair: '#7a6a5a', hat: '#e8c872', cloth: '#6a9ac4', rod: true },
+  luo:  { hair: '#5a3a2a', hat: '#ffc83d', cloth: '#e8873a', lamp: true },
+  mo:   { hair: '#a06a3a', hat: null, cloth: '#7ab0e8', ribbon: true }
+};
+function npcArt(px, py, key, bob) {
+  const L = NPC_LOOK[key] || NPC_LOOK.oak, o = 'rgba(90,60,40,.55)';
+  r('rgba(90,60,40,.18)', px + 3, py + 14, 10, 2);
+  ob(L.cloth, o, px + 4, py + 9 + bob, 8, 6);
+  if (key === 'gui') r('#fff6e6', px + 5, py + 11 + bob, 6, 4);
+  ob('#ffe0c4', o, px + 4, py + 3 + bob, 8, 7);
+  r(L.hair, px + 4, py + 3 + bob, 8, 2); r(L.hair, px + 4, py + 3 + bob, 1, 5); r(L.hair, px + 11, py + 3 + bob, 1, 5);
+  r('#4a3a3a', px + 6, py + 7 + bob, 1, 1); r('#4a3a3a', px + 9, py + 7 + bob, 1, 1); r('#ff9ab0', px + 7, py + 9 + bob, 2, 1);
+  if (L.beard) { r(L.hair, px + 5, py + 9 + bob, 6, 3); r('#ff9ab0', px + 7, py + 9 + bob, 2, 1); }
+  if (L.bun) { ob(L.hair, o, px + 6, py + 1 + bob, 4, 3); }
+  if (L.hat) {
+    if (key === 'luo') { ob(L.hat, '#b8892a', px + 3, py + 1 + bob, 10, 4); r('#fff6a8', px + 7, py + bob, 2, 2); }
+    else if (key === 'li') { ob(L.hat, '#b8932a', px + 1, py + 2 + bob, 14, 3); ob(L.hat, '#b8932a', px + 4, py + bob, 8, 3); }
+    else ob(L.hat, '#5e3a24', px + 4, py + bob, 8, 4);
+  }
+  if (L.ribbon) { r('#ff6b8a', px + 3, py + 3 + bob, 3, 2); r('#ff6b8a', px + 10, py + 3 + bob, 3, 2); r(L.hair, px + 3, py + 5 + bob, 2, 4); r(L.hair, px + 11, py + 5 + bob, 2, 4); }
+  if (L.rod) { r('#8c5b3c', px + 13, py + 5 + bob, 1, 9); r('#ffffff', px + 14, py + 5 + bob, 1, 4); }
+  if (L.lamp) { r('#ffe58a', px + 7, py + 9 + bob, 2, 1); }
+}
+function drawNpc(px, py, key, now) {
+  const bob = Math.floor(now / 600 + key.charCodeAt(0)) % 2;
+  npcArt(px, py, key, bob);
+  const di = storyDone | 0;
+  if (di < NPC_CH.length && NPC_CH[di] === key && plv() >= CH_PL[di]) {
+    const by = py - 5 + Math.round(Math.sin(now / 250));
+    ob('#ffd34d', '#c9971a', px + 6, by, 4, 5); r('#8a5a00', px + 7, by + 1, 2, 2); r('#8a5a00', px + 7, by + 4, 2, 1);
+  }
+}
+function npcIcon(c2d, key) { g = c2d; g.clearRect(0, 0, 16, 16); npcArt(0, 0, key, 0); g = ctx; }
+const dgEl = $('dgm'), dgCard = $('dgcard');
+let dg = null, dgBusy = false;
+async function openNpc(i) {
+  if (i < 0 || !ready || !me || authOpen || paused() || dgOpen) return;
+  const nq = NPCS[i];
+  dgOpen = true; pressed.length = 0; dg = { npc: nq, lines: [], i: 0, mode: 'chat', cur: null };
+  renderDlg(); dgEl.hidden = false; dgCard.focus();
+  try { stData = await rpc('story_get'); } catch (e) { toast(errText(e)); closeDlg(); return; }
+  const d = stData.done | 0, chs = stData.chapters || [], cur = chs.find(c => c.ch === d + 1);
+  if (cur && cur.npc === nq.k) {
+    if (plv() < cur.pl) dg.lines = [{ s: nq.k, t: '再多歷練一下吧，等你到玩家 Lv.' + cur.pl + '，我再把這件事託付給你。' }];
+    else { dg.mode = 'quest'; dg.cur = cur; dg.lines = cur.lines; }
+  } else {
+    const T = NPC_TALK[nq.k], mine = chs.some(c => c.npc === nq.k && c.ch <= d);
+    const pool = !cur ? T.end : mine ? T.after : T.idle;
+    dg.lines = [{ s: nq.k, t: pool[Math.floor(srvNow() / 86400000) % pool.length] }];
+  }
+  dg.i = 0; if (dgOpen) renderDlg();
+}
+function closeDlg() { dgOpen = false; dgEl.hidden = true; dg = null; }
+function renderDlg() {
+  if (!dg) return;
+  if (!dg.lines.length) { dgCard.innerHTML = '<p class="empty">讀取中…</p>'; return; }
+  const ln = dg.lines[dg.i], last = dg.i >= dg.lines.length - 1, me_ = ln.s === 'me';
+  const sp = me_ ? { k: null, n: me ? me.name : '我' } : (NPCS.find(q => q.k === ln.s) || dg.npc);
+  let btn = '';
+  const dis = dgBusy ? ' disabled' : '';
+  if (!last) btn = '<button type="button" class="btn wide" data-a="next">下一句</button>';
+  else if (dg.mode === 'quest') {
+    const cur = dg.cur, need = Object.keys(cur.need).map(k => esc(itemName(k)) + ' ' + Math.min(have(k), cur.need[k]) + '/' + cur.need[k]).join('、');
+    const ok = Object.keys(cur.need).every(k => have(k) >= cur.need[k]);
+    const rw = cur.coins + ' G' + Object.keys(cur.items || {}).map(k => '、' + esc(itemName(k)) + ' ×' + cur.items[k]).join('');
+    btn = '<div class="v-quick"><small class="empty">需要：' + need + '<br>獎勵：' + rw + '</small></div>' +
+      '<button type="button" class="btn wide" data-a="give"' + (dgBusy || !ok ? ' disabled' : '') + '>' + (ok ? '交付' : '材料還不夠') + '</button>' +
+      '<button type="button" class="btn ghost wide" data-a="close">等一下再來</button>';
+  } else btn = '<button type="button" class="btn wide" data-a="close">' + (dg.mode === 'outro' ? '完成' : '再見') + '</button>';
+  dgCard.innerHTML = '<div class="shop-h"><h2>' + esc(sp.n) + '</h2>' + (dg.mode === 'quest' ? '<span class="chip">第 ' + dg.cur.ch + ' 章：' + esc(dg.cur.title) + '</span>' : '') + '</div>' +
+    '<div style="display:flex;gap:12px;align-items:flex-start;margin:8px 0">' +
+    (me_ ? '<canvas width="16" height="22" data-me="1" style="width:64px;height:88px;flex:none;image-rendering:pixelated"></canvas>' : '<canvas width="16" height="16" data-npc="' + sp.k + '" style="width:64px;height:64px;flex:none;image-rendering:pixelated"></canvas>') +
+    '<p style="margin:0;font-size:16px;line-height:1.7;min-height:80px">' + esc(ln.t) + '</p></div>' +
+    '<small class="empty">' + (dg.i + 1) + ' / ' + dg.lines.length + '</small>' + btn;
+  dgCard.querySelectorAll('canvas[data-npc]').forEach(cv => npcIcon(cv.getContext('2d'), cv.dataset.npc));
+  dgCard.querySelectorAll('canvas[data-me]').forEach(cv => { const c2 = cv.getContext('2d'); c2.clearRect(0, 0, 16, 22); g = c2; try { drawPlayer(0, 6, 'down', false, 0, myChar()); } catch (e) { /* 略過 */ } g = ctx; });
+}
+dgCard.addEventListener('click', async e => {
+  const b = e.target.closest('button[data-a]'); if (!b || b.disabled || !dg) return;
+  const a = b.dataset.a;
+  if (a === 'close') { closeDlg(); return; }
+  if (a === 'next') { dg.i++; renderDlg(); return; }
+  if (a === 'give') {
+    dgBusy = true; renderDlg();
+    try {
+      const r = await enqueue(() => rpc('story_submit'));
+      if (r.inv) Object.assign(inv, r.inv);
+      if (typeof r.coins === 'number') me.coins = r.coins;
+      storyDone = r.done | 0;
+      toast('故事過關！+' + r.earned + ' G' + Object.keys(r.items || {}).map(k => '、' + itemName(k) + ' ×' + r.items[k]).join(''));
+      const cur = dg && dg.cur;
+      stData = await rpc('story_get');
+      if (dg && cur) { dg.mode = 'outro'; dg.lines = cur.outro && cur.outro.length ? cur.outro : [{ s: cur.npc, t: '謝謝你！' }]; dg.i = 0; }
+    } catch (err) { toast(errText(err)); await resync(); }
+    dgBusy = false; if (dgOpen) renderDlg(); refreshHud(); loadLevelSoon();
+  }
+});
+dgEl.addEventListener('click', e => { if (e.target === dgEl && !dgBusy) closeDlg(); });
+
+/* ---------- 庭院裝飾（擺在農場空草地上） ---------- */
+const yardBlocks = (x, y) => { const k = yardMap.get(pk(x, y)); if (!k) return false; const c = ycat.find(q => q.key === k); return !(c && c.walk); };
+function yardArt(px, py, key, now, night) {
+  const o = 'rgba(90,60,40,.55)';
+  switch (key) {
+    case 'stones': r('#c9c3b8', px + 2, py + 5, 5, 4); r('#c9c3b8', px + 9, py + 8, 5, 4); r('#e6e1d6', px + 3, py + 5, 2, 1); r('#e6e1d6', px + 10, py + 8, 2, 1); break;
+    case 'fence': r('rgba(90,60,40,.16)', px + 1, py + 14, 14, 1); r('#b88458', px + 1, py + 7, 14, 2); r('#b88458', px + 1, py + 11, 14, 2);
+      [2, 7, 12].forEach(x0 => { ob('#e8b27a', '#9b6a44', px + x0, py + 3, 3, 11); }); break;
+    case 'flowers': ob('#9b6a44', '#6e4a2e', px + 1, py + 9, 14, 6); r('#6b4a2e', px + 2, py + 10, 12, 4);
+      [[3, 6, '#ff8fa8'], [7, 4, '#ffd34d'], [11, 6, '#b79cff'], [5, 8, '#ffffff'], [9, 8, '#ff8fa8']].forEach(([a, b, c]) => { r('#5fbf6a', px + a, py + b + 2, 1, 3); rr(c, px + a - 1, py + b, 3, 3); }); break;
+    case 'lamp': r('rgba(90,60,40,.18)', px + 4, py + 14, 8, 1); r('#5b5b68', px + 7, py + 5, 2, 10); r('#5b5b68', px + 5, py + 13, 6, 2);
+      ob(night ? '#ffe9a0' : '#fff6d6', '#8f8f9a', px + 5, py + 1, 6, 5);
+      if (night) { g.globalAlpha = 0.22; rr('#ffe58a', px - 6, py - 7, 28, 26); g.globalAlpha = 0.18; rr('#ffe58a', px - 2, py - 3, 20, 18); g.globalAlpha = 1; } break;
+    case 'bench': r('rgba(90,60,40,.18)', px + 1, py + 14, 14, 1); ob('#e8b27a', '#9b6a44', px + 1, py + 4, 14, 4); ob('#d9a066', '#9b6a44', px + 1, py + 9, 14, 3); r('#9b6a44', px + 2, py + 12, 2, 3); r('#9b6a44', px + 12, py + 12, 2, 3); break;
+    case 'sapling': r('rgba(90,60,40,.18)', px + 3, py + 14, 10, 1); r('#8c5b3c', px + 7, py + 8, 2, 7); rr('#7fd08a', px + 3, py + 1, 10, 9); rr('#a8ecaa', px + 5, py + 2, 4, 3); r('#ff8fa8', px + 5, py + 6, 1, 1); r('#ff8fa8', px + 10, py + 4, 1, 1); break;
+    case 'statue': r('rgba(90,60,40,.18)', px + 2, py + 14, 12, 1); ob('#c9c3b8', '#8d877c', px + 3, py + 11, 10, 4); ob('#e6e1d6', '#8d877c', px + 5, py + 3, 6, 9); ob('#e6e1d6', '#8d877c', px + 6, py + 1, 4, 4); r('#8d877c', px + 7, py + 2, 1, 1); r('#8d877c', px + 9, py + 2, 1, 1); break;
+    default: ob('#cccccc', o, px + 4, py + 4, 8, 8);
+  }
+}
+function yardIcon(c2d, key) { g = c2d; g.clearRect(0, 0, 16, 16); yardArt(0, 0, key, 0, false); g = ctx; }
+/* 面向的格子能不能擺庭院裝飾（要和 SQL _yard_ok 一致；客戶端更嚴：只能是空草地） */
+const yardOkLocal = (x, y) => grassTile(x, y) && !farmable(x, y) && !plots.has(pk(x, y)) && !yardMap.has(pk(x, y)) && x <= 18;
+function yardAct(x, y) {
+  if (featLocked('yard', x, y)) return;
+  const here = yardMap.get(pk(x, y));
+  if (here) {
+    yardMap.delete(pk(x, y)); inv['y:' + here] = have('y:' + here) + 1;
+    pop(x, y, '收回' + itemName('y:' + here), '#fff3b0'); dust(x, y);
+    act2('yard_pick', { p_x: x, p_y: y }); refreshHud(); return;
+  }
+  const mine = Object.keys(inv).filter(k => /^y:/.test(k) && inv[k] > 0);
+  let key = yardSel && have('y:' + yardSel) > 0 ? yardSel : (mine[0] || '').slice(2);
+  if (!key) { pop(x, y, '沒有庭院裝飾，去雜貨攤買', '#ffb3a8'); return; }
+  if (!yardOkLocal(x, y)) { pop(x, y, '這裡不能擺（要空草地，不含田地區）', '#ffb3a8'); return; }
+  yardMap.set(pk(x, y), key); inv['y:' + key] = have('y:' + key) - 1;
+  pop(x, y, '擺上' + itemName('y:' + key), '#c9f0a8'); dust(x, y);
+  act2('yard_place', { p_key: key, p_x: x, p_y: y }, null, e => { yardMap.delete(pk(x, y)); return false; });
+  refreshHud();
+}
+
+/* ---------- 雜項物品（畜產、採集物、礦物、肥料）的像素圖與價錢 ---------- */
+function miscArt(px, py, key) {
+  const m = itemMeta[key] || { shape: 'round', color: '#cccccc' }, c = m.color, o = 'rgba(90,60,40,.55)';
+  r('rgba(90,60,40,.16)', px + 4, py + 13, 8, 2);
+  switch (m.shape) {
+    case 'bottle': ob('#fffaf0', o, px + 5, py + 6, 6, 8); r('#d8ecf8', px + 6, py + 8, 4, 5); r(o, px + 6, py + 3, 4, 3); break;
+    case 'cloud': rr(c, px + 2, py + 6, 6, 6); rr(c, px + 7, py + 5, 7, 7); rr('#ffffff', px + 4, py + 7, 3, 2); r(o, px + 4, py + 12, 8, 1); break;
+    case 'sack': ob(c, o, px + 3, py + 5, 10, 9); r(o, px + 6, py + 3, 4, 2); r('rgba(255,255,255,.35)', px + 5, py + 7, 2, 4); break;
+    case 'leaf': r('#5fbf6a', px + 7, py + 7, 2, 7); rr(c, px + 4, py + 2, 8, 6); r('#fff8c0', px + 7, py + 4, 2, 2); break;
+    case 'flower': r('#5fbf6a', px + 7, py + 8, 2, 6); rr(c, px + 4, py + 3, 3, 3); rr(c, px + 9, py + 3, 3, 3); rr(c, px + 6, py + 1, 4, 3); rr(c, px + 6, py + 5, 4, 3); r('#ff9b3a', px + 7, py + 4, 2, 2); break;
+    case 'berry': ob(c, o, px + 3, py + 7, 5, 5); ob(c, o, px + 8, py + 6, 5, 5); r('#5fbf6a', px + 7, py + 3, 3, 3); r('rgba(255,255,255,.55)', px + 4, py + 8, 1, 1); break;
+    case 'cap': ob(c, o, px + 2, py + 3, 12, 6); r('#fff3d6', px + 4, py + 5, 2, 2); r('#fff3d6', px + 9, py + 4, 2, 2); ob('#fff3d6', o, px + 6, py + 9, 4, 5); break;
+    case 'gem': ob(c, '#4a7fa8', px + 3, py + 4, 10, 8); r('#ffffff', px + 5, py + 5, 2, 2); r('#4a7fa8', px + 7, py + 7, 1, 4); r(c, px + 5, py + 12, 6, 2); break;
+    case 'rock': ob(c, o, px + 2, py + 6, 12, 8); r('rgba(255,255,255,.4)', px + 4, py + 7, 3, 1); break;
+    case 'ore': ob('#a8a8b0', o, px + 2, py + 6, 12, 8); r(c, px + 4, py + 8, 3, 2); r(c, px + 9, py + 10, 3, 2); r(c, px + 8, py + 7, 2, 2); break;
+    default: ob(c, o, px + 4, py + 5, 8, 8); r('rgba(255,255,255,.6)', px + 5, py + 6, 2, 2);
+  }
+}
+function miscIcon(c2d, key) { g = c2d; g.clearRect(0, 0, 16, 16); miscArt(0, 0, key); g = ctx; }
+function qcropIcon(c2d, key) {
+  const q = key.slice(0, 2), k = key.slice(3);
+  cropIcon(c2d, k); g = c2d;
+  const sc = q === 'q2' ? '#ffd23a' : '#d8e6f2';
+  r('#7a5a1a', 10, 0, 6, 6); r(sc, 11, 1, 4, 4); r('#ffffff', 12, 2, 1, 1);
+  g = ctx;
+}
+function miscPrice(key) {
+  if (/^q[12]:/.test(key)) { const k = key.slice(3); return Math.floor((cropPrice(k) * (key[1] === '2' ? 150 : 125) + 50) / 100); }
+  return (itemMeta[key] || {}).price | 0;
+}
+
+/* ---------- 建物與地標：穀倉、礦石、旅行商人的攤位 ---------- */
+function drawBarn(now) {
+  const ox = 16 * T, oy = 1 * T;
+  r('rgba(107,72,72,.16)', ox + 2, oy + 30, 28, 2);
+  ob('#e0786a', '#9b3f3a', ox + 1, oy + 8, 30, 23);
+  r('#f4a090', ox + 3, oy + 10, 26, 2);
+  ob('#9b6a44', '#6e4a2e', ox, oy + 1, 32, 9); r('#b88458', ox + 3, oy + 3, 26, 2);
+  ob('#fff0d4', '#9b6a44', ox + 10, oy + 16, 12, 15);
+  r('#9b6a44', ox + 15, oy + 17, 2, 14); r('#9b6a44', ox + 11, oy + 22, 10, 2);
+  ob('#ffe9a8', '#9b6a44', ox + 13, oy + 4, 6, 4);
+  const bob = Math.floor(now / 400) % 2;
+  r('#ffffff', ox + 3, oy + 26 - bob, 3, 3); r('#ffd34d', ox + 6, oy + 28, 1, 1);
+}
+function drawRock(px, py, idx) {
+  const ready = !(rocksAt[idx] > srvNow());
+  r('rgba(90,60,40,.18)', px + 1, py + 13, 14, 2);
+  ob(ready ? '#b4b8c4' : '#8d909b', ready ? '#6f7384' : '#5e616e', px + 1, py + 4, 14, 10);
+  if (ready) {
+    r('#dfe3ec', px + 3, py + 5, 4, 1); r('#8e93a6', px + 9, py + 9, 4, 3);
+    r('#8fd3ff', px + 5, py + 8, 2, 2); r('#d98a52', px + 10, py + 6, 2, 2);
+  } else r('#6f7384', px + 5, py + 7, 5, 1);
+}
+function drawStall(px, py, now) {
+  r('rgba(90,60,40,.18)', px + 1, py + 14, 14, 2);
+  r('#9b6a44', px + 2, py + 6, 2, 9); r('#9b6a44', px + 12, py + 6, 2, 9);
+  for (let i = 0; i < 4; i++) rr(i % 2 ? '#ffffff' : '#7a7ee8', px + 1 + i * 4, py, 4, 6);
+  ob('#e8b27a', '#9b6a44', px + 2, py + 10, 12, 4);
+  r('#ffd34d', px + 4, py + 8, 2, 2); r('#ff8fa8', px + 7, py + 8, 2, 2); r('#8fd3ff', px + 10, py + 8, 2, 2);
+  if (Math.floor(now / 500) % 2) r('#fff6a8', px + 14, py + 1, 1, 3);
+}
+
+/* ---------- 採集：農場草地每 30 分鐘長出 3 樣當季野外採集物（和 SQL _slot_forage 一致） ---------- */
+const FSLOT_MS = 1800000;
+function forageSlot(sl) {
+  const sea = seasonAt(sl * FSLOT_MS), pool = forPool.filter(q => q.season === sea).sort((a, b) => a.key < b.key ? -1 : a.key > b.key ? 1 : 0);
+  const tot = pool.reduce((t, q) => t + q.weight, 0), out = [];
+  if (!tot) return out;
+  for (let i = 0; i < 3; i++) {
+    const rr_ = hash(sl, i, 61) * tot; let cs = 0, key = pool[pool.length - 1].key;
+    for (const q of pool) { cs += q.weight; if (cs >= rr_) { key = q.key; break; } }
+    let x = 1 + Math.floor(hash(sl, i, 63) * (W - 2)), y = 1 + Math.floor(hash(sl, i, 64) * (H - 2));
+    for (let n = 0; n < W * H && !(grassTile(x, y) && !farmable(x, y)); n++) { x++; if (x >= W - 1) { x = 1; y = y >= H - 2 ? 1 : y + 1; } }
+    out.push({ slot: sl, i, key, x, y });
+  }
+  return out;
+}
+function updateForage() {
+  const sl = Math.floor(srvNow() / FSLOT_MS);
+  if (sl !== fgSlot && forPool.length) { fgSlot = sl; fgList = forageSlot(sl - 1).concat(forageSlot(sl)); }
+}
+function takeForage(f) {
+  if (featLocked('forage', f.x, f.y)) return;
+  const id = f.slot + ':' + f.i;
+  forTaken.add(id);
+  sparkle(f.x, f.y, '#fff6a8');
+  enqueue(() => rpc('forage_take', { p_slot: f.slot, p_i: f.i })).then(r => {
+    if (r.inv) Object.assign(inv, r.inv);
+    if (r.item) { pop(f.x, f.y, '+1 ' + itemName(r.item), '#fff3b0'); loadLevelSoon(); } else toast('這個已經被採走了');
+    refreshHud();
+  }).catch(e => { toast(errText(e)); });
+}
+
+/* ---------- 挖礦、施肥 ---------- */
+function mineRock(x, y) {
+  const idx = ROCKS.findIndex(q => q[0] === x && q[1] === y), t = curTool();
+  if (idx < 0) return;
+  if (featLocked('mine', x, y)) return;
+  if (t.id !== 'pick') { pop(x, y, '換成鎬子才敲得動', '#ffffff'); return; }
+  if (rocksAt[idx] > srvNow()) { pop(x, y, '還在恢復中', '#ffffff'); return; }
+  rocksAt[idx] = srvNow() + 7200000;
+  burst(x, y, 8, ['#dfe3ec', '#b4b8c4'], -1.2, 8);
+  enqueue(() => rpc('mine', { p_rock: idx })).then(r => {
+    if (r.inv) Object.assign(inv, r.inv);
+    rocksAt[idx] = +r.ready;
+    const got = r.got || {};
+    pop(x, y, Object.keys(got).map(k => itemName(k) + '×' + got[k]).join(' '), '#fff3b0');
+    if (got['m:gem']) toast('挖到水晶了！');
+    refreshHud();
+  }).catch(e => { delete rocksAt[idx]; toast(errText(e)); resync(); });
+}
+function fertAct(x, y, p) {
+  if (!p || !p.crop) { pop(x, y, '先種下作物再施肥', '#ffffff'); return; }
+  if (p.fert) { pop(x, y, '已經施過肥了', '#ffffff'); return; }
+  const kd = have('x:fert') > 0 ? 1 : have('x:fert2') > 0 ? 2 : 0;
+  if (!kd) { pop(x, y, '沒有肥料，去雜貨攤或找旅行商人', '#ffb3a8'); return; }
+  const ik = kd === 2 ? 'x:fert2' : 'x:fert';
+  inv[ik] = have(ik) - 1; p.fert = kd;
+  sparkle(x, y, '#c9a15a'); pop(x, y, '施肥！', '#c9f0a8');
+  act2('fertilize', { p_x: x, p_y: y, p_kind: kd });
+  refreshHud();
+}
+
+
+/* ---------- 穀倉內部：走進去看得到養的動物 ---------- */
+const BAW = 14, BAH = 10, BWL = 19, TRG = 20, BSK = 21, SGN = 22, BX = 23;   // 牆／飼料槽／收成籃／告示牌／門
+const bkind = Array.from({ length: BAH }, () => Array(BAW).fill(G));
+for (let y = 0; y < BAH; y++) for (let x = 0; x < BAW; x++) if (y < 2 || y === BAH - 1 || x === 0 || x === BAW - 1) bkind[y][x] = BWL;
+bkind[BAH - 1][6] = BX; bkind[BAH - 1][7] = BX;
+bkind[2][2] = SGN; bkind[2][6] = TRG; bkind[2][7] = TRG; bkind[2][11] = BSK;
+[[1, 7], [1, 8], [12, 7], [12, 8], [12, 6]].forEach(([x, y]) => { bkind[y][x] = BWL; });   // 乾草堆
+let barnAn = [];
+function barnSync() {
+  const list = rcData && rcData.animals ? rcData.animals : [];
+  barnAn = list.map((a, i) => {
+    const o = barnAn[i];
+    const n = o || { x: 0, y: 0, tx: 0, ty: 0, wait: 0, dir: 1, ph: i * 1.7 };
+    if (!o) { const t = barnPick(); n.x = n.tx = t[0]; n.y = n.ty = t[1]; n.wait = 500 + Math.random() * 2500; }
+    n.sp = a.species; n.ready = a.ready;
+    return n;
+  });
+}
+function barnPick() {
+  for (let n = 0; n < 40; n++) {
+    const x = 1 + Math.floor(Math.random() * (BAW - 2)), y = 3 + Math.floor(Math.random() * (BAH - 4));
+    if (bkind[y][x] === G) return [x, y];
+  }
+  return [6, 5];
+}
+function barnTick(dt) {
+  const sec = dt / 1000;
+  barnAn.forEach(a => {
+    if (a.wait > 0) { a.wait -= dt; return; }
+    const v = (a.sp === 'chicken' ? 1.3 : a.sp === 'cow' ? 0.55 : 0.8) * sec, dx = a.tx - a.x, dy = a.ty - a.y, d = Math.hypot(dx, dy);
+    if (d <= v) { a.x = a.tx; a.y = a.ty; a.wait = 800 + Math.random() * 3500; const t = barnPick(); a.tx = t[0]; a.ty = t[1]; return; }
+    a.x += dx / d * v; a.y += dy / d * v; if (Math.abs(dx) > 0.05) a.dir = dx > 0 ? 1 : -1;
+  });
+}
+async function enterBarn() {
+  if (scene !== 'farm' || enterBusy) return;
+  if (!ready || !me || authOpen || paused()) return;
+  if (featLocked('ranch')) return;
+  enterBusy = true;
+  try { rcData = await rpc('ranch_get'); } catch (e) { enterBusy = false; toast(errText(e)); return; }
+  enterBusy = false;
+  if (scene !== 'farm') return;
+  barnSync();
+  pose = null; scene = 'barn'; K = bkind; W = BAW; H = BAH;
+  critters.length = 0; critSlot = -1;
+  pl.x = pl.sx = 6; pl.y = pl.sy = BAH - 2; pl.prog = 1; pl.face = 'up'; pressed.length = 0;
+  view.snap = true; fitView();
+}
+function leaveBarn(silent) {
+  if (scene !== 'barn') return;
+  scene = 'farm'; K = kind; W = BW; H = BH;
+  pl.x = pl.sx = 16; pl.y = pl.sy = 3; pl.prog = 1; pl.face = 'down'; pressed.length = 0;
+  view.snap = true; fitView();
+  if (!silent) toast('回到農場了');
+}
+const ANI_N = { chicken: '母雞', cow: '乳牛', sheep: '綿羊' };
+function barnStatus(a) {
+  const now = srvNow(), sp = ((rcData.species || []).find(q => q.key === a.sp) || {});
+  return !a.ready ? ANI_N[a.sp] + '：肚子餓了，去飼料槽餵乾草' : a.ready <= now ? ANI_N[a.sp] + '：可以收' + itemName(sp.product) + '了' : ANI_N[a.sp] + '：還要 ' + fmtLeft(a.ready - now);
+}
+async function barnDo(kd) {
+  if (rcBusy || !rcData) return;
+  const hungry = rcData.animals.filter(a => !a.ready).length, done = rcData.animals.filter(a => a.ready && a.ready <= srvNow()).length;
+  if (kd === 'feed') {
+    if (!rcData.animals.length) { toast('還沒有動物，去告示牌買'); return; }
+    if (!hungry) { toast('大家都吃飽了'); return; }
+    if (have('a:hay') < 1) { toast('沒有乾草，去雜貨攤買'); return; }
+  } else if (!done) { toast(rcData.animals.length ? '還沒有東西可以收' : '還沒有動物，去告示牌買'); return; }
+  rcBusy = true;
+  try {
+    const r = await enqueue(() => kd === 'feed' ? rpc('ranch_feed') : rpc('ranch_collect'));
+    if (r.inv) Object.assign(inv, r.inv);
+    rcData = r; barnSync();
+    if (kd === 'feed') toast('餵了 ' + r.fed + ' 隻');
+    else toast('收成：' + Object.keys(r.got).map(k => itemName(k) + ' ×' + r.got[k]).join('、'));
+    loadLevelSoon();
+  } catch (err) { toast(errText(err)); try { rcData = await rpc('ranch_get'); barnSync(); } catch (_) {} }
+  rcBusy = false; refreshHud();
+}
+function barnAct(x, y) {
+  if (x < 0 || y < 0 || x >= W || y >= H || catchShown) { if (catchShown) hideCatch(); return; }
+  const an = barnAn.find(a => Math.abs(a.x - x) < 0.8 && Math.abs(a.y - y) < 0.8), k = K[y][x];
+  if (an && rcData) { pop(x, y, barnStatus(an), '#fff3b0'); return; }
+  if (k === BX) { leaveBarn(); return; }
+  if (k === TRG) { barnDo('feed'); return; }
+  if (k === BSK) { barnDo('collect'); return; }
+  if (k === SGN) { openRanch(); return; }
+}
+function drawAnimal(sp, px, py, dir, fr) {
+  const X = (x, w) => px + (dir > 0 ? x : 16 - x - w), R = (c, x, y, w, h) => r(c, X(x, w), py + y, w, h);
+  r('rgba(90,60,40,.2)', px + 3, py + 13, 10, 2);
+  if (sp === 'chicken') {
+    R('#ffffff', 4, 6, 8, 6); R('#e6e2dc', 4, 10, 8, 2); R('#ffffff', 10, 3, 4, 5); R('#e0483c', 11, 2, 2, 2); R('#ffb02e', 14, 5, 2, 2);
+    R('#2b2b2b', 12, 4, 1, 1); R('#f0f0f0', 3, 7, 2, 3); R('#ffb02e', 6, 12 + (fr ? 1 : 0), 1, 2); R('#ffb02e', 9, 12 + (fr ? 0 : 1), 1, 2);
+  } else if (sp === 'cow') {
+    R('#ffffff', 2, 5, 11, 7); R('#2f2f33', 4, 6, 3, 3); R('#2f2f33', 9, 8, 3, 3);
+    R('#ffffff', 11, 3, 5, 6); R('#f0b8b0', 13, 7, 3, 2); R('#2f2f33', 12, 4, 1, 1); R('#2f2f33', 11, 2, 1, 2); R('#cfc7b8', 14, 2, 1, 2);
+    R('#ffffff', 2, 12, 2, 3 - (fr ? 1 : 0)); R('#ffffff', 5, 12, 2, 3 - (fr ? 0 : 1)); R('#ffffff', 9, 12, 2, 3 - (fr ? 1 : 0)); R('#ffffff', 12, 12, 2, 3 - (fr ? 0 : 1));
+    R('#2f2f33', 1, 6, 1, 4);
+  } else {
+    R('#f1ece2', 2, 4, 11, 8); R('#fff9ee', 4, 3, 7, 3); R('#d9d1c2', 3, 10, 9, 2);
+    R('#3a3436', 11, 5, 4, 5); R('#3a3436', 14, 4, 1, 2);
+    R('#ffffff', 12, 6, 1, 1); R('#3a3436', 4, 12, 2, 3 - (fr ? 1 : 0)); R('#3a3436', 9, 12, 2, 3 - (fr ? 0 : 1));
+  }
+}
+function drawBarnRoom(now) {
+  ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#3b2a1e'; ctx.fillRect(0, 0, cv.width, cv.height); ctx.restore();
+  r('#3b2a1e', 0, 0, W * T, H * T);
+  for (let ty = 0; ty < H; ty++) for (let tx = 0; tx < W; tx++) {
+    const px = tx * T, py = ty * T, k = K[ty][tx];
+    if (ty < 2) {
+      r('#b8895a', px, py, T, T); r('#9b6a44', px, py + 7, T, 1); r('#9b6a44', px + 7, py, 1, 8); r('#d3a574', px, py, T, 1);
+    } else if (k === BWL && (ty === H - 1 || tx === 0 || tx === W - 1)) {
+      r('#a97a4c', px, py, T, T); r('#8a5f38', px + 7, py, 1, T);
+    } else {
+      r((tx + ty) % 2 ? '#d9b27c' : '#d1a972', px, py, T, T);
+      if (hash(tx, ty, 9) > 0.7) r('#e8c690', px + 3, py + 5, 3, 1);
+      if (hash(tx, ty, 11) > 0.8) r('#c19a62', px + 8, py + 10, 2, 1);
+    }
+  }
+  r('rgba(60,36,20,.25)', T, 2 * T, (W - 2) * T, 3);
+  for (let y = 7; y <= 8; y++) { drawHay((1) * T, y * T); drawHay(12 * T, y * T); }
+  drawHay(12 * T, 6 * T);
+  // 門
+  ob('#fff0d4', '#9b6a44', 6 * T + 1, (H - 1) * T - 1, 2 * T - 2, T + 1); r('#9b6a44', 7 * T, (H - 1) * T, 1, T);
+  // 告示牌
+  r('#9b6a44', 2 * T + 7, 2 * T + 8, 2, 8); ob('#f4d9a8', '#9b6a44', 2 * T + 1, 2 * T + 1, 14, 8);
+  r('#7a4a3a', 2 * T + 3, 2 * T + 3, 10, 1); r('#7a4a3a', 2 * T + 3, 2 * T + 5, 7, 1); r('#e0483c', 2 * T + 11, 2 * T + 5, 2, 2);
+  // 飼料槽
+  ob('#9b6a44', '#6e4a2e', 6 * T, 2 * T + 6, 2 * T, 9); r('#e6c25a', 6 * T + 2, 2 * T + 6, 2 * T - 4, 3); r('#f4d97a', 6 * T + 4, 2 * T + 5, 6, 2);
+  // 收成籃
+  ob('#c98f62', '#8a5f38', 11 * T + 2, 2 * T + 6, 12, 9); r('#8a5f38', 11 * T + 2, 2 * T + 9, 12, 1);
+  r('#ffffff', 11 * T + 4, 2 * T + 4, 3, 3); r('#fff6e0', 11 * T + 8, 2 * T + 5, 3, 2);
+  const win = (wx) => { ob('#bfe6ff', '#9b6a44', wx, 8, 12, 9); r('#9b6a44', wx + 5, 8, 1, 9); };
+  win(2 * T + 2); win(10 * T + 2);
+  if (!rcData) return;
+  nameTag('告示牌', 2 * T + 8, 2 * T - 2, '#fff3b0'); nameTag('飼料槽', 7 * T, 2 * T + 3, '#fff3b0'); nameTag('收成', 11 * T + 8, 2 * T + 3, '#fff3b0');
+}
+function drawHay(px, py) {
+  ob('#e6c25a', '#b58a2a', px + 1, py + 3, 14, 12); r('#f4d97a', px + 3, py + 5, 10, 1); r('#f4d97a', px + 3, py + 9, 10, 1); r('#b58a2a', px + 7, py + 3, 1, 12);
+}
+function barnEnts(now, ents) {
+  if (!rcData) return;
+  const sv = srvNow();
+  barnAn.forEach(a => {
+    ents.push({ y: a.y + 0.6, draw: () => {
+      const px = Math.round(a.x * T), py = Math.round(a.y * T) - 3, mv = a.wait <= 0, fr = mv ? Math.floor(now / 200 + a.ph) % 2 : 0;
+      drawAnimal(a.sp, px, py, a.dir, fr);
+      if (!a.ready) nameTag('餓了', px + 8, py - 1, '#ffb3a8');
+      else if (a.ready <= sv) nameTag('可收', px + 8, py - 1 - Math.round(Math.abs(Math.sin(now / 250 + a.ph)) * 2), '#fff3b0');
+    } });
+  });
+}
+
+/* ---------- 動物牧場（穀倉）：買動物、看狀態的視窗，從告示牌開啟 ---------- */
+const rcEl = $('rcm'), rcCard = $('rccard');
+let rcData = null, rcBusy = false;
+const fmtLeft = ms => { const m = Math.ceil(ms / 60000); return m >= 60 ? Math.floor(m / 60) + ' 小時 ' + (m % 60) + ' 分' : m + ' 分'; };
+async function openRanch() {
+  if (!ready || !me || authOpen || paused() || rcOpen) return;
+  if (featLocked('ranch')) return;
+  rcOpen = true; pressed.length = 0; rcData = null; renderRanch(); rcEl.hidden = false; rcCard.focus();
+  try { rcData = await rpc('ranch_get'); } catch (e) { toast(errText(e)); closeRanch(); return; }
+  if (rcOpen) { renderRanch(); barnSync(); }
+}
+function closeRanch() { rcOpen = false; rcEl.hidden = true; }
+function renderRanch() {
+  if (!rcData) { rcCard.innerHTML = '<div class="shop-h"><h2>穀倉</h2></div><p class="empty">讀取中…</p>'; return; }
+  const d = rcData, now = srvNow(), dis = rcBusy ? ' disabled' : '', coins = me ? me.coins : 0;
+  const nm = k => ((d.species || []).find(s => s.key === k) || { name: k }).name;
+  const hungry = d.animals.filter(a => !a.ready).length, done = d.animals.filter(a => a.ready && a.ready <= now).length;
+  const list = d.animals.length ? d.animals.map(a => {
+    const sp = (d.species || []).find(s => s.key === a.species) || {};
+    const st = !a.ready ? '肚子餓了，餵乾草才會生產' : a.ready <= now ? '可以收' + itemName(sp.product) + '了！' : '生產中，還要 ' + fmtLeft(a.ready - now);
+    return '<div class="row"><div class="meta"><b>' + esc(nm(a.species)) + '</b><small>' + st + '</small></div></div>';
+  }).join('') : '<p class="empty">還沒有動物。下面可以買。</p>';
+  const buy = (d.species || []).map(s => {
+    const lock = plv() < s.need, full = d.animals.length >= d.cap;
+    return '<div class="row"><div class="meta"><b>' + esc(s.name) + '</b><small>每餵一次乾草，約 ' + (+s.hours) + ' 小時後產 ' + esc(itemName(s.product)) + '（' + miscPrice(s.product) + ' G）</small></div>' +
+      '<button type="button" class="btn small" data-a="buy" data-c="' + esc(s.key) + '"' + (rcBusy || lock || full || coins < s.buy ? ' disabled' : '') + '>' + (lock ? '玩家 Lv.' + s.need + ' 解鎖' : s.buy + ' G') + '</button></div>';
+  }).join('');
+  rcCard.innerHTML = '<div class="shop-h"><h2>穀倉</h2><span class="chip gold">' + coins + ' G</span></div>' +
+    '<p class="empty">動物 ' + d.animals.length + '/' + d.cap + '（玩家升級會變大）· 乾草 ' + have('a:hay') + ' 把（雜貨攤買，每把 ' + ((itemMeta['a:hay'] || {}).buy || 6) + ' G）</p>' + list +
+    '<div class="v-quick"><button type="button" class="btn" data-a="feed"' + (rcBusy || !hungry || have('a:hay') < 1 ? ' disabled' : '') + '>餵食（' + hungry + ' 隻餓著）</button>' +
+    '<button type="button" class="btn" data-a="collect"' + (rcBusy || !done ? ' disabled' : '') + '>收成（' + done + ' 隻）</button></div>' +
+    '<h3>買動物</h3>' + buy + '<button type="button" class="btn ghost wide" data-a="close">離開</button>';
+}
+rcCard.addEventListener('click', async e => {
+  const b = e.target.closest('button[data-a]'); if (!b || b.disabled) return;
+  const a = b.dataset.a;
+  if (a === 'close') { closeRanch(); return; }
+  rcBusy = true; renderRanch();
+  try {
+    const r = await enqueue(() => a === 'feed' ? rpc('ranch_feed') : a === 'collect' ? rpc('ranch_collect') : rpc('ranch_buy', { p_species: b.dataset.c }));
+    if (r.inv) Object.assign(inv, r.inv);
+    if (typeof r.coins === 'number') me.coins = r.coins;
+    rcData = r; barnSync();
+    if (a === 'feed') toast('餵了 ' + r.fed + ' 隻');
+    if (a === 'collect') toast('收成：' + Object.keys(r.got).map(k => itemName(k) + ' ×' + r.got[k]).join('、'));
+    if (a === 'buy') toast('買了一隻' + (((r.species || []).find(s => s.key === b.dataset.c) || {}).name || '動物'));
+  } catch (err) { toast(errText(err)); try { rcData = await rpc('ranch_get'); } catch (_) {} }
+  rcBusy = false; if (rcOpen) renderRanch(); refreshHud();
+});
+rcEl.addEventListener('click', e => { if (e.target === rcEl) closeRanch(); });
+
+/* ---------- 旅行商人（週五、六、日） ---------- */
+const mcEl = $('mcm'), mcCard = $('mccard');
+let mcData = null, mcBusy = false;
+async function openMerchant() {
+  if (!ready || !me || authOpen || paused() || mcOpen) return;
+  mcOpen = true; pressed.length = 0; mcData = null; renderMerchant(); mcEl.hidden = false; mcCard.focus();
+  try { mcData = await rpc('merchant_get'); } catch (e) { toast(errText(e)); closeMerchant(); return; }
+  if (mcOpen) renderMerchant();
+}
+function closeMerchant() { mcOpen = false; mcEl.hidden = true; }
+function renderMerchant() {
+  if (!mcData) { mcCard.innerHTML = '<div class="shop-h"><h2>旅行商人 米羅</h2></div><p class="empty">讀取中…</p>'; return; }
+  const d = mcData, coins = me ? me.coins : 0;
+  if (!d.here) { mcCard.innerHTML = '<div class="shop-h"><h2>旅行商人 米羅</h2></div><p class="empty">商人還沒到。他每週五、六、日會來，約 ' + d.next + ' 天後。</p><button type="button" class="btn ghost wide" data-a="close">離開</button>'; return; }
+  const dis = mcBusy ? ' disabled' : '';
+  const offers = d.offers.map(o => {
+    const got = (d.bought || []).includes(o.k);
+    return '<div class="row"><canvas class="fico" width="16" height="16" data-mi="' + esc(o.item) + '"></canvas><div class="meta"><b>' + esc(itemName(o.item)) + (o.qty > 1 ? ' ×' + o.qty : '') + '</b><small>' + (/^f:/.test(o.item) ? '商人專屬家具，家具店買不到' : /^s:/.test(o.item) ? '雜交種子，雜貨攤買不到' : '每天限買一份') + '</small></div>' +
+      '<button type="button" class="btn small" data-a="buy" data-i="' + o.i + '"' + (mcBusy || got || coins < o.price ? ' disabled' : '') + '>' + (got ? '已買' : o.price + ' G') + '</button></div>';
+  }).join('');
+  const w = d.want, mx = Math.min(w.left, have(w.item));
+  const want = '<div class="row"><canvas class="fico" width="16" height="16" data-mi="' + esc(w.item) + '"></canvas><div class="meta"><b>今天高價收：' + esc(itemName(w.item)) + '</b><small>每個 ' + w.price + ' G（原價 1.6 倍）· 今天還能賣 ' + w.left + ' 個 · 持有 ' + have(w.item) + '</small></div>' +
+    '<button type="button" class="btn small" data-a="sell" data-n="1"' + (mcBusy || mx < 1 ? ' disabled' : '') + '>賣 1 個</button>' +
+    '<button type="button" class="btn small" data-a="sell" data-n="' + mx + '"' + (mcBusy || mx < 2 ? ' disabled' : '') + '>全賣 ' + mx + ' 個</button></div>';
+  mcCard.innerHTML = '<div class="shop-h"><h2>旅行商人 米羅</h2><span class="chip gold">' + coins + ' G</span></div><p class="empty">米羅：「走過路過別錯過，都是遠方帶來的好東西！」</p><h3>今天的商品</h3>' + offers + '<h3>高價收購</h3>' + want +
+    '<button type="button" class="btn ghost wide" data-a="close">離開</button>';
+  mcCard.querySelectorAll('canvas[data-mi]').forEach(cv => {
+    const k = cv.dataset.mi, c2d = cv.getContext('2d');
+    if (/^s:/.test(k)) drawIcon(c2d, TOOLS.findIndex(x => x.crop === k.slice(2)));
+    else if (/^c:/.test(k)) cropIcon(c2d, k.slice(2));
+    else if (/^fish:/.test(k)) drawFish(c2d, k.slice(5), false);
+    else if (/^bug:/.test(k)) drawBug(c2d, k.slice(4), false);
+    else if (/^f:/.test(k)) { c2d.clearRect(0, 0, 16, 16); g = c2d; if (FURN[k.slice(2)]) FURN[k.slice(2)](0, 0, 0); g = ctx; }
+    else miscIcon(c2d, k);
+  });
+}
+mcCard.addEventListener('click', async e => {
+  const b = e.target.closest('button[data-a]'); if (!b || b.disabled) return;
+  const a = b.dataset.a;
+  if (a === 'close') { closeMerchant(); return; }
+  mcBusy = true; renderMerchant();
+  try {
+    const r = await enqueue(() => a === 'buy' ? rpc('merchant_buy', { p_i: +b.dataset.i }) : rpc('merchant_sell', { p_qty: +b.dataset.n }));
+    if (r.inv) Object.assign(inv, r.inv);
+    if (typeof r.coins === 'number') me.coins = r.coins;
+    if (r.earned) toast('賣出得到 ' + r.earned + ' G');
+    if (a === 'buy') toast('買到了！');
+    mcData = await rpc('merchant_get');
+    if (a === 'buy' && house) { try { await loadHouse(); } catch (_) {} }
+  } catch (err) { toast(errText(err)); try { mcData = await rpc('merchant_get'); } catch (_) {} }
+  mcBusy = false; if (mcOpen) renderMerchant(); refreshHud();
+});
+mcEl.addEventListener('click', e => { if (e.target === mcEl) closeMerchant(); });
+
+/* ---------- 料理：廚房灶台（家裡擺了才能用） ---------- */
+const DISHC = { rcake: '#f3d79a', stew: '#e8a05a', pie: '#f0a64a', grilled: '#c98f62', soup: '#e8c97a', escargot: '#b98a62' };
+function dishIcon(c2d, k) {
+  g = c2d; g.clearRect(0, 0, 16, 16);
+  ob('#fffaf0', '#c9b79a', 2, 9, 12, 5);
+  ob(DISHC[k] || '#f3c77a', 'rgba(90,60,40,.5)', 3, 5, 10, 6);
+  r('rgba(255,255,255,.55)', 5, 6, 2, 1); r('#8fe09a', 9, 4, 2, 2);
+  g = ctx;
+}
+const BUFF_N = { swift: '走路變快', fish: '釣魚運氣變好', bug: '捕蟲網變大' };
+const ckEl = $('ckm'), ckCard = $('ckcard');
+let ckBusy = false;
+function openKitchen() { if (ckOpen) return; ckOpen = true; pressed.length = 0; renderKitchen(); ckEl.hidden = false; ckCard.focus(); }
+function closeKitchen() { ckOpen = false; ckEl.hidden = true; }
+function maxCook(rc) { let m = 99; for (const k in rc.ing) m = Math.min(m, Math.floor(have(k) / rc.ing[k])); return m; }
+function renderKitchen() {
+  const dis = ckBusy ? ' disabled' : '';
+  const act_ = Object.keys(buffs).filter(buffOn).map(k => (BUFF_N[k] || k) + '（剩 ' + Math.ceil((buffs[k] - srvNow()) / 60000) + ' 分鐘）');
+  const rows = recipes.map(rc => {
+    const mx = maxCook(rc), dn = have('dish:' + rc.key);
+    const ing = Object.keys(rc.ing).map(k => esc(itemName(k)) + ' ' + have(k) + '/' + rc.ing[k]).join('、');
+    return '<div class="row" style="flex-wrap:wrap;gap:6px"><i class="dot" style="--c:' + (DISHC[rc.key] || '#f3c77a') + '"></i><div class="meta" style="min-width:150px"><b>' + esc(rc.name) + (dn ? '　持有 ' + dn : '') + '</b><small>' + ing + '</small><small>' +
+      esc(rc.descr) + '　賣 ' + rc.price + ' G</small></div><div style="display:flex;gap:6px;flex-wrap:wrap">' +
+      '<button type="button" class="btn small" data-a="cook" data-c="' + esc(rc.key) + '" data-n="1"' + (ckBusy || mx < 1 ? ' disabled' : '') + '>做 1 份</button>' +
+      (mx >= 5 ? '<button type="button" class="btn small" data-a="cook" data-c="' + esc(rc.key) + '" data-n="5"' + dis + '>做 5 份</button>' : '') +
+      (dn && rc.buff ? '<button type="button" class="btn small" data-a="eat" data-c="' + esc(rc.key) + '"' + dis + '>吃一份</button>' : '') +
+      '</div></div>';
+  }).join('');
+  ckCard.innerHTML = '<div class="shop-h"><h2>廚房</h2><span class="chip gold">' + (me ? me.coins : 0) + ' G</span></div>' +
+    '<p class="empty">用作物、魚、蟲做料理：可以賣錢、交委託，有些吃下去還有 buff（最多累積 60 分鐘）。' + (act_.length ? '<br>目前效果：' + esc(act_.join('、')) : '') + '</p>' +
+    (rows || '<p class="empty">還沒有食譜。</p>') + '<button type="button" class="btn ghost wide" data-a="close">離開</button>';
+}
+ckCard.addEventListener('click', async e => {
+  const b = e.target.closest('button[data-a]');
+  if (!b || b.disabled) return;
+  const a = b.dataset.a, k = b.dataset.c;
+  if (a === 'close') { closeKitchen(); return; }
+  ckBusy = true; renderKitchen();
+  try {
+    const r = await enqueue(() => a === 'cook' ? rpc('cook', { p_key: k, p_qty: +b.dataset.n || 1 }) : rpc('eat', { p_key: k }));
+    if (r.inv) Object.assign(inv, r.inv);
+    if (a === 'cook') toast('做好了！');
+    if (r.buff) { buffs[r.buff] = +r.until; toast('吃下去了：' + (BUFF_N[r.buff] || r.buff)); updateBuffChip(); }
+  } catch (err) { toast(errText(err)); await resync(); }
+  ckBusy = false;
+  if (ckOpen) renderKitchen();
+  refreshHud();
+});
+ckEl.addEventListener('click', e => { if (e.target === ckEl) closeKitchen(); });
+let lastBuffSig = '';
+function updateBuffChip() {
+  const el = $('buff'); if (!el) return;
+  const ks = Object.keys(BUFF_N).filter(buffOn);
+  const sig = ks.map(k => k + Math.ceil((buffs[k] - srvNow()) / 60000)).join('|');
+  if (sig === lastBuffSig) return;
+  lastBuffSig = sig;
+  el.style.display = ks.length ? '' : 'none';
+  el.textContent = '🍲 ' + ks.map(k => BUFF_N[k] + ' ' + Math.ceil((buffs[k] - srvNow()) / 60000) + '分').join('、');
+}
+
+/* ---------- 委託布告欄（農場小路旁）：每天 3 張委託，內容由伺服器決定 ---------- */
+const bdEl = $('bdm'), bdCard = $('bdcard');
+let bdData = null, bdBusy = false;
+async function openBoard() {
+  if (!ready || !me || authOpen || paused() || bdOpen) return;
+  bdOpen = true; pressed.length = 0; bdData = null; stData = null; bdTab = 'order'; renderBoard(); bdEl.hidden = false; bdCard.focus();
+  try { bdData = await rpc('order_get'); } catch (e) { toast(errText(e)); closeBoard(); return; }
+  if (bdOpen) renderBoard();
+}
+function closeBoard() { bdOpen = false; bdEl.hidden = true; }
+function renderBoard() {
+  let h = '<div class="shop-h"><h2>布告欄</h2><span class="chip gold">' + (me ? me.coins : 0) + ' G</span></div>' +
+    '<div class="v-quick" style="margin:6px 0">' + [['order', '每週委託'], ['story', '村莊故事']].map(([k, n]) =>
+      '<button type="button" class="chipbtn" data-a="tab" data-c="' + k + '" aria-pressed="' + (bdTab === k ? 'true' : 'false') + '">' + n + '</button>').join('') + '</div>';
+  if (bdTab === 'story') h += renderStory();
+  else if (!bdData) h += '<p class="empty">讀取中…</p>';
+  else {
+    const done = new Set(bdData.done || []);
+    h += '<p class="empty">每週 3 張委託，週一凌晨 0 點更新（還有 ' + (bdData.left_days || 1) + ' 天）；報酬比雜貨攤賣價高，每張完成都有玩家經驗。三張都完成再加碼 300 G 和 30 經驗。</p>' +
+      (bdData.orders || []).map(o => {
+        const hv = have(o.item), ok = hv >= o.qty, dn = done.has(o.i);
+        return '<div class="row"><div class="meta"><b>' + esc(itemName(o.item)) + ' ×' + o.qty + '</b><small>報酬 ' + o.reward + ' G ＋ ' + (o.xp | 0) + ' 玩家經驗 · 持有 ' + hv + '</small></div>' +
+          '<button type="button" class="btn" data-a="fill" data-c="' + o.i + '"' + (dn || !ok || bdBusy ? ' disabled' : '') + '>' + (dn ? '已完成' : ok ? '交付' : '材料不足') + '</button></div>';
+      }).join('');
+  }
+  bdCard.innerHTML = h + '<button type="button" class="btn ghost wide" data-a="close">離開</button>';
+}
+function renderStory() {
+  if (!stData) return '<p class="empty">讀取中…</p>';
+  const d = stData.done | 0, chs = stData.chapters || [], cur = chs.find(c => c.ch === d + 1);
+  let h = '<p class="empty">雷克斯小村的故事共 ' + chs.length + ' 章，進度 ' + d + '/' + chs.length + '。到村子裡找對應的村民對話、交付物品，故事就會繼續。頭上有「!」的人有事找你。</p>';
+  chs.filter(c => c.ch <= d).forEach(c => { h += '<div class="row"><div class="meta"><b>✓ 第 ' + c.ch + ' 章：' + esc(c.title) + '</b><small>' + esc(c.intro) + '</small></div></div>'; });
+  if (!cur) return h + '<p class="empty">目前的故事都完成了，之後還會有新章節！</p>';
+  const nq = NPCS.find(q => q.k === cur.npc), lock = plv() < cur.pl;
+  h += '<div class="row"><div class="meta"><b>第 ' + cur.ch + ' 章：' + esc(cur.title) + '</b><small>' + esc(cur.intro) + '</small><small>' +
+    (lock ? '玩家 Lv.' + cur.pl + ' 才會開始' : '去找' + esc(cur.npc_name) + (nq ? '（在' + nq.where + '）' : '')) + '</small></div></div>';
+  return h;
+}
+bdCard.addEventListener('click', async e => {
+  const b = e.target.closest('button[data-a]');
+  if (!b || b.disabled) return;
+  if (b.dataset.a === 'close') { closeBoard(); return; }
+  if (b.dataset.a === 'tab') {
+    bdTab = b.dataset.c; renderBoard();
+    if (bdTab === 'story') { try { stData = await rpc('story_get'); } catch (err) { toast(errText(err)); } if (bdOpen) renderBoard(); }
+    return;
+  }
+  if (b.dataset.a === 'story') {
+    stBusy = true; renderBoard();
+    try {
+      const r = await enqueue(() => rpc('story_submit'));
+      if (r.inv) Object.assign(inv, r.inv);
+      if (typeof r.coins === 'number') me.coins = r.coins;
+      storyDone = r.done | 0;
+      toast('故事過關！+' + r.earned + ' G' + Object.keys(r.items || {}).map(k => '、' + itemName(k) + ' ×' + r.items[k]).join(''));
+      stData = await rpc('story_get');
+    } catch (err) { toast(errText(err)); await resync(); try { stData = await rpc('story_get'); } catch (e2) {} }
+    stBusy = false; if (bdOpen) renderBoard(); refreshHud(); return;
+  }
+  bdBusy = true; renderBoard();
+  try {
+    const r = await enqueue(() => rpc('order_fill', { p_i: +b.dataset.c }));
+    if (r.inv) Object.assign(inv, r.inv);
+    if (typeof r.coins === 'number') me.coins = r.coins;
+    toast('完成委託！+' + r.earned + ' G、+' + r.xp + ' 玩家經驗' + (r.bonus ? '（三張都完成，含加碼 ' + r.bonus + ' G）' : '')); loadLevelSoon();
+    bdData = await rpc('order_get');
+  } catch (err) { toast(errText(err)); await resync(); try { bdData = await rpc('order_get'); } catch (e2) {} }
+  bdBusy = false;
+  if (bdOpen) renderBoard();
+  refreshHud();
+});
+bdEl.addEventListener('click', e => { if (e.target === bdEl) closeBoard(); });
 
 /* ---------- 背包 ---------- */
 const bagEl = $('bagm'), bagCard = $('bagcard');
@@ -1685,25 +2695,33 @@ function furnIcon(cv, key) {
 }
 function bagGroups() {
   const out = [];
-  const tools = [0, 1, 5, 6].map(i => ({ t: 'tool', k: String(i), name: TOOLS[i].n, n: null }));
-  const seeds = KEYS.map(k => ({ t: 'seed', k, name: CROPS[k].n + '種子', n: have('s:' + k) }));
-  const crops = KEYS.filter(k => have('c:' + k) > 0).map(k => ({ t: 'crop', k, name: CROPS[k].n, n: have('c:' + k) }));
+  const tools = [0, 1, 5, 6, 10, 12].map(i => ({ t: 'tool', k: String(i), name: TOOLS[i].n, n: null }));
+  const seeds = ALLK.filter(k => !CROPS[k].hy || have('s:' + k) > 0).map(k => ({ t: 'seed', k, name: CROPS[k].n + '種子', n: have('s:' + k) }));
+  const crops = ALLK.filter(k => have('c:' + k) > 0).map(k => ({ t: 'crop', k, name: CROPS[k].n, n: have('c:' + k) }));
+  const qcrops = [];
+  ALLK.forEach(k => ['q2', 'q1'].forEach(q => { if (have(q + ':' + k) > 0) qcrops.push({ t: 'qcrop', k: q + ':' + k, name: itemName(q + ':' + k), n: have(q + ':' + k) }); }));
+  const miscs = Object.keys(inv).filter(k => /^(a|g|m|x):/.test(k) && inv[k] > 0 && itemMeta[k]).sort().map(k => ({ t: 'misc', k, name: itemMeta[k].name, n: inv[k] }));
   const fish = fishCat.filter(f => have('fish:' + f.key) > 0).map(f => ({ t: 'fish', k: f.key, name: f.name, n: have('fish:' + f.key), f }));
   const bugs = bugCat.filter(b => have('bug:' + b.key) > 0).map(b => ({ t: 'bug', k: b.key, name: b.name, n: have('bug:' + b.key), f: b }));
+  const dishes = recipes.filter(rc => have('dish:' + rc.key) > 0).map(rc => ({ t: 'dish', k: rc.key, name: rc.name, n: have('dish:' + rc.key), rc }));
   const furn = Object.keys(inv).filter(k => k.startsWith('f:') && inv[k] > 0 && defOf(k.slice(2))).map(k => {
     const d = defOf(k.slice(2));
     return { t: 'furn', k: k.slice(2), name: d.name, n: inv[k], d };
   });
   out.push(['工具', tools]);
   out.push(['種子', seeds]);
-  if (crops.length) out.push(['作物', crops]);
+  if (crops.length || qcrops.length) out.push(['作物', crops.concat(qcrops)]);
+  const yards = Object.keys(inv).filter(k => /^y:/.test(k) && inv[k] > 0).sort().map(k => ({ t: 'yard', k: k.slice(2), name: itemName(k), n: inv[k] }));
+  if (miscs.length) out.push(['畜產、採集與礦物', miscs]);
   if (fish.length) out.push(['魚', fish]);
   if (bugs.length) out.push(['蟲與蝴蝶', bugs]);
+  if (dishes.length) out.push(['料理', dishes]);
   if (furn.length) out.push(['家具與裝飾', furn]);
+  if (yards.length) out.push(['庭院裝飾', yards]);
   return out;
 }
 /* 物品在 TOOLS 目錄裡的編號（只有工具和種子能放進快捷列） */
-const catIdx = it => it.t === 'tool' ? +it.k : it.t === 'seed' ? TOOLS.findIndex(x => x.crop === it.k) : -1;
+const catIdx = it => it.t === 'tool' ? +it.k : it.t === 'seed' ? TOOLS.findIndex(x => x.crop === it.k) : (it.t === 'misc' && /^x:/.test(it.k)) ? TOOLS.findIndex(x => x.id === 'fert') : -1;
 function equipRow(it) {
   const idx = catIdx(it);
   return '<div class="v-quick eqrow"><span class="v-count">放到快捷列：</span>' + [0, 1, 2, 3, 4, 5].map(s =>
@@ -1715,12 +2733,22 @@ function bagDetail(it) {
   const a = [];
   let info = '';
   if (it.t === 'tool') {
-    info = { hoe: '翻土、把空田翻回草地。', can: '替作物澆水（晴天用；下雨下雪時免澆）。', rod: '面向池塘按動作鍵釣魚。', net: '面向草地上的蟲或蝴蝶，按動作鍵揮網。蟲蝶會隨時段和天氣不同。' }[TOOLS[+it.k].id] || '';
+    info = { hoe: '翻土、把空田翻回草地。', can: '替作物澆水（晴天用；下雨下雪時免澆）。', rod: '面向池塘按動作鍵釣魚。', yard: '裝備後面向農場的空草地按動作鍵，擺上背包裡的庭院裝飾；面向已擺的裝飾再按一次就收回。想擺哪一種，到背包點那個裝飾選擇。', pick: '面向農場的礦石按動作鍵敲開，掉石頭、銅礦，偶爾有水晶。每顆礦石每 2 小時恢復一次。', net: '面向草地上的蟲或蝴蝶，按動作鍵揮網。蟲蝶會隨時段和天氣不同。' }[TOOLS[+it.k].id] || '';
     a.push(equipRow(it));
+    const tid = TOOLS[+it.k].id;
+    if (tid === 'hoe' || tid === 'can') info += ' 目前 Lv.' + toolLv[tid] + '：一次處理 ' + toolN(toolLv[tid]) + ' 格（面向的方向排成一直線）。到雜貨攤可以升級。';
   } else if (it.t === 'seed') {
-    info = fmtDur(growSec(it.k)) + '成熟（晴天要澆水，雨雪天免澆），收成後每個賣 ' + CROPS[it.k].sell + ' G。';
+    info = fmtDur(growSec(it.k)) + '成熟（晴天要澆水，雨雪天免澆），收成後每個賣 ' + cropPrice(it.k) + ' G' + seasonTag(it.k) + '。';
     a.push(equipRow(it));
-  } else if (it.t === 'crop') info = '到雜貨攤可以賣掉，每個 ' + CROPS[it.k].sell + ' G。';
+  } else if (it.t === 'yard') {
+    info = '裝備「庭院佈置」工具後，面向農場空草地按動作鍵擺放。' + ((ycat.find(q => q.key === it.k) || {}).walk ? '可以走上去。' : '會擋住路。') + (yardSel === it.k ? '（目前選用這個）' : '');
+    a.push('<button type="button" class="btn small" data-b="ysel">擺放時用這個</button>');
+  } else if (it.t === 'qcrop') info = '品質好的作物，賣價比普通的高（銀星 +25%、金星 +50%）。到雜貨攤賣，也可以做料理、交委託。每個 ' + miscPrice(it.k) + ' G。';
+  else if (it.t === 'misc') {
+    const m = itemMeta[it.k] || {};
+    info = it.k === 'a:hay' ? '拿去穀倉餵動物，每隻餓著的動物吃 1 把。' : /^x:/.test(it.k) ? '裝備後面向有作物的田地按動作鍵，這一輪收成更容易出現銀星和金星（每格一次）。' : (m.price ? '到雜貨攤賣，每個 ' + m.price + ' G。也能做料理、交委託。' : '');
+    if (/^x:/.test(it.k)) a.push(equipRow(it));
+  } else if (it.t === 'crop') info = '到雜貨攤可以賣掉，每個 ' + cropPrice(it.k) + ' G' + seasonTag(it.k) + '。也能拿去做料理或交委託。';
   else if (it.t === 'fish') {
     const rc = RARITY[it.f.rarity] || ['', ''];
     info = rc[0] + ' · 到雜貨攤賣，每條 ' + it.f.price + ' G。';
@@ -1731,6 +2759,8 @@ function bagDetail(it) {
     info = rc[0] + ' · 到雜貨攤賣，每隻 ' + it.f.price + ' G。';
     const can = canShowHere() && (bugLog[it.k] | 0) > 0;
     a.push('<button type="button" class="btn small"' + (can ? '' : ' disabled') + ' data-b="show">' + (scene === 'plaza' && net && net.ok ? '展示給大家看' : '展示') + '</button>' + (can ? '' : '<small class="empty">（還沒抓到過）</small>'));
+  } else if (it.t === 'dish') {
+    info = it.rc.descr + ' 每份賣 ' + it.rc.price + ' G；到家裡的廚房灶台可以吃，也能交委託。';
   } else if (it.t === 'furn') {
     const st = it.d.layer === 'wall_style' || it.d.layer === 'floor_style';
     info = st ? '已購買的款式，在家具店可以隨時換上。' : '回家進入「布置模式」就能擺放。不要的話，在布置模式可以賣掉，得 ' + Math.floor(it.d.price / 2) + ' G。';
@@ -1752,12 +2782,16 @@ function renderBag() {
     '<div class="bagdetail">' + bagDetail(sel) + '</div>' +
     '<button type="button" class="btn ghost wide" data-b="close">關閉</button>';
   bagCard.querySelectorAll('canvas[data-ic]').forEach(cv => {
-    const [ty, k] = cv.dataset.ic.split(':');
+    const ci = cv.dataset.ic.indexOf(':'), ty = cv.dataset.ic.slice(0, ci), k = cv.dataset.ic.slice(ci + 1);
     if (ty === 'seed') drawIcon(cv.getContext('2d'), TOOLS.findIndex(x => x.crop === k));
     else if (ty === 'tool') drawIcon(cv.getContext('2d'), +k);
     else if (ty === 'crop') cropIcon(cv.getContext('2d'), k);
+    else if (ty === 'qcrop') qcropIcon(cv.getContext('2d'), k);
+    else if (ty === 'misc') miscIcon(cv.getContext('2d'), k);
+    else if (ty === 'yard') yardIcon(cv.getContext('2d'), k);
     else if (ty === 'fish') drawFish(cv.getContext('2d'), k, false);
     else if (ty === 'bug') drawBug(cv.getContext('2d'), k, false);
+    else if (ty === 'dish') dishIcon(cv.getContext('2d'), k);
     else furnIcon(cv, k);
   });
   bagCard.querySelectorAll('canvas[data-hb]').forEach(cv => {
@@ -1777,6 +2811,7 @@ bagCard.addEventListener('click', e => {
   if (!b) return;
   const d = b.dataset;
   if (d.b === 'close') { closeBag(); return; }
+  if (d.b === 'ysel' && bagSel && bagSel.t === 'yard') { yardSel = bagSel.k; toast('擺放時會用「' + itemName('y:' + yardSel) + '」'); renderBag(); return; }
   if (d.b === 'eq' && bagSel) { const idx = catIdx(bagSel); if (idx >= 0) { setSlot(+d.s, idx); renderBag(); } return; }
   if (d.b === 'show' && bagSel && (bagSel.t === 'fish' || bagSel.t === 'bug')) { showItem(bagSel.t, bagSel.k); closeBag(); return; }
   if (d.t) { bagSel = { t: d.t, k: d.k }; renderBag(); }
@@ -1797,10 +2832,11 @@ function renderDex() {
   const cells = list.map(f => {
     const n = log[f.key] | 0, rc = RARITY[f.rarity] || ['', '#a8a0a0'];
     const hint = !n ? '還沒抓到' : '';
-    const when = isBug && !n ? '<small style="color:#bdada5">' + ({ any: '', dawn: '清晨', day: '白天', dusk: '黃昏', night: '夜晚' }[f.phase] || '') + ({ any: '', rain: ' 雨天', clear: ' 晴天' }[f.weather] || '') + '</small>' : '';
+    const sn = f.seasons && f.seasons !== 'any' ? ' ' + f.seasons.split(',').map(x => SEA_SHORT[x]).join('') + '季' : '';
+    const when = !n && (isBug || sn) ? '<small style="color:#bdada5">' + (isBug ? ({ any: '', dawn: '清晨', day: '白天', dusk: '黃昏', night: '夜晚' }[f.phase] || '') + ({ any: '', rain: ' 雨天', clear: ' 晴天' }[f.weather] || '') : '') + sn + '</small>' : '';
     return '<div class="dexc' + (n ? '' : ' no') + '" style="' + (n ? 'border-color:' + rc[1] : '') + '"><canvas width="16" height="16" ' + dat + '="' + esc(f.key) + '"' + (n ? '' : ' data-dim="1"') + '></canvas>' +
       '<small><b>' + (n ? esc(f.name) : '？？？') + '</b></small><small style="color:' + (n ? rc[1] : '#bdada5') + '">' + (n ? rc[0] + ' · ' + f.price + 'G' : (isBug ? '還沒抓到' : '還沒釣到')) + '</small>' +
-      (n ? '<small>' + (isBug ? '抓到' : '釣到') + ' ×' + n + '</small>' : when) + '</div>';
+      (n ? '<small>' + (isBug ? '抓到' : '釣到') + ' ×' + n + (!isBug && fishRec[f.key] ? ' · 最大 ' + fishRec[f.key].best + ' cm' : '') + '</small>' : when) + '</div>';
   }).join('');
   const tabs = '<div class="v-quick" style="margin:6px 0">' + [['fish', '魚'], ['bug', '蟲與蝴蝶']].map(([k, n]) =>
     '<button type="button" class="chipbtn" data-a="tab" data-c="' + k + '" aria-pressed="' + (dexTab === k ? 'true' : 'false') + '">' + n + '</button>').join('') + '</div>';
@@ -1812,7 +2848,14 @@ function renderDex() {
   const miles = '<div class="row" style="flex-wrap:wrap;gap:6px"><div class="meta" style="min-width:0"><b>收集獎勵</b><small>' + thr.map((t, i) =>
     (i < claimed ? '✓ ' : '') + t + ' 種 ' + REW[i] + ' G').join(' ／ ') + '</small></div>' +
     (pend ? '<button type="button" class="btn" data-a="claim" data-c="' + dexTab + '"' + (dexBusy ? ' disabled' : '') + '>領取 ' + pend + ' G</button>' : '') + '</div>';
-  dexCard.innerHTML = '<div class="shop-h"><h2>' + (isBug ? '蟲蝶圖鑑' : '魚類圖鑑') + '</h2><span class="chip">' + found + '/' + cat.length + '</span></div>' + tabs + miles +
+  let recRow = '';
+  if (!isBug) {
+    const total = fishCat.reduce((t, f) => t + (fishLog[f.key] | 0), 0);
+    let bk = null; Object.keys(fishRec).forEach(k => { if (!bk || fishRec[k].best > fishRec[bk].best) bk = k; });
+    const bf = bk && fishCat.find(f => f.key === bk);
+    recRow = '<div class="row"><div class="meta" style="min-width:0"><b>我的釣魚紀錄</b><small>累計釣到 ' + total + ' 條' + (bf ? ' · 最大紀錄：' + esc(bf.name) + ' ' + fishRec[bk].best + ' cm' : '') + '</small></div></div>';
+  }
+  dexCard.innerHTML = '<div class="shop-h"><h2>' + (isBug ? '蟲蝶圖鑑' : '魚類圖鑑') + '</h2><span class="chip">' + found + '/' + cat.length + '</span></div>' + tabs + miles + recRow +
     (cat.length ? '<div class="dex" style="grid-template-columns:repeat(auto-fill,minmax(92px,1fr))">' + cells + '</div>' : '<p class="empty">還沒有資料。</p>') +
     '<button type="button" class="btn ghost wide" data-a="close">關閉</button>';
   dexCard.querySelectorAll('canvas[data-fish]').forEach(cv => drawFish(cv.getContext('2d'), cv.dataset.fish, !!cv.dataset.dim));
@@ -1847,7 +2890,7 @@ const QUESTS = [
 ];
 const QBONUS = 150;
 /* ---------- 等級：玩家等級只靠每日任務；農耕技能上限 = 玩家等級 + 2 ---------- */
-const CROP_NEED = { radish: 1, tomato: 2, pumpkin: 3 };
+const CROP_NEED = { radish: 1, tomato: 2, pumpkin: 3, beet: 2, corn: 3, melon: 4 };
 const ROD_NEED = { 1: 1, 2: 2, 3: 4, 4: 6 }, BUG_NEED = { common: 1, uncommon: 2, rare: 4, legend: 6 };
 const rodLocked = l => !!lv && lv.fish < (ROD_NEED[l] || 1);
 const bugLocked = r => !!lv && lv.bug < (BUG_NEED[r] || 1);
@@ -1904,8 +2947,8 @@ function lvHtml() {
     const L = lv[k], mx = L >= lv.max_skill, cap = L >= lv.cap;
     return row(ic, n + ' Lv.' + L + ' / 上限 ' + lv.cap, mx ? '已滿級' : cap ? '需要玩家 Lv.' + (lv.pl + 1) + ' 才能繼續成長' : '經驗 ' + lv['xp_' + k] + ' / ' + lv[k + '_next'], lvBar(lv[k + '_cur'], lv[k + '_next'], lv['xp_' + k], ''));
   };
-  const nxt = [[4, '房子變寬、高級家具'], [6, '房子變深']].find(a => a[0] > lv.pl);
-  return row('⭐', '玩家等級 Lv.' + lv.pl, lv.pl >= lv.max_pl ? '已滿級' : '每日任務經驗 ' + lv.xp_player + ' / ' + lv.pl_next + '（每天最多 70）' + (nxt ? ' · Lv.' + nxt[0] + '：' + nxt[1] : '') + ' · 田地 ' + plots.size + '/' + plotCap() + (nextCap() ? '（下一級 ' + nextCap() + '）' : ''), lvBar(lv.pl_cur, lv.pl_next, lv.xp_player, '')) +
+  const nxt = [[2, '牧場／採集／庭院'], [3, '採礦'], [4, '高級家具']].find(a => a[0] > lv.pl);
+  return row('⭐', '玩家等級 Lv.' + lv.pl, lv.pl >= lv.max_pl ? '已滿級' : '任務與委託經驗 ' + lv.xp_player + ' / ' + lv.pl_next + '（每天最多 70）' + (nxt ? ' · Lv.' + nxt[0] + '：' + nxt[1] : '') + ' · 田地 ' + plots.size + '/' + plotCap() + (nextCap() ? '（下一級 ' + nextCap() + '）' : ''), lvBar(lv.pl_cur, lv.pl_next, lv.xp_player, '')) +
     skill('🌱', '農耕', 'farm') + skill('🎣', '釣魚', 'fish') + skill('🦋', '捕蟲', 'bug');
 }
 const qEl = $('qm'), qCard = $('qcard');
@@ -1972,10 +3015,11 @@ const SK = {
 };
 function plUnlocks(L) {
   const a = ['田地上限 ' + PLOT_CAP[L - 1] + ' 塊', '技能等級上限 ' + Math.min(L + 2, 12)];
-  if (L === 1) a.push('房子 8×5 格', '基本家具與 100 G 以下的家具');
-  if (L === 2) a.push('單價 100 G 以上的家具');
-  if (L === 4) a.push('房子變寬（12×5 格）', '單價 200 G 以上的家具');
-  if (L === 6) a.push('房子變深（12×7 格）');
+  if (L === 1) a.push('基本家具與 100 G 以下的家具', '故事第 1 章');
+  if (L === 2) a.push('單價 100 G 以上的家具', '動物牧場（養雞）', '野外採集', '庭院佈置', '故事第 2、3 章');
+  if (L === 3) a.push('採礦（鶴嘴鋤）', '養牛', '故事第 4 章');
+  if (L === 4) a.push('單價 200 G 以上的家具', '故事第 5 章');
+  if (L === 5) a.push('養羊', '故事終章');
   return a;
 }
 function renderLevels() {
@@ -1983,7 +3027,7 @@ function renderLevels() {
   let h = '<div class="shop-h"><h2>等級與解鎖</h2></div>';
   if (!lv) h += '<p class="empty">讀取中…（如果一直沒出現，請確認伺服器已更新）</p>';
   else {
-    h += lvHtml() + '<h3>玩家等級（只靠每日任務）</h3><small class="empty">每天最多 70 點經驗，技能等級上限＝玩家等級＋2。</small>';
+    h += lvHtml() + '<h3>玩家等級</h3><small class="empty">經驗來自每日任務（每天最多 70 點）與小村布告欄的每週委託；技能等級上限＝玩家等級＋2。旅行商人只在週五～日出現。</small>';
     for (let L = 1; L <= 10; L++) {
       const st = L < cur ? '✓' : L === cur ? '目前' : '🔒';
       h += '<div class="lvrow' + (L === cur ? ' on' : L > cur ? ' lock' : '') + '"><b>Lv.' + L + ' ' + st + '</b><div>' + plUnlocks(L).join('、') +
@@ -2026,10 +3070,16 @@ const ACH = [
   { id: 'friend3', ic: '🤝', n: '好人緣', d: '擁有 3 位好友' }
 ];
 const itemName = k => {
+  if (/^y:/.test(k)) { const yc = ycat.find(q => q.key === k.slice(2)); return yc ? yc.name : k.slice(2); }
   const [t, id] = [k.slice(0, k.indexOf(':')), k.slice(k.indexOf(':') + 1)];
   if (t === 'c') return CROPS[id] ? CROPS[id].n : id;
   if (t === 'fish') { const f = fishCat.find(x => x.key === id); return f ? f.name : id; }
   if (t === 'bug') { const b = bugCat.find(x => x.key === id); return b ? b.name : id; }
+  if (t === 'dish') { const rc = recipes.find(x => x.key === id); return rc ? rc.name : id; }
+  if (t === 'q1' || t === 'q2') return (t === 'q2' ? '金星' : '銀星') + (CROPS[id] ? CROPS[id].n : id);
+  if (itemMeta[k]) return itemMeta[k].name;
+  if (t === 'f') { const d = defOf(id); return d ? d.name : id; }
+  if (t === 's') return (CROPS[id] ? CROPS[id].n : id) + '種子';
   return id;
 };
 let cdGift = false;
@@ -2054,7 +3104,7 @@ function renderCard() {
       ACH.map(a => '<div class="ach' + (got.has(a.id) ? '' : ' off') + ((cd.badges || []).includes(a.id) && got.has(a.id) ? ' pin' : '') + '" data-a="' + (cd.self && got.has(a.id) ? 'pin' : '') + '" data-id="' + a.id + '" title="' + esc(a.d) + '"><span class="ai">' + a.ic + '</span>' + esc(a.n) + '<br><small>' + esc(a.d) + '</small></div>').join('') + '</div>';
   }
   const keep = $('cd-bio') ? $('cd-bio').value : null;
-  cdCard.innerHTML = h + (cd && !cd.self && !cdGift ? '<button type="button" class="btn wide" data-a="gift">送禮物給 ' + esc(cd.name) + '</button>' : '') +
+  cdCard.innerHTML = h + (cd && !cd.self && !cdGift ? '<button type="button" class="btn wide" data-a="gift">寄明信片＆禮物給 ' + esc(cd.name) + '</button>' : '') +
     (cdGift ? '<button type="button" class="btn ghost wide" data-a="back">回到名片</button>' : '') +
     (cd && cd.self && !cdGift ? '<button type="button" class="btn wide" data-a="lv">等級與解鎖說明</button>' : '') + '<button type="button" class="btn ghost wide" data-a="close">關閉</button>';
   if (keep !== null && $('cd-bio') && cdMsg === '') $('cd-bio').value = keep;
@@ -2074,7 +3124,7 @@ cdCard.addEventListener('click', async e => {
   const a = b.dataset.a;
   if (a === 'close') closeCard();
   else if (a === 'lv') { closeCard(); openLevels(); }
-  else if (a === 'gift') { cdGift = true; cdMsg = ''; renderCard(); }
+  else if (a === 'gift') { const u = cd && cd.uid; closeCard(); if (u && isFriend(u)) openMail(u); else toast('要先成為好友才能寄明信片'); }
   else if (a === 'back') { cdGift = false; cdMsg = ''; renderCard(); }
   else if (a === 'give') {
     const k = b.dataset.k; b.disabled = true;
@@ -2106,7 +3156,11 @@ const TUT = [
   { t: '雜貨攤', d: '走到右上角的雜貨攤前面，按「動作」：可以買種子、賣作物和魚，也能升級釣竿。', ev: 'shop' },
   { t: '釣魚', d: '選「釣竿」（電腦按 6），面向池塘按「動作」拋竿；看到紅色驚嘆號時馬上再按一次拉竿，太早或太慢魚會跑掉。', ev: 'fish' },
   { t: '回家布置', d: '走到房子的門前按「動作」進屋，買家具、換牆面和地板，布置自己的家。', ev: 'house' },
-  { t: '快捷列與廣場', d: '右上角的快捷列可以隨時開背包、好友、圖鑑。農場右邊的大門通往廣場，能聊天、釣魚、交朋友。想重看教學，點「❓教學」。', ev: null }
+  { t: '雷克斯小村', d: '農場左邊（西邊）的大門通往「雷克斯小村」，村裡有居民、布告欄和旅行商人。頭上有黃色「！」的居民有故事要告訴你，走近按「動作」就能對話。', ev: null },
+  { t: '布告欄與每週委託', d: '小村的布告欄每週更新一次委託，交付作物或料理可得金幣，還能拿玩家經驗。「故事」分頁會記錄劇情進度，並提示下一位該去找誰。', ev: null },
+  { t: '更多工具', d: '工具列的「鎬子」可敲礦石（Lv.3 解鎖採礦）；「肥料」能提升作物品質，品質分銀星、金星，特定作物還能雜交出新品種；「庭院」工具能在農場擺放裝飾（Lv.2 解鎖）。', ev: null },
+  { t: '牧場、採集與商人', d: 'Lv.2 解鎖動物牧場：走進農場右上角的穀倉，能看到動物在裡面走動；飼料槽餵乾草、收成籃收蛋奶毛、告示牌買動物（養雞，牛 Lv.3、羊 Lv.5）。另外還有野外採集。旅行商人只在週五、六、日出現，會賣稀有東西。釣到的魚會記錄最大尺寸，在圖鑑裡看。', ev: null },
+  { t: '快捷列與廣場', d: '右上角的快捷列可以隨時開背包、好友、信箱（寄明信片給好友，1～10 金幣）、圖鑑、等級。農場右邊的大門通往廣場，能聊天、釣魚、交朋友。玩家等級靠每日任務和每週委託升級，詳情看「等級與解鎖」。想重看教學，點「❓教學」。', ev: null }
 ];
 const tutEl = $('tut');
 let tutI = -1, tutMoves = 0;
@@ -2156,6 +3210,7 @@ function dockAct(k) {
   if (k === 'emo') openEmote();
   else if (k === 'bag') openBag();
   else if (k === 'fr') openFriends();
+  else if (k === 'mail') openMail();
   else if (k === 'dex') openDex();
   else if (k === 'quest') openQuests();
   else if (k === 'lv') openLevels();
@@ -2224,7 +3279,8 @@ function updateClock() {
   const w = world();
   const h = Math.floor(w.min / 60), m = Math.floor(w.min % 60);
   const s = String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
-  const sig = s + '|' + w.wet + w.snow;
+  const sea = seasonAt(srvNow());
+  const sig = s + '|' + w.wet + w.snow + sea;
   if (sig === lastClock) return;
   lastClock = sig;
   $('clock').textContent = s;
@@ -2232,6 +3288,7 @@ function updateClock() {
   const wx = $('wx');
   wx.textContent = w.snow ? '雪天' : w.wet ? '雨天' : '晴天';
   wx.classList.toggle('rain', w.wet);
+  $('sn').textContent = SEASON_N[sea];
 }
 function refreshHud() {
   $('emobtn').hidden = !(ready && me);
@@ -2245,7 +3302,7 @@ function refreshHud() {
     else if (tl.id === 'seed') { const n = have('s:' + tl.crop); s.n.textContent = '×' + n; s.el.classList.toggle('empty', n <= 0); }
     else { s.n.textContent = ''; s.el.classList.remove('empty'); }
   });
-  lastClock = ''; updateClock();
+  lastClock = ''; updateClock(); updateBuffChip();
 }
 let lastTip = '';
 function updateTip() {
@@ -2260,7 +3317,7 @@ function updateTip() {
     if (x >= 0 && y >= 0 && x < W && y < H) {
       const lx = x - RX, ly = y - RY, hit = house && lx >= 0 && lx < RW && ly >= -2 && ly < RH ? itemAtLocal(lx, ly) : null;
       if (K[y][x] === GT) s = '門口：按動作鍵回農場。';
-      else if (hit) s = ((defOf(hit.k) || {}).name || '') + (DISP[hit.k] ? '：按動作鍵' + (visiting ? '看展示品' : '換展示品') : STYLER[hit.k] && !visiting && !edit.on ? '：按動作鍵換造型' : SEAT[hit.k] && !edit.on ? '：按動作鍵' + (SEAT[hit.k] === 'lie' ? '躺下' : '坐下') : '');
+      else if (hit) s = ((defOf(hit.k) || {}).name || '') + (DISP[hit.k] ? '：按動作鍵' + (visiting ? '看展示品' : '換展示品') : hit.k === 'kitchen' && !visiting && !edit.on ? '：按動作鍵做料理' : STYLER[hit.k] && !visiting && !edit.on ? '：按動作鍵換造型' : SEAT[hit.k] && !edit.on ? '：按動作鍵' + (SEAT[hit.k] === 'lie' ? '躺下' : '坐下') : '');
     }
   } else if (scene === 'plaza') {
     s = '和朋友聊聊天吧，下方可以打字。';
@@ -2274,6 +3331,28 @@ function updateTip() {
       else if (K[y][x] === FR) s = '噴水池。';
       else if (K[y][x] === BN) s = '長椅：按動作鍵坐下。';
       else if (K[y][x] === TS) s = '塔羅小攤：按動作鍵，抽今天的運勢牌。';
+    }
+  } else if (scene === 'barn') {
+    s = '穀倉：和動物面對面按動作鍵看狀態；飼料槽餵乾草、收成籃收蛋奶毛、告示牌買動物。';
+    if (x >= 0 && y >= 0 && x < W && y < H) {
+      const an = barnAn.find(a => Math.abs(a.x - x) < 0.8 && Math.abs(a.y - y) < 0.8), k = K[y][x];
+      if (an && rcData) s = barnStatus(an);
+      else if (k === BX) s = '門口：按動作鍵回農場。';
+      else if (k === TRG) s = '飼料槽：按動作鍵，用乾草餵所有肚子餓的動物（乾草 ' + have('a:hay') + ' 把）。';
+      else if (k === BSK) s = '收成籃：按動作鍵，收所有做好的蛋、牛奶和羊毛。';
+      else if (k === SGN) s = '告示牌：按動作鍵，買動物、看牧場總覽。';
+    }
+  } else if (scene === 'town') {
+    s = '雷克斯小村：找村民聊聊，頭上有「!」的人有故事要告訴你；布告欄和旅行商人也在這裡。';
+    if (x >= 0 && y >= 0 && x < W && y < H) {
+      const k = K[y][x];
+      if (k === FG) s = '村口：按動作鍵回農場。';
+      else if (k === NP) s = (NPCS.find(q => q.x === x && q.y === y) || {}).n + '：按動作鍵對話。';
+      else if (k === BD) s = '委託布告欄：按動作鍵，看本週的委託和村莊故事進度。';
+      else if (x === MXT && y === MYT && merchantHere()) s = '旅行商人 米羅：按動作鍵，看今天賣什麼、收什麼。';
+      else if (k === WL) s = '村子的水井。';
+      else if (k === WA) s = curTool().id === 'rod' ? '池塘：按動作鍵拋竿釣魚。' : '池塘。（換成釣竿就能釣魚）';
+      else if (k === HB) s = '村民的家。';
     }
   } else if (false) {
     s = fishing.phase === 'bite' ? '魚咬鉤了！快按動作鍵拉竿！' : fishing.phase === 'cast' ? '拋竿…' : fishing.phase === 'reel' ? '拉起來…' : '等魚上鉤…看到「!」立刻按動作鍵。太早拉會嚇跑魚。';
@@ -2297,6 +3376,11 @@ function updateTip() {
     else if (k === GT) s = '村莊大門：去公共廣場和朋友見面。';
     else if (k === DR) s = '房子的門：按動作鍵進屋，可以布置你的家。';
     else if (k === SH) s = '雜貨攤：買種子、賣作物。';
+      else if (curTool().id === 'yard' && k === G) s = yardMap.has(pk(x, y)) ? '庭院佈置：按動作鍵收回這件裝飾。' : '庭院佈置：按動作鍵在這格擺裝飾（要空草地）。';
+      else if (k === TG) s = '西邊的出口：按動作鍵前往雷克斯小村（村民、布告欄、旅行商人都在那裡）。';
+      else if (k === BR) s = plv() < featNeed.ranch ? '穀倉：玩家 Lv.' + featNeed.ranch + ' 解鎖動物牧場。' : '穀倉：按動作鍵走進去，看看養的雞、牛、羊。';
+      else if (k === RK) s = plv() < featNeed.mine ? '礦石：玩家 Lv.' + featNeed.mine + ' 解鎖採礦。' : curTool().id === 'pick' ? '礦石：按動作鍵敲開，每顆每 2 小時恢復一次。' : '礦石：換成鎬子才敲得動。';
+      else if (fgList.some(f => f.x === x && f.y === y && !forTaken.has(f.slot + ':' + f.i))) s = plv() < featNeed.forage ? '野外採集物：玩家 Lv.' + featNeed.forage + ' 解鎖採集。' : '野外採集物：按動作鍵撿起來。';
     else if (k === WA) s = curTool().id === 'rod' ? '池塘：按動作鍵拋竿釣魚。' : '池塘。（換成釣竿就能釣魚）';
     else if (k === G) s = farmable(x, y) ? '空地：用鋤頭翻成田（' + plots.size + '/' + (lv ? plotCap() : '—') + '）。' : '這裡不能耕種，田地在房子下方的草地。';
   }
@@ -2329,9 +3413,9 @@ const phaseOf = m => m >= 300 && m < 480 ? 'dawn' : m >= 480 && m < 1020 ? 'day'
 /* 第 sl 輪第 i 隻是哪一種（和 SQL 的 _slot_bug 完全相同，所有玩家看到的一樣） */
 function slotBug(sl, i) {
   const t0 = sl * SLOT_MS, min = (((t0 + 8 * 3600000) % 86400000) + 86400000) % 86400000 / 60000;
-  const ph = phaseOf(min), rain = precipHour(Math.floor(t0 / 3600000));
+  const ph = phaseOf(min), rain = precipHour(Math.floor(t0 / 3600000)), sea = seasonAt(t0);
   const kd = hash(sl, i, 1) < 0.5 ? 'butterfly' : 'bug';
-  const list = bugCat.filter(b => b.kind === kd && (b.phase === 'any' || b.phase === ph) && (b.weather === 'any' || (b.weather === 'rain') === rain))
+  const list = bugCat.filter(b => b.kind === kd && (b.phase === 'any' || b.phase === ph) && (b.weather === 'any' || (b.weather === 'rain') === rain) && inSeason(b.seasons, sea))
     .sort((a, b) => a.key < b.key ? -1 : a.key > b.key ? 1 : 0);
   const tot = list.reduce((s, b) => s + b.weight, 0), rr_ = hash(sl, i, 2) * tot;
   let cs = 0;
@@ -2377,7 +3461,7 @@ function updateCritters(dt) {
 function swingNet(x, y) {
   if (scene !== 'farm' || Date.now() < netCool) return;
   netCool = Date.now() + 450; netSwing = { x, y, t0: performance.now() };
-  let best = null, bd = 1.25;
+  let best = null, bd = buffOn('bug') ? 2.1 : 1.25;
   critters.forEach(c => { const d = Math.hypot(c.x - (x + 0.5), c.y - (y + 0.5)); if (d < bd) { bd = d; best = c; } });
   if (!best) { pop(x, y, '揮空了', '#ffffff'); return; }
   const bg = bugCat.find(q => q.key === best.key);
@@ -2420,6 +3504,13 @@ async function fishReel(f) {
       Object.assign(inv, r.inv); fishLog[r.fish.key] = +r.n || 1;
       splash(f.x, f.y); sparkle(f.x, f.y, (RARITY[r.fish.rarity] || [0, '#8fd3ff'])[1]);
       showCatch(r.fish, !!r.first); qAdd('fish'); refreshHud(); loadLevelSoon();
+      const prevBest = (fishRec[r.fish.key] || {}).best | 0;
+      rpc('fish_rec').then(m => {
+        fishRec = {}; Object.keys(m || {}).forEach(k => { fishRec[k] = m[k]; });
+        const e = fishRec[r.fish.key];
+        if (e && e.last) toast(r.fish.name + ' 體長 ' + e.last + ' cm' + (e.last > prevBest ? (prevBest ? '（個人新紀錄！）' : '（第一次記錄）') : '（最大 ' + e.best + ' cm）'));
+        if (dexOpen) renderDex();
+      }).catch(() => {});
     } else if (r.result === 'early') toast('太早拉竿了，魚被嚇跑了');
     else if (r.result === 'late') toast('慢了一步，魚跑掉了…');
   } catch (e) { if (fishing && fishing.id === f.id) { fishing = null; fishCool = Date.now() + 700; } toast(errText(e)); }
@@ -2511,6 +3602,11 @@ const release = d => { const i = pressed.indexOf(d); if (i >= 0) pressed.splice(
 window.addEventListener('keydown', e => {
   const tg = e.target && e.target.tagName;
   if (tg === 'INPUT' || tg === 'SELECT' || tg === 'TEXTAREA') return;
+  if (e.key === 'Escape' && bdOpen) { closeBoard(); return; }
+  if (e.key === 'Escape' && ckOpen) { closeKitchen(); return; }
+  if (e.key === 'Escape' && dgOpen) { closeDlg(); return; }
+  if (e.key === 'Escape' && rcOpen) { closeRanch(); return; }
+  if (e.key === 'Escape' && mcOpen) { closeMerchant(); return; }
   if (e.key === 'Escape' && lvOpen) { closeLevels(); return; }
   if (e.key === 'Escape' && cdOpen) { closeCard(); return; }
   if (e.key === 'Escape' && qOpen) { closeQuests(); return; }
@@ -2522,8 +3618,10 @@ window.addEventListener('keydown', e => {
   if (e.key === 'Escape' && bagOpen) { closeBag(); return; }
   if ((e.key === 'b' || e.key === 'B') && !paused()) { openBag(); return; }
   if ((e.key === 'b' || e.key === 'B') && bagOpen) { closeBag(); return; }
+  if (e.key === 'Escape' && mlOpen) { closeMail(); return; }
   if (e.key === 'Escape' && frOpen) { closeFriends(); return; }
   if ((e.key === 'f' || e.key === 'F') && !paused() && ready && me) { openFriends(); return; }
+  if ((e.key === 'm' || e.key === 'M') && !paused() && ready && me) { openMail(); return; }
   if (e.key === 'Escape' && shopOpen) { closeShop(); return; }
   if (e.key === 'Escape' && vmOpen) { closeVMenu(); return; }
   if (e.key === 'Escape' && gmOpen) { closeGM(); return; }
@@ -2574,7 +3672,7 @@ function dpDir(e) {
   stickDir = horiz ? (dx < 0 ? 'left' : 'right') : (dy < 0 ? 'up' : 'down');
   return stickDir;
 }
-const stepMs = () => (dpId !== null && stickMag > 0) ? 290 - 140 * stickMag : STEP_MS;   // 搖桿：輕推約 290ms 一步，推到底約 150ms 一步（鍵盤維持 120ms）
+const stepMs = () => ((dpId !== null && stickMag > 0) ? 290 - 140 * stickMag : STEP_MS) * (buffOn('swift') ? 0.8 : 1);   // 搖桿：輕推約 290ms 一步，推到底約 150ms 一步（鍵盤維持 120ms）
 dpadEl.addEventListener('pointerdown', e => {
   e.preventDefault();
   if (dpId !== null) return;
@@ -2906,8 +4004,9 @@ $('auth-form').addEventListener('submit', async e => {
 });
 function showAuth() {
   tutI = -1; tutEl.hidden = true;
-  leaveVillage(true); leaveHouse(true); stopPresence(); closeFriends(); fr = { friends: [], incoming: [], outgoing: [], max: 50 }; house = null; ready = false; authOpen = true; closeMaker(); closeShop(); closeVMenu(); closeGM(); closeFShop(); closeDex(); closeBag();
+  leaveVillage(true); leaveHouse(true); leaveTown(true); leaveBarn(true); stopPresence(); closeFriends(); fr = { friends: [], incoming: [], outgoing: [], max: 50 }; house = null; ready = false; authOpen = true; closeMaker(); closeShop(); closeVMenu(); closeGM(); closeFShop(); closeDex(); closeBag();
   bootEl.hidden = true; authEl.hidden = false; me = null; refreshHud();
+  closeBoard(); closeKitchen(); closeRanch(); closeMerchant(); closeDlg();
   closeQuests(); qs = { day: 0, c: {}, claimed: {} }; qBadge();
 }
 async function enter(u, uid) {
@@ -3136,27 +4235,52 @@ function onSync(ch) {
     seen.add(id);
     let rp = remotes.get(id);
     if (!rp) {
-      rp = { id, name, char: toChar(name, m.c), x, y, tx: x, ty: y, f, bubble: null, sit: m.s === 1 && pkind[y][x] === BN };
+      rp = { id, name, char: toChar(name, m.c), x, y, tx: x, ty: y, f, bubble: null, sit: m.s === 1 && pkind[y][x] === BN, heard: performance.now() };
       remotes.set(id, rp);
       if (net.synced) addSys(name + ' 來到廣場');
     } else {
+      rp.heard = performance.now();
       rp.name = name; rp.char = toChar(name, m.c);
       if (performance.now() - (rp.posAt || 0) > 800) { rp.tx = x; rp.ty = y; rp.f = f; rp.sit = m.s === 1 && pkind[y][x] === BN; }   // 剛收到更新的走動訊息就不要被舊位置蓋回去
     }
   });
-  remotes.forEach((rp, id) => { if (!seen.has(id)) { remotes.delete(id); addSys(rp.name + ' 離開了'); } });
+  /* 這次 presence 沒看到的人，不要馬上刪：網路抖一下、Realtime 丟包時 presence 常常漏掉人。
+     只要最近還有收到他的位置廣播（站著不動也每 3 秒一次）就繼續顯示，真的消失由 sweepRemotes 在幾秒後清掉 */
+  remotes.forEach((rp, id) => { if (!seen.has(id) && performance.now() - (rp.heard || 0) > 8000) dropRemote(id); });
   net.synced = true;
   renderVillage();
 }
+function dropRemote(id) { const rp = remotes.get(id); if (!rp) return; remotes.delete(id); addSys(rp.name + ' 離開了'); renderVillage(); }
+const UID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 function onPos(p) {
-  if (!p || typeof p !== 'object') return;
-  const rp = typeof p.i === 'string' ? remotes.get(p.i) : null;
-  if (!rp) return;
-  const nx = intIn(p.x, 0, W - 1, rp.tx), ny = intIn(p.y, 0, H - 1, rp.ty);
+  if (!p || typeof p !== 'object' || typeof p.i !== 'string' || p.i === myUid) return;
+  let rp = remotes.get(p.i);
+  const nx = intIn(p.x, 0, W - 1, rp ? rp.tx : 10), ny = intIn(p.y, 0, H - 1, rp ? rp.ty : 11);
+  if (!rp) {
+    /* presence 漏掉的人：靠位置廣播（心跳裡帶名字和造型）補回來 */
+    if (!UID_RE.test(p.i) || remotes.size >= 16) return;
+    const name = clean(p.n, 8) || '旅人';
+    rp = { id: p.i, name, char: toChar(name, p.c), x: nx, y: ny, tx: nx, ty: ny, f: intIn(p.f, 0, 3, 0), bubble: null, sit: false, heard: performance.now() };
+    remotes.set(p.i, rp);
+    if (net && net.synced) addSys(name + ' 來到廣場');
+    renderVillage();
+  } else if (typeof p.n === 'string') { rp.name = clean(p.n, 8) || rp.name; rp.char = toChar(rp.name, p.c); }
+  rp.heard = performance.now();
   if (nx !== rp.tx || ny !== rp.ty) rp.fish = null;
   rp.tx = nx; rp.ty = ny; rp.f = intIn(p.f, 0, 3, rp.f); rp.posAt = performance.now();
   rp.sit = p.s === 1 && pkind[ny][nx] === BN;                  // 只有真的在長椅那一格才當作坐著
 }
+function onBye(p) { if (p && typeof p.i === 'string') dropRemote(p.i); }
+/* 清道夫：很久沒收到位置廣播、presence 也沒有他的人才移除 */
+setInterval(() => {
+  if (scene !== 'plaza' || !net || !net.ok) return;
+  const now = performance.now(), st = (net.ch.presenceState && net.ch.presenceState()) || {};
+  remotes.forEach((rp, id) => {
+    if (now - (rp.heard || 0) < 12000) return;
+    if (st[id]) { rp.heard = now; return; }
+    dropRemote(id);
+  });
+}, 2000);
 /* 別人釣魚：只畫釣竿和浮標（收到的資料一律檢查：座標要在範圍內、而且要是池塘的水面） */
 function onFish(p) {
   if (!p || typeof p !== 'object') return;
@@ -3208,6 +4332,7 @@ function startNet(rm, priv) {
     net = { ch, room: rm, priv, ok: false, wasOk: false, bad: 0, synced: false };
     ch.on('presence', { event: 'sync' }, () => onSync(ch))
       .on('broadcast', { event: 'pos' }, m => onPos(m && m.payload))
+      .on('broadcast', { event: 'bye' }, m => onBye(m && m.payload))
       .on('broadcast', { event: 'chat' }, m => onChat(m && m.payload))
       .on('broadcast', { event: 'fish' }, m => onFish(m && m.payload))
       .on('broadcast', { event: 'show' }, m => onShow(m && m.payload))
@@ -3242,8 +4367,10 @@ function enterPlaza(info) {
     } catch (e) { /* 下次再試 */ }
   }, 20000);
 }
+function sayBye() { try { if (net && net.ok) net.ch.send({ type: 'broadcast', event: 'bye', payload: { i: myUid } }); } catch (e) { /* 略過 */ } }
+window.addEventListener('pagehide', sayBye);
 function leaveVillage(silent) {
-  stopNet(); clearInterval(pingTimer); if (pose && pose.bench) pose = null;
+  sayBye(); stopNet(); clearInterval(pingTimer); if (pose && pose.bench) pose = null;
   const was = scene === 'plaza';
   scene = 'farm'; K = kind; roomInfo = null; remotes.clear(); myBubble = null; myShow = null;
   vPanel.hidden = true;
@@ -3268,7 +4395,7 @@ function sendPos(dt) {
   if ((moved || beat) && net && net.ok) {
     posAcc = 0; lastPosKey = key; lastSendAt = now;
     if (moved) lastMoveAt = now;
-    try { net.ch.send({ type: 'broadcast', event: 'pos', payload: { i: myUid, x: pl.x, y: pl.y, f: FACEIDX[pl.face], s: pose && pose.bench ? 1 : 0 } }); } catch (e) { /* 略過 */ }
+    try { net.ch.send({ type: 'broadcast', event: 'pos', payload: beat ? { i: myUid, x: pl.x, y: pl.y, f: FACEIDX[pl.face], s: pose && pose.bench ? 1 : 0, n: me.name, c: me.look } : { i: myUid, x: pl.x, y: pl.y, f: FACEIDX[pl.face], s: pose && pose.bench ? 1 : 0 } }); } catch (e) { /* 略過 */ }
     if (moved && now - lastTrackAt > 1500) { lastTrackAt = now; trackSelf(); }   // presence 只當備援，降低頻率以免超過 Realtime 的訊息上限
   }
   if (lastMoveAt && now - lastMoveAt > 500) { lastMoveAt = 0; trackSelf(); }
@@ -3350,7 +4477,7 @@ $('v-copy').addEventListener('click', () => { if (roomInfo && roomInfo.code) cop
 /* ---------- 好友 ---------- */
 const frEl = $('frmenu'), frCard = $('frcard');
 let fr = { friends: [], incoming: [], outgoing: [], max: 50 }, frTarget = null, frConfirm = '', frMsg = '';
-let onlineMap = new Map(), pres = null, lastWhere = '', whereTimer = 0, frBusy = false;
+let seenMap = {}, onlineMap = new Map(), pres = null, lastWhere = '', whereTimer = 0, frBusy = false;
 const WHERE = { farm: '在農場', plaza: '在廣場', house: '在屋子裡' };
 const isFriend = uid => fr.friends.some(f => f.uid === uid);
 function applyFriends(d) {
@@ -3365,6 +4492,18 @@ function applyFriends(d) {
 }
 async function loadFriends() {
   try { applyFriends(await rpc('friend_list')); } catch (e) { /* 下次再試 */ }
+  try { const m = await rpc('friend_seen'); seenMap = m && typeof m === 'object' ? m : {}; if (frOpen) renderFriends(); } catch (e) { /* 伺服器還沒裝最後上線功能就略過 */ }
+}
+function touchSeen() { rpc('touch_seen').catch(() => {}); }          // 告訴伺服器「我現在在線」
+function agoText(ms) {
+  if (!ms) return '離線';
+  const m = Math.max(0, Math.floor((Date.now() - ms) / 60000));
+  if (m < 1) return '離線 · 剛剛上線';
+  if (m < 60) return '離線 · ' + m + ' 分鐘前上線';
+  const h = Math.floor(m / 60);
+  if (h < 24) return '離線 · ' + h + ' 小時前上線';
+  const d = Math.floor(h / 24);
+  return '離線 · ' + (d > 30 ? '30 天以上' : d + ' 天前') + '上線';
 }
 function trackWhere(force) {
   if (!pres || !pres.ok) return;
@@ -3411,7 +4550,7 @@ async function loadGifts() {
     if (gs.length) { toast('🎁 收到 ' + gs.map(x => clean(x.from, 8) + ' 送的' + itemName(String(x.item))).slice(0, 3).join('、') + (gs.length > 3 ? ' 等 ' + gs.length + ' 份禮物' : '')); chime([76, 81], 0.12); refreshHud(); }
   } catch (e) { /* 伺服器還沒裝送禮功能就略過 */ }
 }
-function afterReady() { loadFriends(); startPresence(); loadQuests(); loadLevel(); loadGifts(); }
+function afterReady() { touchSeen(); loadFriends(); mailLoad(true); startPresence(); loadQuests(); loadLevel(); }
 function notifyFriend(uid) {
   if (!pres || !pres.ok || !uid) return;
   try { pres.ch.send({ type: 'broadcast', event: 'fr', payload: { to: uid } }); } catch (e) { /* 略過 */ }
@@ -3439,8 +4578,9 @@ function renderFriends() {
     const list = fr.friends.slice().sort((a, b) => (onlineMap.has(b.uid) ? 1 : 0) - (onlineMap.has(a.uid) ? 1 : 0));
     h += list.map(f => {
       const w = onlineMap.get(f.uid);
-      return '<div class="frow"><div class="meta"><b><span class="fdot' + (w ? ' on' : '') + '"></span>' + esc(f.name) + '</b><small>@' + esc(f.username) + ' · ' + (w ? WHERE[w] : '離線') + '</small></div><div class="acts">' +
+      return '<div class="frow"><div class="meta"><b><span class="fdot' + (w ? ' on' : '') + '"></span>' + esc(f.name) + '</b><small>@' + esc(f.username) + ' · ' + (w ? WHERE[w] : agoText(+seenMap[f.uid] || 0)) + '</small></div><div class="acts">' +
         '<button type="button" class="btn small ghost" data-a="card" data-u="' + esc(f.uid) + '">名片</button>' +
+        '<button type="button" class="btn small ghost" data-a="mail" data-u="' + esc(f.uid) + '">寄信</button>' +
         '<button type="button" class="btn small" data-a="visit" data-u="' + esc(f.uid) + '">拜訪</button>' +
         (frConfirm === f.uid ? '<button type="button" class="btn small" data-a="remove" data-u="' + esc(f.uid) + '">確定刪除</button>'
                              : '<button type="button" class="btn small ghost" data-a="rmask" data-u="' + esc(f.uid) + '">刪除</button>') + '</div></div>';
@@ -3462,6 +4602,178 @@ function openFriends(target) {
   renderFriends(); frEl.hidden = false; frCard.focus(); loadFriends();
 }
 function closeFriends() { frOpen = false; frEl.hidden = true; frTarget = null; }
+
+/* ---------- 明信片與寫信：寄給好友，花 1～10 金幣，收件匣最多留 50 封 ---------- */
+const mlEl = $('mlm'), mlCard = $('mlcard');
+let mlOpen = false, ml = { cards: [], inbox: [], unread: 0 }, mlTab = 'in', mlTo = '', mlPick = 'plain', mlMsg = '', mlView = 0, mlItem = '', mlBusy = false, mlErr = '', mlLoaded = false;
+function disc(g, cx, cy, rad, col) { g.fillStyle = col; for (let y = -rad; y <= rad; y++) for (let x = -rad; x <= rad; x++) if (x * x + y * y <= rad * rad + rad * 0.5) g.fillRect(cx + x, cy + y, 1, 1); }
+function cardArt(cv, key) {
+  const g = cv.getContext('2d'), W2 = 64, H2 = 40;
+  const R = (c, x, y, w, h) => { g.fillStyle = c; g.fillRect(x, y, w, h); };
+  const bands = (cols, y0, y1) => { const n = cols.length, h = (y1 - y0) / n; cols.forEach((c, i) => R(c, 0, Math.round(y0 + i * h), W2, Math.ceil(h))); };
+  const hill = (c, base, amp, ph, w) => { for (let x = 0; x < W2; x++) { const y = Math.round(base - Math.abs(Math.sin(x / w + ph)) * amp); R(c, x, y, 1, H2 - y); } };
+  const stars = (n, seed, col) => { for (let i = 0; i < n; i++) { const x = Math.floor(hash(i, seed, 1) * W2), y = Math.floor(hash(i, seed, 2) * 22); R(col || '#fff6c8', x, y, 1, 1); if (i % 5 === 0) { R(col || '#fff6c8', x - 1, y, 3, 1); R(col || '#fff6c8', x, y - 1, 1, 3); } } };
+  const tree = (x, y, trunk, leaf, leaf2) => { R(trunk, x, y, 2, 9); disc(g, x + 1, y - 2, 6, leaf); disc(g, x - 2, y, 4, leaf2 || leaf); disc(g, x + 4, y, 4, leaf2 || leaf); };
+  g.imageSmoothingEnabled = false;
+  if (key === 'plain') {
+    R('#fff6e0', 0, 0, W2, H2); R('#e8c9a0', 0, 0, W2, 1); R('#e8c9a0', 0, H2 - 1, W2, 1); R('#e8c9a0', 0, 0, 1, H2); R('#e8c9a0', W2 - 1, 0, 1, H2);
+    R('#d9b894', 34, 8, 1, 24); for (let i = 0; i < 4; i++) R('#d9b894', 6, 10 + i * 6, 22, 1);
+    R('#ff8fa8', 46, 6, 12, 12); R('#fff6e0', 48, 8, 8, 8); R('#ff8fa8', 51, 10, 2, 4);
+  } else if (key === 'meadow') {
+    bands(['#a8dcf5', '#bfe6ff', '#d8f1ff'], 0, 24); disc(g, 50, 9, 5, '#ffe27a'); disc(g, 14, 8, 4, '#ffffff'); disc(g, 19, 9, 4, '#ffffff'); R('#ffffff', 10, 9, 12, 3);
+    hill('#8fd47a', 30, 6, 0.3, 11); hill('#6fbf5a', 36, 4, 1.6, 7);
+    [[6, 34, '#ff8fa8'], [14, 37, '#ffd34d'], [26, 35, '#ffffff'], [40, 36, '#ff8fa8'], [52, 34, '#ffd34d'], [58, 37, '#ffffff']].forEach(([x, y, c]) => { R('#3f8f3a', x, y + 1, 1, 3); R(c, x - 1, y, 3, 1); R(c, x, y - 1, 1, 3); R('#ffd34d', x, y, 1, 1); });
+  } else if (key === 'pond') {
+    bands(['#7a5ab8', '#c0679a', '#ff8f7a', '#ffc27a'], 0, 22); disc(g, 32, 22, 8, '#fff0a8');
+    R('#3a5f86', 0, 22, W2, 18); R('#5a82ad', 0, 25, W2, 1); R('#5a82ad', 8, 29, 20, 1); R('#5a82ad', 36, 33, 20, 1);
+    R('#ffe9a0', 26, 24, 12, 1); R('#ffe9a0', 28, 27, 8, 1); R('#ffe9a0', 29, 30, 6, 1);
+    for (const x of [4, 8, 56, 60]) { R('#2f5a3a', x, 14, 1, 14); R('#7a5a3a', x - 1, 11, 3, 4); }
+    R('#2f5a3a', 0, 30, 14, 10); R('#2f5a3a', 50, 32, 14, 8);
+  } else if (key === 'stars') {
+    bands(['#141a44', '#1d2458', '#2a2f6e', '#3a3a82'], 0, 28); stars(26, 5); disc(g, 48, 9, 6, '#fff6c8'); disc(g, 51, 8, 5, '#2a2f6e');
+    hill('#1a1f3c', 32, 5, 0.5, 9); hill('#10142c', 37, 3, 2.1, 6);
+  } else if (key === 'sakura') {
+    bands(['#ffe3ef', '#ffd1e0', '#ffc2d8'], 0, 30); R('#8a6a5a', 30, 14, 4, 26); R('#8a6a5a', 24, 20, 8, 2); R('#8a6a5a', 33, 18, 9, 2);
+    [[32, 8, 10], [22, 13, 7], [42, 12, 8], [28, 4, 6], [36, 3, 6]].forEach(([x, y, rr], i) => disc(g, x, y, rr, i % 2 ? '#ff9fc0' : '#ffb3cc'));
+    R('#a8dc9a', 0, 36, W2, 4); for (let i = 0; i < 16; i++) R('#fff', Math.floor(hash(i, 3, 4) * 62), 10 + Math.floor(hash(i, 3, 5) * 28), 1, 1);
+  } else if (key === 'maple') {
+    bands(['#ffd9a0', '#ffc27a', '#ffa86a'], 0, 30); disc(g, 12, 9, 4, '#fff0c0');
+    R('#8a5a3a', 31, 20, 3, 20); tree(32, 20, '#8a5a3a', '#e0483c', '#ff9a3a'); disc(g, 32, 8, 7, '#ff7a2a');
+    R('#b8793a', 0, 36, W2, 4); for (let i = 0; i < 14; i++) R(i % 2 ? '#e0483c' : '#ff9a3a', Math.floor(hash(i, 6, 1) * 62), 24 + Math.floor(hash(i, 6, 2) * 15), 2, 1);
+  } else if (key === 'snow') {
+    bands(['#10163a', '#1c2552', '#2c3a72'], 0, 26); stars(14, 8); disc(g, 52, 8, 4, '#fff6c8');
+    hill('#e8f0ff', 30, 5, 0.4, 10); R('#e8f0ff', 0, 33, W2, 7);
+    R('#7a4a3a', 22, 22, 18, 12); R('#c9ddf5', 20, 19, 22, 4); R('#e8f0ff', 22, 17, 18, 3); R('#7a4a3a', 32, 20, 3, 4);
+    R('#ffe27a', 25, 26, 4, 4); R('#ffe27a', 34, 26, 3, 8); R('#fff6c8', 26, 27, 2, 2);
+    tree(8, 24, '#5a3a2a', '#2f6a4a'); tree(54, 26, '#5a3a2a', '#2f6a4a'); for (let i = 0; i < 16; i++) R('#fff', Math.floor(hash(i, 2, 7) * 63), Math.floor(hash(i, 2, 8) * 38), 1, 1);
+  } else if (key === 'beach') {
+    bands(['#ff9a6a', '#ffb87a', '#ffd6a0', '#ffe9c0'], 0, 22); disc(g, 32, 22, 9, '#fff0b0'); disc(g, 32, 22, 6, '#ffd86a');
+    R('#3a8fb8', 0, 22, W2, 8); R('#5ab0d0', 0, 24, W2, 1); R('#ffe9a0', 24, 23, 16, 1); R('#8fd0e8', 6, 27, 14, 1); R('#8fd0e8', 42, 28, 14, 1);
+    R('#f0d08a', 0, 30, W2, 10); R('#fff6e0', 0, 30, W2, 1); R('#e0b868', 8, 34, 6, 1); R('#e0b868', 40, 36, 8, 1);
+    R('#8a5a3a', 52, 18, 2, 18); R('#3f9f4a', 48, 16, 10, 2); R('#3f9f4a', 49, 14, 8, 2); R('#3f9f4a', 51, 12, 4, 2);
+  } else if (key === 'rainbow') {
+    bands(['#9fd8f5', '#bfe6ff', '#d8f1ff'], 0, 28);
+    ['#ff6a6a', '#ffa84d', '#ffe36a', '#7ad66a', '#5ab0f0', '#9a7ae8'].forEach((c, i) => { const rad = 26 - i * 2; for (let a = 0; a <= 180; a += 2) { const x = Math.round(32 + Math.cos(a * Math.PI / 180) * rad * 1.15), y = Math.round(32 - Math.sin(a * Math.PI / 180) * rad); R(c, x, y, 2, 2); } });
+    disc(g, 8, 8, 4, '#fff'); disc(g, 13, 9, 4, '#fff'); disc(g, 54, 12, 4, '#fff'); disc(g, 50, 13, 3, '#fff');
+    R('#7ad66a', 0, 32, W2, 8); R('#5fbf55', 0, 34, W2, 1);
+    for (let i = 0; i < 14; i++) { const x = 2 + i * 4.5 | 0, c = ['#ff8fa8', '#ffd34d', '#ffffff', '#c9a0ff', '#ff6a6a'][i % 5]; R('#3f8f3a', x, 35, 1, 4); R(c, x - 1, 34, 3, 1); R(c, x, 33, 1, 3); R('#ffd34d', x, 34, 1, 1); }
+  } else {
+    bands(['#050a24', '#0a1a3a', '#0e2e4a', '#0f3f4a'], 0, 30); stars(18, 3);
+    for (let x = 0; x < W2; x++) {
+      const t = Math.sin(x / 7) * 4 + Math.sin(x / 3.1) * 1.5;
+      R('rgba(80,255,170,.55)', x, Math.round(8 + t), 1, 10); R('rgba(120,255,200,.35)', x, Math.round(5 + t), 1, 5);
+      R('rgba(170,110,255,.4)', x, Math.round(18 + t * 0.7), 1, 6); R('rgba(255,120,220,.25)', x, Math.round(22 + t * 0.6), 1, 3);
+    }
+    hill('#e0ecff', 33, 4, 0.8, 9); R('#e0ecff', 0, 36, W2, 4); tree(10, 26, '#3a2a2a', '#1f4a3a'); tree(52, 27, '#3a2a2a', '#1f4a3a');
+  }
+  R('rgba(0,0,0,.15)', 0, 0, W2, 1);
+}
+function mailBadge() {
+  const n = ml.unread | 0;
+  ['mailbadge', 'immmb'].forEach(id => { const b = $(id); if (b) { b.hidden = !n; b.textContent = n; } });
+}
+async function mailLoad(quiet) {
+  try {
+    mailPollAt = Date.now();
+    const before = ml.unread | 0, d = await rpc('mail_list');
+    ml = { cards: Array.isArray(d.cards) ? d.cards : [], inbox: Array.isArray(d.inbox) ? d.inbox : [], unread: d.unread | 0 }; mlLoaded = true;
+    if (!quiet && ml.unread > before && before >= 0 && !mlOpen) toast('收到新的明信片！按 M 打開信箱', 4000);
+    mailBadge(); if (mlOpen) renderMail();
+  } catch (e) { /* 伺服器還沒更新就略過 */ }
+}
+let mailPollAt = 0;
+document.addEventListener('visibilitychange', () => { if (!document.hidden && ready) mailPoll(); });   // 切回遊戲分頁時，超過 5 分鐘沒查就馬上查
+async function mailPoll() {   // 每 5 分鐘只問「有幾封未讀」（幾十個位元組），有新的才讀完整收件匣
+  if (Date.now() - mailPollAt < 290000 || mlOpen) return;
+  mailPollAt = Date.now();
+  try {
+    const n = await rpc('mail_unread');
+    if (typeof n === 'number' && n !== (ml.unread | 0)) { if (n > (ml.unread | 0)) toast('收到新的明信片！按 M 打開信箱', 4000); await mailLoad(true); }
+  } catch (e) { /* 略過 */ }
+}
+function openMail(to) {
+  if (!ready || !me || authOpen || paused() || mlOpen) return;
+  mlOpen = true; pressed.length = 0; mlErr = ''; mlView = 0;
+  if (to) { mlTab = 'send'; mlTo = to; } else mlTab = ml.unread ? 'in' : (mlTab || 'in');
+  renderMail(); mlEl.hidden = false; mlCard.focus();
+  mailLoad(true).then(() => { if (mlOpen && mlTab === 'in' && ml.unread) rpc('mail_read').then(() => { ml.unread = 0; ml.inbox.forEach(m => { m.read = true; }); mailBadge(); }).catch(() => {}); });
+}
+function closeMail() { mlOpen = false; mlEl.hidden = true; }
+const fmtDay = ms => { const d = new Date(ms); return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
+function renderMail() {
+  const cname = k => ((ml.cards.find(c => c.key === k) || {}).name || '明信片');
+  let h = '<div class="shop-h"><h2>✉️ 信箱</h2><span class="chip gold">' + (me ? me.coins : 0) + ' G</span></div>' +
+    '<div class="mltabs"><button type="button" class="btn small' + (mlTab === 'in' ? '' : ' ghost') + '" data-a="tab" data-t="in">收件匣' + (ml.unread ? '（' + ml.unread + '）' : '') + '</button>' +
+    '<button type="button" class="btn small' + (mlTab === 'send' ? '' : ' ghost') + '" data-a="tab" data-t="send">寄明信片</button></div>';
+  if (mlErr) h += '<p class="mk-msg">' + esc(mlErr) + '</p>';
+  if (mlTab === 'in') {
+    const v = mlView ? ml.inbox.find(m => m.id === mlView) : null;
+    if (v) {
+      h += '<div class="mlbig"><canvas width="64" height="40" data-card="' + esc(v.card) + '"></canvas><div class="mlmsg">' + esc(v.msg).replace(/\n/g, '<br>') + '</div>' +
+        '<div class="mlfrom">— ' + esc(v.name) + ' · ' + fmtDay(v.at) + '</div></div>' +
+        (v.item ? '<div class="giftrow"><span>🎁 附贈禮物：' + esc(itemName(v.item)) + ' ×1</span>' + (v.claimed ? '<small>已領取</small>' : '<button type="button" class="btn small" data-a="claim" data-id="' + v.id + '">領取</button>') + '</div>' : '') +
+        '<div class="v-quick"><button type="button" class="btn" data-a="reply" data-u="' + esc(v.from) + '"' + (isFriend(v.from) ? '' : ' disabled') + '>回信給 ' + esc(v.name) + '</button>' +
+        '<button type="button" class="btn ghost" data-a="del" data-id="' + v.id + '"' + (v.item && !v.claimed ? ' disabled' : '') + '>刪除</button></div>' +
+        '<button type="button" class="btn ghost wide" data-a="back">回收件匣</button>';
+    } else if (!mlLoaded) h += '<p class="empty">讀取中…（如果一直沒出現，請確認伺服器已更新）</p>';
+    else if (!ml.inbox.length) h += '<p class="empty">還沒有收到明信片。到「寄明信片」寄一張給好友吧！</p>';
+    else h += ml.inbox.map(m => '<div class="mlrow' + (m.read && !(m.item && !m.claimed) ? '' : ' new') + '" data-a="open" data-id="' + m.id + '" role="button" tabindex="0"><canvas width="64" height="40" data-card="' + esc(m.card) + '"></canvas>' +
+      '<div class="meta"><b>' + (m.read ? '' : '🔴 ') + (m.item && !m.claimed ? '🎁 ' : '') + esc(m.name) + '</b><small>' + esc(cname(m.card)) + ' · ' + fmtDay(m.at) + '</small><small>' + esc(m.msg.slice(0, 24)) + (m.msg.length > 24 ? '…' : '') + '</small></div></div>').join('');
+  } else {
+    const fl = fr.friends;
+    if (!fl.length) h += '<p class="empty">還沒有好友。先到好友頁加好友，才能寄明信片。</p>';
+    else {
+      if (!fl.some(f => f.uid === mlTo)) mlTo = fl[0].uid;
+      const pr = (ml.cards.find(c => c.key === mlPick) || { price: 1 }).price;
+      h += '<label class="mllab">寄給</label><select id="ml-to" class="nameinput">' + fl.map(f => '<option value="' + esc(f.uid) + '"' + (f.uid === mlTo ? ' selected' : '') + '>' + esc(f.name) + '（@' + esc(f.username) + '）</option>').join('') + '</select>' +
+        '<label class="mllab">選明信片</label><div class="mlgrid">' + ml.cards.map(c => '<button type="button" class="mlpick' + (c.key === mlPick ? ' on' : '') + '" data-a="pick" data-k="' + esc(c.key) + '"><canvas width="64" height="40" data-card="' + esc(c.key) + '"></canvas><b>' + esc(c.name) + '</b><small>' + c.price + ' G</small></button>').join('') + '</div>' +
+        '<label class="mllab">附上禮物（選填，禮物要跟著明信片寄；一天最多 3 份）</label><select id="ml-item" class="nameinput"><option value="">不附禮物</option>' +
+        Object.keys(inv).filter(k => /^(c|fish|bug):[a-z0-9_]+$/.test(k) && have(k) > 0).map(k => '<option value="' + esc(k) + '"' + (k === mlItem ? ' selected' : '') + '>' + esc(itemName(k)) + ' ×' + have(k) + '</option>').join('') + '</select>' +
+        '<label class="mllab">寫幾句話（最多 200 字）</label><textarea id="ml-msg" class="nameinput mltext" maxlength="200" rows="4" placeholder="今天農場的蘿蔔長得很好，改天一起釣魚吧！">' + esc(mlMsg) + '</textarea>' +
+        '<button type="button" class="btn wide" data-a="send"' + (mlBusy || !me || me.coins < pr ? ' disabled' : '') + '>寄出（' + pr + ' G' + (mlItem ? '，附 ' + itemName(mlItem) : '') + '）</button>';
+    }
+  }
+  h += '<button type="button" class="btn ghost wide" data-a="close">關閉</button>';
+  mlCard.innerHTML = h;
+  mlCard.querySelectorAll('canvas[data-card]').forEach(cv => cardArt(cv, cv.dataset.card));
+}
+mlCard.addEventListener('input', e => { if (e.target.id === 'ml-msg') mlMsg = e.target.value; });
+mlCard.addEventListener('change', e => { if (e.target.id === 'ml-to') mlTo = e.target.value; if (e.target.id === 'ml-item') mlItem = e.target.value; });
+mlCard.addEventListener('click', async e => {
+  const b = e.target.closest('[data-a]'); if (!b || b.disabled) return;
+  const a = b.dataset.a; mlErr = '';
+  if (a === 'close') { closeMail(); return; }
+  if (a === 'tab') { mlTab = b.dataset.t; mlView = 0; renderMail(); return; }
+  if (a === 'open') { mlView = +b.dataset.id; renderMail(); return; }
+  if (a === 'back') { mlView = 0; renderMail(); return; }
+  if (a === 'pick') { mlPick = b.dataset.k; renderMail(); return; }
+  if (a === 'reply') { mlTo = b.dataset.u; mlTab = 'send'; mlView = 0; renderMail(); return; }
+  if (a === 'claim') {
+    try { const r = await rpc('mail_claim', { p_id: +b.dataset.id }); if (r.inv) Object.assign(inv, r.inv); const m = ml.inbox.find(x => x.id === +b.dataset.id); if (m) m.claimed = true; toast('領到了 ' + itemName(r.item) + '！'); refreshHud(); }
+    catch (err) { mlErr = errText(err); }
+    renderMail(); return;
+  }
+  if (a === 'del') {
+    try { const d = await rpc('mail_delete', { p_id: +b.dataset.id }); ml = { cards: d.cards || [], inbox: d.inbox || [], unread: d.unread | 0 }; mlView = 0; mailBadge(); }
+    catch (err) { mlErr = errText(err); }
+    renderMail(); return;
+  }
+  if (a === 'send') {
+    const msg = mlMsg.trim();
+    if (!msg) { mlErr = '先寫幾句話再寄出吧'; renderMail(); return; }
+    mlBusy = true; renderMail();
+    try {
+      const r = await enqueue(() => rpc('mail_send', { p_to: mlTo, p_card: mlPick, p_msg: msg, p_item: mlItem || null }));
+      if (typeof r.coins === 'number') me.coins = r.coins;
+      if (r.inv) Object.assign(inv, r.inv);
+      mlMsg = ''; mlItem = ''; const f = fr.friends.find(x => x.uid === mlTo);
+      toast('明信片寄給 ' + (f ? f.name : '好友') + ' 了！' + (typeof r.left === 'number' && r.inv && Object.keys(r.inv).length ? '今天還能送 ' + r.left + ' 份禮物' : '')); refreshHud();
+    } catch (err) { mlErr = errText(err); }
+    mlBusy = false; renderMail();
+  }
+});
+mlEl.addEventListener('click', e => { if (e.target === mlEl) closeMail(); });
+
 async function frCall(name, args, okMsg, notifyUid) {
   if (frBusy) return;
   frBusy = true; frMsg = '';
@@ -3480,6 +4792,7 @@ frCard.addEventListener('click', async e => {
   if (a === 'close') { closeFriends(); return; }
   if (a === 'rmask') { frConfirm = u; renderFriends(); return; }
   if (a === 'card') { closeFriends(); openCard(u); return; }
+  if (a === 'mail') { closeFriends(); openMail(u); return; }
   if (a === 'visit') {
     const f = fr.friends.find(x => x.uid === u) || (frTarget && frTarget.id === u ? frTarget : null);
     closeFriends(); visitHouse(u, f && f.name); return;
@@ -3790,6 +5103,32 @@ const FURN = {
     }
   }
 };
+FURN.kitchen = (px, py, now) => {                  // 廚房灶台（2×1）：爐子＋冒煙的鍋子
+  ob('#f1e3cf', '#9b6a44', px + 1, py + 4, 30, 11);
+  r('#c9a67a', px + 1, py + 4, 30, 2);
+  ob('#8d8d9a', '#5b5b68', px + 3, py + 6, 11, 6);
+  r('#3b3b46', px + 5, py + 7, 3, 2); r('#3b3b46', px + 9, py + 7, 3, 2);
+  ob('#d96b6b', '#8f3a3a', px + 18, py + 2, 10, 7); r('#f3a0a0', px + 19, py + 3, 8, 1);
+  r('#8f3a3a', px + 17, py + 4, 1, 2); r('#8f3a3a', px + 28, py + 4, 1, 2);
+  const st = Math.floor((now || 0) / 450) % 3;
+  r('rgba(255,255,255,.75)', px + 21 + st, py - (st % 2), 1, 2); r('rgba(255,255,255,.5)', px + 24 - st, py + 1 - ((st + 1) % 2), 1, 1);
+  r('#9b6a44', px + 3, py + 15, 2, 1); r('#9b6a44', px + 27, py + 15, 2, 1);
+};
+FURN.lantern = (px, py, now) => {                  // 紙燈籠（商人專屬）
+  r('rgba(90,60,40,.18)', px + 3, py + 14, 10, 1);
+  r('#9b6a44', px + 7, py + 11, 2, 4); ob('#ff7a6c', '#b8403a', px + 3, py + 2, 10, 10);
+  r('#ffd34d', px + 3, py + 6, 10, 1); r('#b8403a', px + 5, py + 1, 6, 1); r('#ffb3a8', px + 5, py + 4, 2, 2);
+};
+FURN.globe = (px, py, now) => {                    // 地球儀
+  r('rgba(90,60,40,.18)', px + 3, py + 14, 10, 1);
+  ob('#9b6a44', '#6e4a2e', px + 4, py + 12, 8, 3); r('#6e4a2e', px + 7, py + 9, 2, 4);
+  ob('#6fb7e8', '#3f7fae', px + 3, py + 1, 10, 9); r('#7fd08a', px + 5, py + 3, 3, 3); r('#7fd08a', px + 9, py + 5, 2, 3);
+};
+FURN.vase = (px, py, now) => {                     // 青花瓶
+  r('rgba(90,60,40,.18)', px + 4, py + 14, 8, 1);
+  ob('#fafcff', '#7a8fb8', px + 4, py + 5, 8, 10); r('#7a8fb8', px + 6, py + 1, 4, 5); r('#fafcff', px + 6, py + 2, 4, 1);
+  r('#4a6fb8', px + 5, py + 8, 6, 1); r('#4a6fb8', px + 6, py + 10, 4, 1); r('#4a6fb8', px + 7, py + 12, 2, 1);
+};
 const SEAT = { chair: 'sit', sofa: 'sit', bed: 'lie' };   // 可以坐／躺的家具
 const STYLER = { wardrobe: 1, mirror: 1 };   // 在自己家按動作鍵就能換造型
 const DISP = { aquarium: { n: 4, kind: 'fish' }, specimen: { n: 6, kind: 'bug' } };   // 要和 SQL 的 _display_slots / _display_kind 一致
@@ -3823,17 +5162,28 @@ const DCONT = {
 function drawFurn(it, px, py, now) {
   const f = FURN[it.k], d = defOf(it.k);
   if (!f || !d) return;
-  if (!it.f) f(px, py, now);
-  else { g.save(); g.translate(2 * px + d.w * T, 0); g.scale(-1, 1); f(px, py, now); g.restore(); }
-  if (it.id != null && DCONT[it.k]) DCONT[it.k](it, px, py, now);
+  const rt = (it.r | 0) & 3;
+  let ox = px, oy = py;
+  g.save();
+  if (rt) {   // 旋轉：以轉過之後的佔格中心為軸（90 度的倍數，像素不會糊）
+    const rw = rt & 1 ? d.h : d.w, rh = rt & 1 ? d.w : d.h;
+    g.translate(px + rw * T / 2, py + rh * T / 2); g.rotate(rt * Math.PI / 2); g.translate(-d.w * T / 2, -d.h * T / 2);
+    ox = 0; oy = 0;
+  }
+  if (!it.f) f(ox, oy, now);
+  else { g.save(); g.translate(2 * ox + d.w * T, 0); g.scale(-1, 1); f(ox, oy, now); g.restore(); }
+  if (it.id != null && DCONT[it.k]) DCONT[it.k](it, ox, oy, now);
+  g.restore();
 }
 const defOf = k => (house && house.cat[k]) || null;
-const itemRect = it => { const d = defOf(it.k); return d ? { x: it.x, y: it.y, w: d.w, h: d.h, layer: d.layer } : null; };
-/* 房子大小依玩家等級（要和 SQL 的 _house_fits 一致）；拜訪別人家時不限制 */
-const houseW = () => (visiting || plv() >= 4) ? RW : 8;
-const houseD = () => (visiting || plv() >= 6) ? RH : 5;
-function fitsLocal(k, x, y, ignoreId) {
-  const d = defOf(k);
+/* 家具轉過之後的佔格（轉 90／270 度長寬對調，要和 SQL 的 _house_fits 一致） */
+const dimsOf = (k, r) => { const d = defOf(k); if (!d) return null; return (r & 1) ? { ...d, w: d.h, h: d.w } : d; };
+const itemRect = it => { const d = dimsOf(it.k, it.r | 0); return d ? { x: it.x, y: it.y, w: d.w, h: d.h, layer: d.layer } : null; };
+/* 屋子大小固定 12×7（要和 SQL 的 _house_fits 一致） */
+const houseW = () => RW;   // 屋子大小不受等級限制
+const houseD = () => RH;
+function fitsLocal(k, x, y, ignoreId, rot) {
+  const d = dimsOf(k, rot | 0);
   if (!d || x < 0 || x + d.w > houseW()) return false;
   if (d.layer === 'wall') { if (y < -2 || y + d.h > 0) return false; }
   else if (y < 0 || y + d.h > houseD()) return false;
@@ -3863,7 +5213,7 @@ function applyHouse(d) {
   (d.catalog || []).forEach(c => { cat[c.key] = c; list.push(c); });
   const disp = {};
   (d.display || []).forEach(x => { const id = +x.id, s = x.s | 0; if (s < 0 || s > 15 || (x.t !== 'fish' && x.t !== 'bug')) return; (disp[id] || (disp[id] = []))[s] = { t: x.t, k: String(x.k) }; });
-  house = { style: d.style || { wall: 0, floor: 0 }, items: (d.items || []).map(i => ({ id: +i.id, k: i.k, x: i.x | 0, y: i.y | 0, f: !!i.f })), cat, list, disp };
+  house = { style: d.style || { wall: 0, floor: 0 }, items: (d.items || []).map(i => ({ id: +i.id, k: i.k, x: i.x | 0, y: i.y | 0, f: !!i.f, r: (i.r | 0) & 3 })), cat, list, disp };
 }
 async function loadHouse() { applyHouse(await rpc('house_get')); }
 function reloadHouse() {
@@ -3983,7 +5333,8 @@ $('emobtn').addEventListener('pointerdown', e => e.stopPropagation());
 /* ---------- 坐椅子、躺床（在自己家或朋友家都可以） ---------- */
 let pose = null;                                // { type: 'sit' | 'lie', id, ix, iy, ox, oy, face0, tile, sort, t }
 function takeSeat(it, x, y) {
-  const d = defOf(it.k); if (!d || pose) return;
+  const d = dimsOf(it.k, it.r | 0); if (!d || pose) return;
+  if ((it.r | 0) !== 0) { toast('轉過方向的家具不能坐／躺，轉回原位就可以了', 2200); return; }
   pose = { type: SEAT[it.k], id: it.id, ix: it.x, iy: it.y, ox: pl.x, oy: pl.y, face0: pl.face, tile: x - (RX + it.x), sort: RY + it.y + d.h - 1 + 0.02, t: 0 };
   pl.x = pl.sx = x; pl.y = pl.sy = y; pl.prog = 1; pl.face = 'down'; pressed.length = 0;
   if (pose.type === 'lie') pop(x, y - 0.6, 'Zzz', '#cfe8f7');
@@ -4135,7 +5486,7 @@ function renderHousePanel() {
   $('h-edit').textContent = '布置模式：' + (edit.on ? '開' : '關');
   $('h-edit').setAttribute('aria-pressed', edit.on ? 'true' : 'false');
   $('h-edit-box').hidden = !edit.on;
-  $('h-hint').textContent = !edit.on ? '走到門口按動作鍵回農場' : hold ? '點房間的格子放下 ' + (defOf(hold.k) || {}).name : '點家具可以移動、翻轉、收回或賣出；從背包選家具來擺';
+  $('h-hint').textContent = !edit.on ? '走到門口按動作鍵回農場' : hold ? '點房間的格子放下 ' + (defOf(hold.k) || {}).name : '點家具可以移動、翻轉、旋轉、收回或賣出；從背包選家具來擺';
   const have_ = house.list.filter(c => ['floor', 'flat', 'wall'].includes(c.layer) && have('f:' + c.key) > 0);
   $('h-inv').innerHTML = have_.length
     ? have_.map(c => '<button type="button" class="chipbtn" data-f="' + esc(c.key) + '" aria-pressed="' + (hold && !hold.fromId && hold.k === c.key ? 'true' : 'false') + '">' + esc(c.name) + ' ×' + have('f:' + c.key) + '</button>').join('')
@@ -4143,13 +5494,13 @@ function renderHousePanel() {
   const sb_ = $('h-sel');
   if (selIt) {
     sb_.hidden = false;
-    sb_.innerHTML = '<span class="v-count">' + esc((defOf(selIt.k) || {}).name || '') + '</span><button type="button" class="btn small" data-s="move">移動</button><button type="button" class="btn small" data-s="flip">翻轉</button>' + (DISP[selIt.k] ? '<button type="button" class="btn small" data-s="disp">展示品</button>' : '') + '<button type="button" class="btn small ghost" data-s="pick">收回背包</button><button type="button" class="btn small ghost" data-s="sell">賣出 +' + sellPrice(selIt.k) + 'G</button><button type="button" class="btn small ghost" data-s="cancel">取消</button>';
+    sb_.innerHTML = '<span class="v-count">' + esc((defOf(selIt.k) || {}).name || '') + '</span><button type="button" class="btn small" data-s="move">移動</button><button type="button" class="btn small" data-s="flip">翻轉</button><button type="button" class="btn small" data-s="rot">旋轉</button>' + (DISP[selIt.k] ? '<button type="button" class="btn small" data-s="disp">展示品</button>' : '') + '<button type="button" class="btn small ghost" data-s="pick">收回背包</button><button type="button" class="btn small ghost" data-s="sell">賣出 +' + sellPrice(selIt.k) + 'G</button><button type="button" class="btn small ghost" data-s="cancel">取消</button>';
   } else if (hold && hold.fromId) {
     sb_.hidden = false;
-    sb_.innerHTML = '<button type="button" class="btn small" data-s="flip-hold">翻轉</button><button type="button" class="btn small ghost" data-s="cancel">取消移動</button>';
+    sb_.innerHTML = '<button type="button" class="btn small" data-s="flip-hold">翻轉</button><button type="button" class="btn small" data-s="rot-hold">旋轉</button><button type="button" class="btn small ghost" data-s="cancel">取消移動</button>';
   } else if (hold) {
     sb_.hidden = false;
-    sb_.innerHTML = '<span class="v-count">' + esc((defOf(hold.k) || {}).name || '') + '</span><button type="button" class="btn small ghost" data-s="sell-bag">賣出1個 +' + sellPrice(hold.k) + 'G</button><button type="button" class="btn small ghost" data-s="cancel">取消</button>';
+    sb_.innerHTML = '<span class="v-count">' + esc((defOf(hold.k) || {}).name || '') + '</span><button type="button" class="btn small" data-s="flip-hold">翻轉</button><button type="button" class="btn small" data-s="rot-hold">旋轉</button><button type="button" class="btn small ghost" data-s="sell-bag">賣出1個 +' + sellPrice(hold.k) + 'G</button><button type="button" class="btn small ghost" data-s="cancel">取消</button>';
   } else { sb_.hidden = true; sb_.innerHTML = ''; }
 }
 $('h-edit').addEventListener('click', () => {
@@ -4169,29 +5520,39 @@ $('h-sel').addEventListener('click', e => {
   if (!b) return;
   const it = house.items.find(i => i.id === edit.sel), a = b.dataset.s;
   if (a === 'cancel') { edit.sel = null; edit.hold = null; }
-  else if (a === 'move' && it) { edit.hold = { k: it.k, fromId: it.id, f: it.f }; edit.sel = null; }
+  else if (a === 'move' && it) { edit.hold = { k: it.k, fromId: it.id, f: it.f, r: it.r | 0 }; edit.sel = null; }
   else if (a === 'pick' && it) { doPickup(it); edit.sel = null; }
   else if (a === 'flip' && it) doFlip(it);
+  else if (a === 'rot' && it) doRotate(it);
+  else if (a === 'rot-hold' && edit.hold) edit.hold.r = ((edit.hold.r | 0) + 1) & 3;
   else if (a === 'disp' && it) openDisplay(it.id);
   else if (a === 'flip-hold' && edit.hold) edit.hold.f = !edit.hold.f;
   else if (a === 'sell' && it) { doSell(it); edit.sel = null; }
   else if (a === 'sell-bag' && edit.hold && !edit.hold.fromId) { doSellBag(edit.hold.k); if (have('f:' + edit.hold.k) <= 0) edit.hold = null; }
   renderHousePanel(); refreshHud();
 });
-function doPlace(k, x, y, f) {
+function doPlace(k, x, y, f, rot) {
   inv['f:' + k] = have('f:' + k) - 1;
-  const it = { id: 't' + (++tmpSeq), k, x, y, f: !!f };
+  const it = { id: 't' + (++tmpSeq), k, x, y, f: !!f, r: (rot | 0) & 3 };
   house.items.push(it);
   enqueue(async () => {
-    const r_ = await rpc('house_place', { p_item: k, p_x: x, p_y: y });
+    const r_ = await rpc('house_place', { p_item: k, p_x: x, p_y: y, p_rot: it.r });
     it.id = +r_.item.id; Object.assign(inv, r_.inv);
     if (it.f) await rpc('house_flip', { p_id: it.id });
   }).catch(e => { toast(errText(e)); reloadHouse(); });
 }
-function doMove(it, x, y, f) {
-  it.x = x; it.y = y;
+function doMove(it, x, y, f, rot) {
+  it.x = x; it.y = y; if (rot != null) it.r = (rot | 0) & 3;
   const flipIt = f != null && f !== it.f; it.f = f != null ? f : it.f;
-  enqueue(async () => { await rpc('house_move', { p_id: it.id, p_x: x, p_y: y }); if (flipIt) await rpc('house_flip', { p_id: it.id }); }).catch(e => { toast(errText(e)); reloadHouse(); });
+  enqueue(async () => { await rpc('house_move', { p_id: it.id, p_x: x, p_y: y, p_rot: it.r | 0 }); if (flipIt) await rpc('house_flip', { p_id: it.id }); }).catch(e => { toast(errText(e)); reloadHouse(); });
+}
+/* 旋轉 90 度；原位置放不下時，會試著往房間內側推一點 */
+function doRotate(it) {
+  const nr = ((it.r | 0) + 1) & 3, d = dimsOf(it.k, nr);
+  const [ax, ay] = anchorFor(it.k, it.x, it.y, nr);
+  if (!d || !fitsLocal(it.k, ax, ay, it.id, nr)) { toast('這裡轉不過去，旁邊的空間不夠', 1800); return; }
+  it.x = ax; it.y = ay; it.r = nr;
+  enqueue(async () => { await rpc('house_move', { p_id: it.id, p_x: ax, p_y: ay, p_rot: nr }); }).catch(e => { toast(errText(e)); reloadHouse(); });
 }
 function doFlip(it) {
   it.f = !it.f;
@@ -4214,30 +5575,27 @@ function doPickup(it) {
   inv['f:' + it.k] = have('f:' + it.k) + 1;
   enqueue(async () => { const r_ = await rpc('house_pickup', { p_id: it.id }); Object.assign(inv, r_.inv); }).catch(e => { toast(errText(e)); reloadHouse(); });
 }
-function anchorFor(k, lx, ly) {
-  const d = defOf(k);
+function anchorFor(k, lx, ly, rot) {
+  const d = dimsOf(k, rot | 0);
   const ax = clamp(lx, 0, RW - d.w);
   const ay = d.layer === 'wall' ? clamp(ly, -2, -d.h) : clamp(ly, 0, RH - d.h);
   return [ax, ay];
 }
 function tileFromEvent(ev) {
   const rc = $('game').getBoundingClientRect();
-  if (imm) {
-    const k = cv.width / rc.width, s = view.s;
-    return [Math.floor(((ev.clientX - rc.left) * k + Math.round(view.x * s)) / s / T), Math.floor(((ev.clientY - rc.top) * k + Math.round(view.y * s)) / s / T)];
-  }
-  return [Math.floor((ev.clientX - rc.left) / rc.width * W), Math.floor((ev.clientY - rc.top) / rc.height * H)];
+  const k = cv.width / rc.width, s = imm ? view.s : S;
+  return [Math.floor(((ev.clientX - rc.left) * k + Math.round(view.x * s)) / s / T), Math.floor(((ev.clientY - rc.top) * k + Math.round(view.y * s)) / s / T)];
 }
 function houseTap(tx, ty) {
   if (scene !== 'house' || !edit.on || !house) return;
   const lx = tx - RX, ly = ty - RY;
   if (lx < 0 || lx >= RW || ly < -2 || ly >= RH) { edit.sel = null; renderHousePanel(); return; }
   if (edit.hold) {
-    const [ax, ay] = anchorFor(edit.hold.k, lx, ly);
+    const [ax, ay] = anchorFor(edit.hold.k, lx, ly, edit.hold.r);
     const ign = edit.hold.fromId;
-    if (!fitsLocal(edit.hold.k, ax, ay, ign)) { toast('這裡放不下', 1200); return; }
-    if (ign != null) { const it = house.items.find(i => i.id === ign); if (it) doMove(it, ax, ay, edit.hold.f); edit.hold = null; }
-    else { doPlace(edit.hold.k, ax, ay, edit.hold.f); if (have('f:' + edit.hold.k) <= 0) edit.hold = null; }
+    if (!fitsLocal(edit.hold.k, ax, ay, ign, edit.hold.r)) { toast('這裡放不下', 1200); return; }
+    if (ign != null) { const it = house.items.find(i => i.id === ign); if (it) doMove(it, ax, ay, edit.hold.f, edit.hold.r); edit.hold = null; }
+    else { doPlace(edit.hold.k, ax, ay, edit.hold.f, edit.hold.r); if (have('f:' + edit.hold.k) <= 0) edit.hold = null; }
     renderHousePanel(); refreshHud(); return;
   }
   const it = itemAtLocal(lx, ly);
@@ -4255,7 +5613,7 @@ function renderFShop() {
   const tab = (k, n) => '<button type="button" class="cb" data-a="tab" data-c="' + k + '" aria-pressed="' + (fTab === k) + '">' + n + '</button>';
   let rows = '';
   if (fTab === 'furn') {
-    rows = house.list.filter(c => ['floor', 'flat', 'wall'].includes(c.layer)).map(c =>
+    rows = house.list.filter(c => ['floor', 'flat', 'wall'].includes(c.layer) && !c.special).map(c =>
       '<div class="row"><div class="meta"><b>' + esc(c.name) + '</b><small>' + c.w + '×' + c.h + ' 格 · ' + (c.layer === 'wall' ? '掛牆' : c.layer === 'flat' ? '地毯' : '落地') + ' · 持有 ' + have('f:' + c.key) + '</small></div>' +
       '<button type="button" class="btn small" data-a="buy" data-c="' + esc(c.key) + '"' + (fsBusy || coins < c.price || (c.need | 0) > plv() ? ' disabled' : '') + '>' + ((c.need | 0) > plv() ? '玩家 Lv.' + c.need + ' 解鎖' : c.price + ' G') + '</button></div>').join('');
   } else {
@@ -4310,7 +5668,7 @@ function drawRoom(now) {
 function houseEnts(now) {
   if (!house) return [];
   return house.items.filter(it => (defOf(it.k) || {}).layer === 'floor').map(it => {
-    const d = defOf(it.k);
+    const d = dimsOf(it.k, it.r | 0);
     return { y: RY + it.y + d.h - 1 + 0.01, draw: () => drawFurn(it, it.x * T + RX * T, it.y * T + RY * T, now) };
   });
 }
@@ -4327,12 +5685,12 @@ function drawEditOverlay(now) {
   const selIt = house.items.find(i => i.id === edit.sel);
   if (selIt) { const g_ = itemRect(selIt); if (g_) box(g_, '#ff5f8a'); }
   if (edit.hold && edit.hover) {
-    const d = defOf(edit.hold.k);
+    const d = dimsOf(edit.hold.k, edit.hold.r | 0);
     if (d) {
-      const [ax, ay] = anchorFor(edit.hold.k, edit.hover[0], edit.hover[1]);
-      const okp = fitsLocal(edit.hold.k, ax, ay, edit.hold.fromId);
+      const [ax, ay] = anchorFor(edit.hold.k, edit.hover[0], edit.hover[1], edit.hold.r);
+      const okp = fitsLocal(edit.hold.k, ax, ay, edit.hold.fromId, edit.hold.r);
       ctx.globalAlpha = 0.6;
-      drawFurn({ k: edit.hold.k, f: edit.hold.f }, (RX + ax) * T, (RY + ay) * T, now);
+      drawFurn({ k: edit.hold.k, f: edit.hold.f, r: edit.hold.r | 0 }, (RX + ax) * T, (RY + ay) * T, now);
       ctx.globalAlpha = 1;
       r(okp ? 'rgba(120,255,160,.30)' : 'rgba(255,80,80,.40)', (RX + ax) * T, (RY + ay) * T, d.w * T, d.h * T);
     }
@@ -4362,8 +5720,9 @@ function update(dt) {
   const lk = Math.min(1, dt / 110);
   remotes.forEach(rp => { rp.x += (rp.tx - rp.x) * lk; rp.y += (rp.ty - rp.y) * lk; });
   if (scene === 'plaza') sendPos(dt);
+  if (scene === 'barn') barnTick(dt);
   moodAcc += dt;
-  if (moodAcc > 1000) { moodAcc = 0; if (Music) Music.setMood(darkness(world().min), scene === 'plaza'); }
+  if (moodAcc > 1000) { moodAcc = 0; if (Music) Music.setMood(darkness(world().min), scene === 'plaza'); updateBuffChip(); }
   fishTick();
   if (paused()) { actQueued = false; return; }
   if (anim && (pressed.length || pose || pl.prog < 1)) anim = null;   // 走動或坐下就中斷動作
@@ -4389,40 +5748,50 @@ function update(dt) {
 
 function draw(now) {
   g = ctx;
-  if (imm) {
-    const s = view.s, vw = cv.width / s, vh = cv.height / s, e0 = pl.prog;
+  SEA = seasonAt(srvNow());
+  {
+    const s = imm ? view.s : S, vw = cv.width / s, vh = cv.height / s, e0 = pl.prog;
     const cx = (pl.sx + (pl.x - pl.sx) * e0) * T + 8, cy = (pl.sy + (pl.y - pl.sy) * e0) * T + 8;
     const tx = vw >= W * T ? (W * T - vw) / 2 : clamp(cx - vw / 2, 0, W * T - vw);
     const ty = vh >= H * T ? (H * T - vh) / 2 : clamp(cy - vh / 2, 0, H * T - vh);
     if (view.snap || view.scene !== scene) { view.x = tx; view.y = ty; view.snap = false; view.scene = scene; }
     else { view.x += (tx - view.x) * 0.2; view.y += (ty - view.y) * 0.2; }
-    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#6fbf73'; ctx.fillRect(0, 0, cv.width, cv.height);
+    if (imm) { ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#6fbf73'; ctx.fillRect(0, 0, cv.width, cv.height); }
     ctx.setTransform(s, 0, 0, s, -Math.round(view.x * s), -Math.round(view.y * s));
-  } else ctx.setTransform(S, 0, 0, S, 0, 0);
+  }
   ctx.imageSmoothingEnabled = false;
   const w = world(), dark = darkness(w.min);
   if (scene === 'house') drawRoom(now);
+  else if (scene === 'barn') drawBarnRoom(now);
   else {
   for (let ty = 0; ty < H; ty++) for (let tx = 0; tx < W; tx++) {
     const k = K[ty][tx], px = tx * T, py = ty * T;
     if (k === WA) drawWater(px, py, tx, ty, now);
     else if (k === P) drawPath(px, py, tx, ty);
     else if (k === TR) drawTree(px, py, tx, ty);
-    else if (k === GT) { drawPath(px, py, tx, ty); drawGate(px, py, now); }
+    else if (k === GT || k === FG || k === TG) { drawPath(px, py, tx, ty); drawGate(px, py, now); }
     else if (k === FR) drawRim(px, py, tx, ty);
     else {
       drawGrass(px, py, tx, ty);
       if (k === BN) drawBench(px, py);
+      else if (k === BD) drawBoard(px, py);
+      else if (k === NP) drawNpc(px, py, (NPCS.find(q => q.x === tx && q.y === ty) || NPCS[0]).k, now);
+      else if (k === RK) drawRock(px, py, ROCKS.findIndex(q => q[0] === tx && q[1] === ty));
+      else if (k === WL) drawWell(px, py, now);
+      else if (k === G && scene === 'town' && tx === MXT && ty === MYT && merchantHere()) drawStall(px, py, now);
+      else if (k === G && scene === 'farm' && yardMap.has(pk(tx, ty))) yardArt(px, py, yardMap.get(pk(tx, ty)), now, dark > 0.35);
       else if (k === G && scene === 'farm') {
         const p = plots.get(pk(tx, ty));
         if (p) {
           drawSoil(px, py, isWet(p) || w.wet);
+          if (p.fert) { r(p.fert === 2 ? '#f0c040' : '#8c6a44', px + 2, py + 13, 2, 1); r(p.fert === 2 ? '#f0c040' : '#8c6a44', px + 12, py + 12, 2, 1); r(p.fert === 2 ? '#f0c040' : '#8c6a44', px + 7, py + 14, 2, 1); }
           if (p.crop) drawCrop(px, py, { t: p.crop, p: progress(p) }, now);
         } else if (farmable(tx, ty)) r('rgba(255,255,255,.07)', px, py, T, T);
       }
     }
   }
-  if (scene === 'farm') { drawHouse(dark > 0.15, now); drawShop(dark > 0.15, now); }
+  if (scene === 'farm') { drawHouse(dark > 0.15, now); drawShop(dark > 0.15, now); drawBarn(now); }
+  else if (scene === 'town') TOWN_BLD.forEach(b => drawBldg(b, now, dark > 0.15));
   else {
     drawTarotStall(now);
     for (let i = 0; i < 5; i++) {
@@ -4460,6 +5829,11 @@ function draw(now) {
     } });
   }
   if (scene === 'house') houseEnts(now).forEach(en => ents.push(en));
+  if (scene === 'barn') barnEnts(now, ents);
+  if (scene === 'farm') { updateForage(); fgList.forEach(f => {
+    if (forTaken.has(f.slot + ':' + f.i) || yardMap.has(pk(f.x, f.y))) return;
+    ents.push({ y: f.y + 0.5, draw: () => { miscArt(f.x * T, f.y * T + Math.round(Math.sin(now / 500 + f.i) * 0.6), f.key); } });
+  }); }
   if (scene === 'farm') critters.forEach(c => {
     const fr = Math.floor(now / (c.fly ? 130 : 260) + c.ph) % 2, bob = c.fly ? Math.round(5 + Math.sin(now / 300 + c.ph) * 2) : 0;
     ents.push({ y: c.y + (c.fly ? 1.2 : 0), draw: () => {
@@ -4501,8 +5875,10 @@ function draw(now) {
   });
   ctx.globalAlpha = 1;
 
-  const indoors = scene === 'house';
+  const indoors = scene === 'house' || scene === 'barn';
   const warm = indoors ? 0 : Math.max(0, 1 - Math.abs(w.min - 1110) / 100) * 0.2;
+  if (!indoors && SEA === 'autumn') r('rgba(255,170,70,.06)', 0, 0, W * T, H * T);
+  else if (!indoors && SEA === 'winter') r('rgba(215,232,255,.07)', 0, 0, W * T, H * T);
   if (warm > 0) r('rgba(255,150,130,' + warm.toFixed(3) + ')', 0, 0, W * T, H * T);
   if (dark > 0 && !indoors) r('rgba(70,50,130,' + (dark * 0.45).toFixed(3) + ')', 0, 0, W * T, H * T);
   if (w.wet && !indoors) {
@@ -4571,7 +5947,7 @@ function fitView() {
     if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
     view.s = Math.max(2, Math.round(Math.min(rc.width, rc.height) / 8 * dpr / T), Math.ceil(h / (H * T)), Math.ceil(w / (W * T)));
   } else {
-    if (cv.width !== W * T * S || cv.height !== H * T * S) { cv.width = W * T * S; cv.height = H * T * S; }
+    if (cv.width !== BW * T * S || cv.height !== BH * T * S) { cv.width = BW * T * S; cv.height = BH * T * S; }
     view.s = S;
   }
 }
@@ -4583,7 +5959,7 @@ const wakeUI = () => { lastInputAt = performance.now(); };
 ['pointerdown', 'pointermove', 'keydown', 'touchstart'].forEach(t => document.addEventListener(t, wakeUI, { passive: true }));
 function idleTick(now) {
   /* 商店、背包、圖鑑這些全頁視窗打開時，把搖桿、動作鈕、工具列、選單把手都藏起來，才不會蓋住視窗底下的按鈕 */
-  const modal = imm && (lvOpen || cdOpen || dexOpen || qOpen || dsOpen || stOpen || trOpen || frOpen || bagOpen || shopOpen || makerOpen || authOpen || vmOpen || gmOpen || fOpen);
+  const modal = imm && (bdOpen || ckOpen || rcOpen || mcOpen || dgOpen || lvOpen || cdOpen || dexOpen || qOpen || dsOpen || stOpen || trOpen || frOpen || mlOpen || bagOpen || shopOpen || makerOpen || authOpen || vmOpen || gmOpen || fOpen);
   if (modal !== document.body.classList.contains('modal')) document.body.classList.toggle('modal', modal);
   const idle = imm && !sheetOpen && !pressed.length && now - lastInputAt > 3000;
   if (idle !== document.body.classList.contains('idle')) document.body.classList.toggle('idle', idle);
@@ -4647,7 +6023,7 @@ async function boot() {
   if (sess && sess.user && sess.user.email) {
     await enter(sess.user.email.split('@')[0], sess.user.id);
   } else { bootEl.hidden = true; showAuth(); }
-  setInterval(() => { if (ready && !document.hidden) resync(); }, 60000);
+  setInterval(() => { if (ready && !document.hidden) { resync(); touchSeen(); mailPoll(); } }, 60000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden && ready) resync(); });
 }
 boot();
