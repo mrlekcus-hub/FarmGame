@@ -499,6 +499,12 @@ body.imm .immgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;flex:
 .cdav{display:flex;gap:10px;align-items:center}.cdav canvas{width:64px;height:88px;image-rendering:pixelated;background:#e8f6d4;border-radius:12px;border:2px solid #f0dcc8}
 .ach.pin{border-color:#f08fa4;background:#fff0f3}.ach{cursor:default}.cdself .ach:not(.off){cursor:pointer}
 .giftrow{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 8px;border:2px solid #f0dcc8;border-radius:12px;background:#fff;margin:4px 0;font-size:13px}
+/* ---- Lekcus 塔羅小屋 ---- */
+.lkrow{display:flex;gap:12px;align-items:flex-start;margin:6px 0}
+.lkport{flex:none;width:112px;height:112px;border-radius:18px;border:3px solid #cdb6f0;background:linear-gradient(#7b3fa0,#4d3170);display:grid;place-items:center;overflow:hidden}
+.lkport canvas{width:96px;height:96px;image-rendering:pixelated}
+.lkport img{width:100%;height:100%;object-fit:contain;display:block}
+.lkline{margin:0;font-size:16px;line-height:1.7;min-height:84px}
 </style>
 </head><body>
 
@@ -666,6 +672,7 @@ body.imm .immgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;flex:
 <div class="maker" id="dgm" hidden><div class="card maker-card" id="dgcard" tabindex="-1"></div></div>
 <div class="maker" id="rcm" hidden><div class="card maker-card" id="rccard" tabindex="-1"></div></div>
 <div class="maker" id="mcm" hidden><div class="card maker-card" id="mccard" tabindex="-1"></div></div>
+<div class="maker" id="lkm" hidden><div class="card maker-card" id="lkcard" tabindex="-1"></div></div>
 
 <div class="maker" id="auth" hidden>
   <form class="maker-card auth-card" id="auth-form" autocomplete="on">
@@ -1356,9 +1363,9 @@ let bagOpen = false, shopOpen = false, makerOpen = false, authOpen = true, actQu
 let pendingInvite = '';
 const pressed = [];
 let frOpen = false;
-let bdOpen = false, ckOpen = false, rcOpen = false, mcOpen = false, dgOpen = false;
+let lkOpen = false, bdOpen = false, ckOpen = false, rcOpen = false, mcOpen = false, dgOpen = false;
 let lvOpen = false, cdOpen = false, dexOpen = false, qOpen = false, dsOpen = false, emOpen = false, stOpen = false, imm = false, sheetOpen = false, trOpen = false;
-const paused = () => bdOpen || ckOpen || rcOpen || mcOpen || dgOpen || lvOpen || cdOpen || dexOpen || qOpen || dsOpen || stOpen || trOpen || (imm && sheetOpen) || frOpen || mlOpen || bagOpen || shopOpen || makerOpen || authOpen || vmOpen || gmOpen || fOpen || !ready;
+const paused = () => lkOpen || bdOpen || ckOpen || rcOpen || mcOpen || dgOpen || lvOpen || cdOpen || dexOpen || qOpen || dsOpen || stOpen || trOpen || (imm && sheetOpen) || frOpen || mlOpen || bagOpen || shopOpen || makerOpen || authOpen || vmOpen || gmOpen || fOpen || !ready;
 
 /* ---------- 小提示與特效 ---------- */
 const toastEl = $('toast');
@@ -1724,7 +1731,7 @@ function act() {
     else if (k2 === WA) pop(x, y, '這是池塘（換成釣竿就能釣魚）', '#cfe8f7');
     else if (k2 === BN) takeBench(x, y);
     else if (rp) openFriends(rp);
-    else if (k2 === TS) openTarot();
+    else if (k2 === TS) enterLekcus();
     return;
   }
   if (scene === 'house') {
@@ -1737,6 +1744,7 @@ function act() {
     else if (hit) pop(x, y, (defOf(hit.k) || {}).name || '', '#fff3b0');
     return;
   }
+  if (scene === 'tarot') { lekcusRoomAct(x, y); return; }
   if (scene === 'town') { townAct(x, y); return; }
   if (scene === 'barn') { barnAct(x, y); return; }
   const k = K[y][x], key = pk(x, y), p = plots.get(key), t = curTool();
@@ -2434,6 +2442,183 @@ function barnEnts(now, ents) {
     } });
   });
 }
+
+/* ---------- 塔羅小屋：廣場的塔羅小攤可以走進去，裡面是 Lekcus ---------- */
+const LK = 24, TBL = 25, DEC = 26;
+const RMW = 12, RMH = 9;
+const rkind = Array.from({ length: RMH }, () => Array(RMW).fill(G));
+for (let y = 0; y < RMH; y++) for (let x = 0; x < RMW; x++) if (y < 2 || y === RMH - 1 || x === 0 || x === RMW - 1) rkind[y][x] = BWL;
+rkind[RMH - 1][5] = BX; rkind[RMH - 1][6] = BX;
+[5, 6, 7].forEach(x => { rkind[4][x] = TBL; });
+rkind[3][6] = LK;
+[[2, 3], [9, 3], [1, 6], [10, 6]].forEach(([x, y]) => { rkind[y][x] = DEC; });
+const LK_HELLO = ['歡迎光臨！我是 Lekcus，今天想問什麼呢？', '來啦～坐近一點，我們來看看今天的牌。', '歡迎來到塔羅小屋，把心裡的問題輕輕放在心上吧。'];
+const LK_CHAT = [
+  '我平常在直播裡幫大家抽牌，沒想到在雷克斯農場也開了小攤。',
+  '塔羅不是預言，是幫你把心裡已經知道的事看清楚。',
+  '每天抽一張牌，慢慢你會發現自己的規律。',
+  '農場裡的作物要等，牌也是，答案會在對的時間浮現。',
+  '想要更多占卜，記得來看我的直播和社群喔！',
+  '今天的天氣好，很適合給自己一點安靜的時間。'
+];
+let lkMsg = '', lkImg = null, lkImgOk = false;
+const lkEl = $('lkm'), lkCard = $('lkcard');
+/* Lekcus 的像素小人：深青色包頭、黃色髮夾、棕框眼鏡、綠色披肩 */
+function lekcusArt(px, py, bob) {
+  const o = '#1b0f12', hair = '#0d3b3a', hair2 = '#1f6a66', skin = '#f6b4a4', brown = '#8a3b1b';
+  r('rgba(40,20,60,.25)', px + 3, py + 14, 10, 2);
+  r('#ffffff', px + 1, py + 11 + bob, 3, 3); r('#ffffff', px + 12, py + 11 + bob, 3, 3);
+  ob('#2f8f4f', '#1c5a32', px + 3, py + 9 + bob, 10, 6);
+  r('#256f3c', px + 6, py + 10 + bob, 4, 5); r('#4fb36a', px + 4, py + 10 + bob, 2, 1);
+  r(skin, px, py + 13 + bob, 2, 2); r(skin, px + 14, py + 13 + bob, 2, 2);
+  ob(skin, o, px + 4, py + 3 + bob, 8, 8);
+  ob(hair, o, px + 6, py - 2 + bob, 4, 4);
+  r('#ffd400', px + 5, py + 1 + bob, 6, 1); r('#ffd400', px + 4, py + bob, 1, 2); r('#ffd400', px + 11, py + bob, 1, 2);
+  r(hair, px + 3, py + 2 + bob, 10, 3); r(hair, px + 3, py + 4 + bob, 2, 4); r(hair, px + 11, py + 4 + bob, 2, 4);
+  r(hair2, px + 5, py + 3 + bob, 2, 1); r(hair, px + 7, py + 5 + bob, 2, 1);
+  r(brown, px + 4, py + 6 + bob, 3, 3); r(brown, px + 9, py + 6 + bob, 3, 3); r(brown, px + 7, py + 6 + bob, 2, 1);
+  r('#1b0f12', px + 5, py + 7 + bob, 1, 1); r('#1b0f12', px + 10, py + 7 + bob, 1, 1);
+  r('#d94f5a', px + 7, py + 9 + bob, 2, 1);
+}
+function enterLekcus() {
+  if (scene !== 'plaza' || !ready || !me || paused()) return;
+  pose = null;
+  scene = 'tarot'; K = rkind; W = RMW; H = RMH;
+  pl.x = pl.sx = 6; pl.y = pl.sy = RMH - 2; pl.prog = 1; pl.face = 'up'; pressed.length = 0;
+  view.snap = true; fitView(); toast('歡迎光臨 Lekcus 塔羅小屋');
+}
+function leaveLekcus(silent) {
+  if (scene !== 'tarot') return;
+  closeLekcus();
+  scene = 'plaza'; K = pkind; W = BW; H = BH;
+  pl.x = pl.sx = 10; pl.y = pl.sy = 3; pl.prog = 1; pl.face = 'down'; pressed.length = 0;
+  view.snap = true; fitView(); lastPosKey = ''; posAcc = 999;
+  if (!silent) toast('回到廣場了');
+}
+function lekcusRoomAct(x, y) {
+  if (catchShown) { hideCatch(); return; }
+  if (y <= 1 && x >= 4 && x <= 7) { window.open('https://www.instagram.com/lekcusong/', '_blank', 'noopener'); return; }   // 牆上的招牌 → Lekcus 的 IG
+  const k = K[y][x];
+  if (k === BX) leaveLekcus();
+  else if (k === LK || k === TBL) openLekcus();
+  else if (k === DEC) pop(x, y, '星星小擺設', '#ffe9a8');
+}
+/* 塔羅小屋裡的 Lekcus：用 img/lekcus_walk.png（3 列：正面/右側/背面；4 格：站、左腳、站、右腳；向左 = 右側翻轉），在櫃檯後來回踱步；找不到圖就用程式畫的像素版 */
+let lkWalk = null, lkWalkOk = false;
+(function () { lkWalk = new Image(); lkWalk.onload = () => { lkWalkOk = true; }; lkWalk.src = 'img/lekcus_walk.png'; })();
+const LK_PATH = [   // [持續毫秒, 起點x, 終點x, 面向]（x 為格子座標，櫃檯後面那一排）
+  [3000, 6, 6, 'down'], [1600, 6, 7.6, 'right'], [2500, 7.6, 7.6, 'down'],
+  [3200, 7.6, 4.4, 'left'], [2500, 4.4, 4.4, 'down'], [1600, 4.4, 6, 'right']
+];
+const LK_LOOP = LK_PATH.reduce((a, s) => a + s[0], 0);
+function lekcusPose(now) {
+  if (lkOpen) return { x: 6, face: 'down', mv: false };   // 對話中站回正中間面向你
+  let t = now % LK_LOOP;
+  for (const [d, a, b, f] of LK_PATH) {
+    if (t < d) return { x: a + (b - a) * (t / d), face: f, mv: a !== b };
+    t -= d;
+  }
+  return { x: 6, face: 'down', mv: false };
+}
+function lekcusEnts(now, ents) {
+  const bob = Math.floor(now / 600) % 2;
+  ents.push({ y: 3.5, draw: () => {
+    if (!lkWalkOk) { lekcusArt(6 * T, 3 * T, bob); nameTag('Lekcus', 6 * T + 8, 3 * T - 6, '#ffe9a8'); return; }
+    const ps = lekcusPose(now), cw = lkWalk.width / 4, chh = lkWalk.height / 3, hh = 24, ww = hh * cw / chh;
+    const row = ps.face === 'up' ? 2 : (ps.face === 'down' ? 0 : 1), col = ps.mv ? Math.floor(now / 130) % 4 : 0;
+    const cx = ps.x * T + 8, x = cx - ww / 2, y = 3 * T + 15 - hh, sm = g.imageSmoothingEnabled;
+    g.imageSmoothingEnabled = false;
+    r('rgba(40,20,60,.25)', cx - 5, 3 * T + 13, 10, 2);
+    if (ps.face === 'left') { g.save(); g.translate(x + ww, y); g.scale(-1, 1); g.drawImage(lkWalk, col * cw, row * chh, cw, chh, 0, 0, ww, hh); g.restore(); }
+    else g.drawImage(lkWalk, col * cw, row * chh, cw, chh, x, y, ww, hh);
+    g.imageSmoothingEnabled = sm;
+    nameTag('Lekcus', cx, y - 3, '#ffe9a8');
+  } });
+}
+function drawTarotRoom(now) {
+  ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#1f1430'; ctx.fillRect(0, 0, cv.width, cv.height); ctx.restore();
+  r('#1f1430', 0, 0, W * T, H * T);
+  for (let ty = 0; ty < H; ty++) for (let tx = 0; tx < W; tx++) {
+    const px = tx * T, py = ty * T;
+    if (ty < 2) { r(ty === 0 ? '#34204f' : '#44295f', px, py, T, T); if (ty === 1) { r('#e0b24a', px, py + T - 2, T, 1); r('#2c1b45', px, py + T - 1, T, 1); } }
+    else if (tx === 0 || tx === W - 1 || ty === H - 1) { r('#3d2757', px, py, T, T); r('#4d3170', px + 7, py, 1, T); }
+    else { r((tx + ty) % 2 ? '#6a4a96' : '#735199', px, py, T, T); if (hash(tx, ty, 21) > 0.8) r('#8d6bbd', px + 4, py + 6, 2, 1); }
+  }
+  for (let i = 0; i < 12; i++) {
+    const tw = (Math.sin(now / 420 + i * 1.7) + 1) / 2;
+    r(tw > 0.55 ? '#ffe9a8' : '#a583d6', T + (i * 13) % ((W - 2) * T), 2 + (i * 7) % 20, 1 + (tw > 0.85 ? 1 : 0), 1);
+  }
+  // 中間的星月布幔
+  ob('#7b5ea7', '#e0b24a', 4 * T, 3, 4 * T, 26);
+  r('#e0b24a', 4 * T + 6, 16, 4 * T - 12, 1);
+  ctx.save(); ctx.textAlign = 'center'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#2c1b45';
+  ctx.font = '800 7px "Chiron GoRound TC", "Noto Sans TC", sans-serif'; ctx.lineWidth = 2;
+  ctx.strokeText('Lekcus Tarots', 6 * T, 13); ctx.fillStyle = '#ffe9a8'; ctx.fillText('Lekcus Tarots', 6 * T, 13);
+  ctx.font = '800 5px "Chiron GoRound TC", "Noto Sans TC", sans-serif'; ctx.lineWidth = 1.5;
+  ctx.strokeText('susumatehyo', 6 * T, 24); ctx.fillStyle = '#ffffff'; ctx.fillText('susumatehyo', 6 * T, 24);
+  ctx.restore();
+  // 兩側的藥水架
+  [T + 4, 8 * T + 8].forEach(sx => {
+    ob('#5a3d7a', '#2c1b45', sx, 6, 36, 20); r('#2c1b45', sx + 2, 16, 32, 1);
+    ['#ff8fa8', '#8fd3f4', '#8fe09a', '#ffd27a'].forEach((c, i) => { r(c, sx + 4 + i * 8, 10, 4, 6); r('#ffffff', sx + 5 + i * 8, 9, 2, 1); r(c, sx + 4 + i * 8, 19, 4, 5); });
+  });
+  // 地毯
+  ob('#8d6bbd', '#e0b24a', 3 * T + 2, 5 * T + 4, 6 * T - 4, 2 * T - 8);
+  r('#6a4a96', 3 * T + 6, 5 * T + 8, 6 * T - 12, 2 * T - 16);
+  r('#ffe9a8', 95, 93, 2, 6); r('#ffe9a8', 93, 95, 6, 2);
+  // 櫃檯
+  ob('#8d6bbd', '#4d3170', 5 * T, 4 * T + 3, 3 * T, 13);
+  r('#e0b24a', 5 * T + 1, 4 * T + 4, 3 * T - 2, 1);
+  for (let i = 0; i < 6; i++) r('#e0b24a', 5 * T + 3 + i * 8, 4 * T + 13, 2, 2);
+  ob('#fff3d0', '#b98a2e', 5 * T + 2, 4 * T, 5, 7); r('#7b5ea7', 5 * T + 3, 4 * T + 2, 3, 3);
+  ob('#fff3d0', '#b98a2e', 7 * T + 9, 4 * T, 5, 7); r('#e0b24a', 7 * T + 10, 4 * T + 2, 3, 3);
+  const gl = 0.5 + 0.5 * Math.sin(now / 600);
+  r('rgba(190,150,255,' + (0.18 + 0.18 * gl).toFixed(2) + ')', 6 * T + 1, 4 * T - 7, 14, 14);
+  ob('#bfe3ff', '#7a8fc9', 6 * T + 4, 4 * T - 4, 8, 8); r('#ffffff', 6 * T + 5, 4 * T - 3, 2, 2);
+  r('#e0b24a', 6 * T + 3, 4 * T + 4, 10, 2);
+  // 燭台與盆栽
+  [[2, 3], [9, 3]].forEach(([cx, cy]) => {
+    const px = cx * T, py = cy * T, f = Math.floor(now / 140 + cx) % 3;
+    r('rgba(255,200,120,.12)', px - 4, py - 6, 24, 24);
+    r('rgba(20,10,30,.3)', px + 3, py + 14, 10, 2);
+    ob('#e0b24a', '#8a6a1f', px + 5, py + 9, 6, 6); r('#fff3d0', px + 7, py + 4, 2, 6);
+    r('#ffb347', px + 7, py + 1 + (f === 1 ? 1 : 0), 2, 3); r('#fff0a0', px + 7, py + 2 + (f === 1 ? 1 : 0), 1, 1);
+  });
+  FURN.plant(1 * T, 6 * T); FURN.plant(10 * T, 6 * T);
+  // 門
+  ob('#c08a62', '#8c5b3c', 5 * T + 1, (H - 1) * T - 1, 2 * T - 2, T + 1); r('#8c5b3c', 6 * T, (H - 1) * T, 1, T);
+  r('#ffd34d', 6 * T - 3, (H - 1) * T + 7, 2, 2); r('#ffd34d', 6 * T + 2, (H - 1) * T + 7, 2, 2);
+}
+function renderLekcus() {
+  lkCard.innerHTML = '<div class="shop-h"><h2>Lekcus</h2><span class="chip">塔羅占卜師</span></div>' +
+    '<div class="lkrow"><div class="lkport" id="lkport"><canvas width="16" height="16"></canvas></div><p class="lkline">' + esc(lkMsg) + '</p></div>' +
+    '<button type="button" class="btn wide" data-a="draw">請 Lekcus 幫我抽今天的牌</button>' +
+    '<button type="button" class="btn ghost wide" data-a="chat">聊聊天</button>' +
+    '<a class="btn ghost wide" style="display:block;text-align:center;text-decoration:none" href="https://www.instagram.com/lekcusong/" target="_blank" rel="noopener noreferrer">前往 Lekcus 的 Instagram</a>' +
+    '<button type="button" class="btn ghost wide" data-a="close">先告辭</button>';
+  const box = $('lkport');
+  if (lkImgOk && lkImg) { box.innerHTML = ''; box.appendChild(lkImg.cloneNode()); }
+  else { const c2 = box.querySelector('canvas').getContext('2d'); g = c2; try { lekcusArt(0, 0, 0); } catch (e) { /* 略過 */ } g = ctx; }
+}
+function openLekcus() {
+  if (!ready || !me || authOpen || paused() || lkOpen) return;
+  if (!lkImg) {   // 把你的卡通圖存成 img/lekcus.png，對話視窗就會用它
+    lkImg = new Image(); lkImg.alt = 'Lekcus';
+    lkImg.onload = () => { lkImgOk = true; if (lkOpen) renderLekcus(); };
+    lkImg.src = 'img/lekcus.png';
+  }
+  lkOpen = true; pressed.length = 0; lkMsg = LK_HELLO[Math.floor(Math.random() * LK_HELLO.length)];
+  renderLekcus(); lkEl.hidden = false; lkCard.focus();
+}
+function closeLekcus() { lkOpen = false; lkEl.hidden = true; }
+lkCard.addEventListener('click', e => {
+  const b = e.target.closest('button[data-a]'); if (!b) return;
+  const a = b.dataset.a;
+  if (a === 'close') closeLekcus();
+  else if (a === 'draw') { closeLekcus(); openTarot(); }
+  else if (a === 'chat') { lkMsg = LK_CHAT[Math.floor(Math.random() * LK_CHAT.length)]; renderLekcus(); }
+});
+lkEl.addEventListener('click', e => { if (e.target === lkEl) closeLekcus(); });
 
 /* ---------- 動物牧場（穀倉）：買動物、看狀態的視窗，從告示牌開啟 ---------- */
 const rcEl = $('rcm'), rcCard = $('rccard');
@@ -3330,7 +3515,7 @@ function updateTip() {
       else if (K[y][x] === WA) s = curTool().id === 'rod' ? '池塘：按動作鍵拋竿釣魚。' : '池塘。（換成釣竿就能釣魚）';
       else if (K[y][x] === FR) s = '噴水池。';
       else if (K[y][x] === BN) s = '長椅：按動作鍵坐下。';
-      else if (K[y][x] === TS) s = '塔羅小攤：按動作鍵，抽今天的運勢牌。';
+      else if (K[y][x] === TS) s = '塔羅小攤：按動作鍵走進去，找 Lekcus 抽今天的運勢牌。';
     }
   } else if (scene === 'barn') {
     s = '穀倉：和動物面對面按動作鍵看狀態；飼料槽餵乾草、收成籃收蛋奶毛、告示牌買動物。';
@@ -3341,6 +3526,14 @@ function updateTip() {
       else if (k === TRG) s = '飼料槽：按動作鍵，用乾草餵所有肚子餓的動物（乾草 ' + have('a:hay') + ' 把）。';
       else if (k === BSK) s = '收成籃：按動作鍵，收所有做好的蛋、牛奶和羊毛。';
       else if (k === SGN) s = '告示牌：按動作鍵，買動物、看牧場總覽。';
+    }
+  } else if (scene === 'tarot') {
+    s = '塔羅小屋：和 Lekcus 面對面按動作鍵，打招呼或抽今天的牌。';
+    if (x >= 0 && y >= 0 && x < W && y < H) {
+      const k = K[y][x];
+      if (k === BX) s = '門口：按動作鍵回廣場。';
+      else if (y <= 1 && x >= 4 && x <= 7) s = '招牌：按動作鍵，前往 Lekcus 的 Instagram。';
+      else if (k === LK || k === TBL) s = 'Lekcus：按動作鍵打招呼、抽牌。';
     }
   } else if (scene === 'town') {
     s = '雷克斯小村：找村民聊聊，頭上有「!」的人有故事要告訴你；布告欄和旅行商人也在這裡。';
@@ -3602,6 +3795,7 @@ const release = d => { const i = pressed.indexOf(d); if (i >= 0) pressed.splice(
 window.addEventListener('keydown', e => {
   const tg = e.target && e.target.tagName;
   if (tg === 'INPUT' || tg === 'SELECT' || tg === 'TEXTAREA') return;
+  if (e.key === 'Escape' && lkOpen) { closeLekcus(); return; }
   if (e.key === 'Escape' && bdOpen) { closeBoard(); return; }
   if (e.key === 'Escape' && ckOpen) { closeKitchen(); return; }
   if (e.key === 'Escape' && dgOpen) { closeDlg(); return; }
@@ -4004,7 +4198,7 @@ $('auth-form').addEventListener('submit', async e => {
 });
 function showAuth() {
   tutI = -1; tutEl.hidden = true;
-  leaveVillage(true); leaveHouse(true); leaveTown(true); leaveBarn(true); stopPresence(); closeFriends(); fr = { friends: [], incoming: [], outgoing: [], max: 50 }; house = null; ready = false; authOpen = true; closeMaker(); closeShop(); closeVMenu(); closeGM(); closeFShop(); closeDex(); closeBag();
+  leaveLekcus(true); leaveVillage(true); leaveHouse(true); leaveTown(true); leaveBarn(true); stopPresence(); closeFriends(); fr = { friends: [], incoming: [], outgoing: [], max: 50 }; house = null; ready = false; authOpen = true; closeMaker(); closeShop(); closeVMenu(); closeGM(); closeFShop(); closeDex(); closeBag();
   bootEl.hidden = true; authEl.hidden = false; me = null; refreshHud();
   closeBoard(); closeKitchen(); closeRanch(); closeMerchant(); closeDlg();
   closeQuests(); qs = { day: 0, c: {}, claimed: {} }; qBadge();
@@ -4231,7 +4425,7 @@ function onSync(ch) {
     if (id === myUid) return;
     const m = (state[id] && state[id][0]) || {};
     const name = clean(m.n, 8) || '旅人';
-    const x = intIn(m.x, 0, W - 1, 10), y = intIn(m.y, 0, H - 1, 11), f = intIn(m.f, 0, 3, 0);
+    const x = intIn(m.x, 0, BW - 1, 10), y = intIn(m.y, 0, BH - 1, 11), f = intIn(m.f, 0, 3, 0);
     seen.add(id);
     let rp = remotes.get(id);
     if (!rp) {
@@ -4255,7 +4449,7 @@ const UID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 function onPos(p) {
   if (!p || typeof p !== 'object' || typeof p.i !== 'string' || p.i === myUid) return;
   let rp = remotes.get(p.i);
-  const nx = intIn(p.x, 0, W - 1, rp ? rp.tx : 10), ny = intIn(p.y, 0, H - 1, rp ? rp.ty : 11);
+  const nx = intIn(p.x, 0, BW - 1, rp ? rp.tx : 10), ny = intIn(p.y, 0, BH - 1, rp ? rp.ty : 11);
   if (!rp) {
     /* presence 漏掉的人：靠位置廣播（心跳裡帶名字和造型）補回來 */
     if (!UID_RE.test(p.i) || remotes.size >= 16) return;
@@ -4287,8 +4481,8 @@ function onFish(p) {
   const rp = typeof p.i === 'string' ? remotes.get(p.i) : null;
   if (!rp) return;
   if (p.a !== 1) { rp.fish = null; return; }
-  const x = intIn(p.x, 0, W - 1, -1), y = intIn(p.y, 0, H - 1, -1);
-  if (x < 0 || y < 0 || K[y][x] !== WA) { rp.fish = null; return; }
+  const x = intIn(p.x, 0, BW - 1, -1), y = intIn(p.y, 0, BH - 1, -1);
+  if (x < 0 || y < 0 || pkind[y][x] !== WA) { rp.fish = null; return; }
   const bite = p.b === 1;
   if (rp.fish && rp.fish.x === x && rp.fish.y === y) rp.fish.phase = bite ? 'bite' : rp.fish.phase;
   else rp.fish = { x, y, phase: bite ? 'bite' : 'cast', t0: Date.now() };
@@ -4370,6 +4564,7 @@ function enterPlaza(info) {
 function sayBye() { try { if (net && net.ok) net.ch.send({ type: 'broadcast', event: 'bye', payload: { i: myUid } }); } catch (e) { /* 略過 */ } }
 window.addEventListener('pagehide', sayBye);
 function leaveVillage(silent) {
+  leaveLekcus(true);
   sayBye(); stopNet(); clearInterval(pingTimer); if (pose && pose.bench) pose = null;
   const was = scene === 'plaza';
   scene = 'farm'; K = kind; roomInfo = null; remotes.clear(); myBubble = null; myShow = null;
@@ -5391,7 +5586,7 @@ async function visitHouse(uid, name) {
   enterBusy = true;
   try {
     const d = await withTimeout(rpc('house_visit', { p_uid: uid }), 12000);
-    if (scene === 'plaza') leaveVillage(true);
+    if (scene === 'plaza' || scene === 'tarot') leaveVillage(true);
     if (scene === 'house') leaveHouse(true);
     closeFriends();
     pose = null; ownHouse = house; applyHouse(d);
@@ -5763,6 +5958,7 @@ function draw(now) {
   const w = world(), dark = darkness(w.min);
   if (scene === 'house') drawRoom(now);
   else if (scene === 'barn') drawBarnRoom(now);
+  else if (scene === 'tarot') drawTarotRoom(now);
   else {
   for (let ty = 0; ty < H; ty++) for (let tx = 0; tx < W; tx++) {
     const k = K[ty][tx], px = tx * T, py = ty * T;
@@ -5830,6 +6026,7 @@ function draw(now) {
   }
   if (scene === 'house') houseEnts(now).forEach(en => ents.push(en));
   if (scene === 'barn') barnEnts(now, ents);
+  if (scene === 'tarot') lekcusEnts(now, ents);
   if (scene === 'farm') { updateForage(); fgList.forEach(f => {
     if (forTaken.has(f.slot + ':' + f.i) || yardMap.has(pk(f.x, f.y))) return;
     ents.push({ y: f.y + 0.5, draw: () => { miscArt(f.x * T, f.y * T + Math.round(Math.sin(now / 500 + f.i) * 0.6), f.key); } });
@@ -5875,7 +6072,7 @@ function draw(now) {
   });
   ctx.globalAlpha = 1;
 
-  const indoors = scene === 'house' || scene === 'barn';
+  const indoors = scene === 'house' || scene === 'barn' || scene === 'tarot';
   const warm = indoors ? 0 : Math.max(0, 1 - Math.abs(w.min - 1110) / 100) * 0.2;
   if (!indoors && SEA === 'autumn') r('rgba(255,170,70,.06)', 0, 0, W * T, H * T);
   else if (!indoors && SEA === 'winter') r('rgba(215,232,255,.07)', 0, 0, W * T, H * T);
@@ -5959,7 +6156,7 @@ const wakeUI = () => { lastInputAt = performance.now(); };
 ['pointerdown', 'pointermove', 'keydown', 'touchstart'].forEach(t => document.addEventListener(t, wakeUI, { passive: true }));
 function idleTick(now) {
   /* 商店、背包、圖鑑這些全頁視窗打開時，把搖桿、動作鈕、工具列、選單把手都藏起來，才不會蓋住視窗底下的按鈕 */
-  const modal = imm && (bdOpen || ckOpen || rcOpen || mcOpen || dgOpen || lvOpen || cdOpen || dexOpen || qOpen || dsOpen || stOpen || trOpen || frOpen || mlOpen || bagOpen || shopOpen || makerOpen || authOpen || vmOpen || gmOpen || fOpen);
+  const modal = imm && (lkOpen || bdOpen || ckOpen || rcOpen || mcOpen || dgOpen || lvOpen || cdOpen || dexOpen || qOpen || dsOpen || stOpen || trOpen || frOpen || mlOpen || bagOpen || shopOpen || makerOpen || authOpen || vmOpen || gmOpen || fOpen);
   if (modal !== document.body.classList.contains('modal')) document.body.classList.toggle('modal', modal);
   const idle = imm && !sheetOpen && !pressed.length && now - lastInputAt > 3000;
   if (idle !== document.body.classList.contains('idle')) document.body.classList.toggle('idle', idle);
