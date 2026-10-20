@@ -170,6 +170,16 @@ kbd{font:600 12px/1 var(--f-display);color:var(--ink);background:var(--panel);pa
 .offer{background:#fff;border:2px dashed var(--edge);border-radius:14px;padding:10px 14px;display:flex;flex-direction:column;gap:4px;font-size:15px}
 .offer p{margin:0}
 .tmsg{margin:0;font-size:15px;line-height:1.6;text-align:center}
+.stm{position:fixed;inset:0;z-index:31;display:flex;padding:16px;background:rgba(107,72,72,.35);overflow:auto}
+.stm[hidden]{display:none}
+.stcard{width:min(340px,100%);margin:auto;background:var(--panel);border:4px solid var(--edge);border-radius:22px;padding:14px 16px;display:flex;flex-direction:column;gap:12px;box-shadow:0 5px 0 var(--edge)}
+.stcard h2{margin:0;text-align:center;font:800 20px/1.2 var(--f-display);color:var(--pink-deep);letter-spacing:.08em}
+.strow{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.strow>b{font:700 14px/1.2 var(--f-display);color:var(--ink);flex:none}
+.seg{display:flex;border:2px solid var(--edge);border-radius:999px;overflow:hidden;background:#fff}
+.seg button{font:600 13px/1 var(--f-display);color:var(--ink);background:transparent;border:0;padding:8px 12px;cursor:pointer}
+.seg button+button{border-left:2px solid var(--edge)}
+.seg button.on{background:var(--pink);color:#fff}
 .maker{
   position:fixed;inset:0;z-index:30;overflow:auto;background:var(--ground);display:flex;
   padding-block:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-bottom,0px));
@@ -222,6 +232,19 @@ kbd{font:600 12px/1 var(--f-display);color:var(--ink);background:var(--panel);pa
 @media (max-width:520px){.tut{left:5px;bottom:5px;width:calc(100% - 62px);padding:6px 10px 7px}.tut p{font-size:12px}.tut-t{font-size:14px}}
 @media (orientation:landscape) and (max-height:560px){.tut{width:min(290px,calc(100% - 90px));padding:5px 9px 6px}.tut p{font-size:11px;margin:1px 0 4px}.tut-t{font-size:13px}}
 /* ---- 快捷列 ---- */
+.empop{position:absolute;right:8px;bottom:56px;z-index:4;width:196px;max-width:calc(100% - 16px);padding:7px;line-height:1.2;background:rgba(255,250,240,.97);
+  border:3px solid var(--edge);border-radius:14px;box-shadow:0 3px 0 var(--edge)}
+.empop[hidden]{display:none}
+.empop .eg{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}
+.empop .eg+.eg{margin-top:5px;padding-top:5px;border-top:2px dashed #e8d3bf;grid-template-columns:repeat(5,1fr)}
+.empop button{font:inherit;font-size:19px;line-height:1;padding:5px 0;background:#fff;border:2px solid var(--edge);border-radius:10px;cursor:pointer}
+.empop button:active{transform:translateY(1px);background:#fde9c9}
+.empop button:focus-visible{outline:2px solid #e8833a}
+@media (max-width:520px){.empop{right:5px;bottom:48px;width:178px}.empop button{font-size:17px}}
+.emobtn{position:absolute;right:8px;bottom:8px;z-index:3;width:42px;height:42px;padding:0;border-radius:50%;border:3px solid var(--edge);
+  background:rgba(255,250,240,.94);box-shadow:0 3px 0 var(--edge);font-size:21px;line-height:1;cursor:pointer;-webkit-user-select:none;user-select:none}
+.emobtn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--edge)}
+@media (max-width:520px){.emobtn{right:5px;bottom:5px;width:38px;height:38px;font-size:19px}}
 .dock{position:absolute;right:8px;top:8px;z-index:3;display:flex;flex-direction:column;gap:6px;line-height:1}
 .dockbtn{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;width:52px;padding:6px 0 5px;cursor:pointer;
   color:var(--ink);background:rgba(255,250,240,.94);border:3px solid var(--edge);border-radius:16px;box-shadow:0 3px 0 var(--edge);-webkit-user-select:none;user-select:none}
@@ -230,7 +253,7 @@ kbd{font:600 12px/1 var(--f-display);color:var(--ink);background:var(--panel);pa
 .dockbtn small{font:600 10px/1 var(--f-display);color:var(--muted)}
 .dbadge{position:absolute;right:-6px;top:-6px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;background:var(--pink-deep);color:#fff;
   font:800 11px/18px var(--f-display);font-style:normal;text-align:center;border:2px solid #fff}
-@media (max-width:520px){.dock{right:5px;top:5px;gap:4px}.dockbtn{width:44px;padding:4px 0 3px;border-width:2px;border-radius:13px}.dockbtn .di{font-size:17px}}
+@media (max-width:520px){.dock{right:5px;top:5px;gap:4px}.dockbtn{width:40px;padding:5px 0;border-width:2px;border-radius:13px}.dockbtn .di{font-size:17px}.dockbtn small{display:none}}
 @media (orientation:landscape) and (max-height:560px){.dock{flex-direction:row;right:5px;top:5px}.dockbtn{width:40px}.dockbtn small{display:none}.dockbtn .di{font-size:16px}}
 /* ---- 背包 ---- */
 .hbrow{display:flex;gap:6px;flex-wrap:wrap}
@@ -354,11 +377,14 @@ body{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
     <canvas id="game"></canvas>
     <div class="toast" id="toast" hidden></div>
     <div class="tut" id="tut" hidden></div>
+    <div class="empop" id="emm" hidden role="dialog" aria-label="表情與動作"><div id="emcard" tabindex="-1"></div></div>
+    <button type="button" class="emobtn" id="emobtn" aria-label="表情與動作（X）" hidden>😊</button>
     <div class="dock" id="dock" aria-label="快捷功能">
       <button type="button" class="dockbtn" data-k="bag" aria-label="背包（B）"><span class="di">🎒</span><small>背包</small></button>
       <button type="button" class="dockbtn" data-k="fr" aria-label="好友（F）"><span class="di">👥</span><small>好友</small><i class="dbadge" id="dockbadge" hidden></i></button>
       <button type="button" class="dockbtn" data-k="dex" aria-label="圖鑑（G）"><span class="di">📖</span><small>圖鑑</small></button>
       <button type="button" class="dockbtn" data-k="quest" aria-label="每日任務（Q）"><span class="di">📋</span><small>任務</small><i class="dbadge" id="questbadge" hidden></i></button>
+      <button type="button" class="dockbtn" data-k="set" aria-label="設定"><span class="di">⚙️</span><small>設定</small></button>
       <button type="button" class="dockbtn" data-k="tut" aria-label="新手教學"><span class="di">❓</span><small>教學</small></button>
     </div>
     <div class="catch" id="catch" hidden><canvas id="catch-cv" width="16" height="16"></canvas><div class="catch-t" id="catch-t"></div><div class="catch-s" id="catch-s"></div><button type="button" class="btn small" id="catch-show" hidden>展示給大家看</button></div>
@@ -375,11 +401,11 @@ body{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 
   <section class="village" id="hpanel" hidden>
     <div class="v-head">
-      <b>我的家</b>
+      <b id="h-title">我的家</b>
       <span class="v-last" id="h-hint"></span>
       <button type="button" class="btn ghost" id="h-leave">回農場</button>
     </div>
-    <div class="v-quick">
+    <div class="v-quick" id="h-quick">
       <button type="button" class="btn small" id="h-edit" aria-pressed="false">布置模式：關</button>
       <button type="button" class="btn small ghost" id="h-shop">家具店</button>
       <button type="button" class="btn small ghost" id="h-look">換造型</button>
@@ -399,7 +425,6 @@ body{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
       <button type="button" class="btn ghost" id="v-leave">回農場</button>
     </div>
     <div class="v-list" id="v-list"></div>
-    <div class="v-fish" id="v-fish" hidden></div>
     <div class="v-log" id="v-log" aria-live="polite"></div>
     <form class="v-send" id="v-form" autocomplete="off">
       <input class="nameinput" id="v-input" type="text" maxlength="40" placeholder="對廣場上的朋友說點什麼" aria-label="聊天訊息">
@@ -410,13 +435,7 @@ body{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
   <div class="foot" id="foot">
     <p><span class="keys"><kbd>←↑↓→</kbd> 或 <kbd>WASD</kbd> 移動　<kbd>空白</kbd> 或 <kbd>E</kbd> 動作　<kbd>1</kbd>–<kbd>5</kbd> 換工具<br></span>翻土、播種、澆水之後，作物會依真實時間慢慢長大——就算你關掉遊戲也會繼續長。晴天要保持土壤濕潤，下雨和下雪時不用澆水也會長。站在房子門前按動作鍵可以進屋布置。</p>
     <div class="footbtns">
-      <button type="button" class="btn ghost" id="music" aria-pressed="true">音樂：開</button>
-      <input type="range" id="vol" min="0" max="100" value="50" aria-label="音量" style="width:90px;accent-color:var(--pink)">
-      <button type="button" class="btn ghost" id="frbtn">好友</button>
       <button type="button" class="btn ghost" id="gmbtn" hidden>GM 邀請碼</button>
-      <button type="button" class="btn ghost" id="fs" hidden>全螢幕</button>
-      <button type="button" class="btn ghost" id="restyle">換造型</button>
-      <button type="button" class="btn ghost" id="logout">登出</button>
     </div>
     </div>
   </div>
@@ -463,9 +482,20 @@ body{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 <div class="maker" id="bagm" hidden><div class="card maker-card" id="bagcard" tabindex="-1"></div></div>
 <div class="maker" id="fshop" hidden><div class="card maker-card" id="fshopcard" tabindex="-1"></div></div>
 <div class="maker" id="frmenu" hidden><div class="card maker-card" id="frcard" tabindex="-1"></div></div>
+<div class="stm" id="stm" hidden><div class="stcard" id="stcard" role="dialog" aria-label="設定" tabindex="-1">
+  <h2>設定</h2>
+  <div class="strow" id="st-orient-row" hidden><b>畫面方向</b>
+    <div class="seg" id="st-orient"><button type="button" data-o="auto">自動</button><button type="button" data-o="portrait">直向</button><button type="button" data-o="landscape">橫向</button></div></div>
+  <div class="strow"><b>音樂</b><button type="button" class="btn ghost small" id="music" aria-pressed="true">音樂：開</button></div>
+  <div class="strow"><b>音量</b><input type="range" id="vol" min="0" max="100" value="50" aria-label="音量" style="flex:1;min-width:0;accent-color:var(--pink)"></div>
+  <div class="strow" id="st-fs-row"><b>全螢幕</b><button type="button" class="btn ghost small" id="fs" hidden>全螢幕</button></div>
+  <button type="button" class="btn ghost wide" id="logout">登出</button>
+  <button type="button" class="btn wide" id="st-close">完成</button>
+</div></div>
 <div class="maker" id="vmenu" hidden><div class="card maker-card" id="vmcard" tabindex="-1"></div></div>
 <div class="maker" id="qm" hidden><div class="card maker-card" id="qcard" tabindex="-1"></div></div>
 <div class="maker" id="gm" hidden><div class="card maker-card" id="gmcard" tabindex="-1"></div></div>
+<div class="maker" id="dsm" hidden><div class="card maker-card" id="dscard" tabindex="-1"></div></div>
 
 <div class="maker" id="auth" hidden>
   <form class="maker-card auth-card" id="auth-form" autocomplete="on">
@@ -1065,8 +1095,8 @@ let bagOpen = false, shopOpen = false, makerOpen = false, authOpen = true, actQu
 let pendingInvite = '';
 const pressed = [];
 let frOpen = false;
-let dexOpen = false, qOpen = false;
-const paused = () => dexOpen || qOpen || frOpen || bagOpen || shopOpen || makerOpen || authOpen || vmOpen || gmOpen || fOpen || !ready;
+let dexOpen = false, qOpen = false, dsOpen = false, emOpen = false, stOpen = false;
+const paused = () => dexOpen || qOpen || dsOpen || stOpen || frOpen || bagOpen || shopOpen || makerOpen || authOpen || vmOpen || gmOpen || fOpen || !ready;
 
 /* ---------- 小提示與特效 ---------- */
 const toastEl = $('toast');
@@ -1158,6 +1188,8 @@ function grownNow(p) {
   return Math.min(g, growSec(p.crop));
 }
 const progress = p => p.crop ? grownNow(p) / growSec(p.crop) : 0;
+/* 可以收成：多留 3 秒緩衝，避免本機時鐘和伺服器差一點點，剛成熟就按會被伺服器退回「還沒長好」 */
+const ripeNow = p => !!(p && p.crop && p.grown + wetSecs(p.tick, srvNow(), p.wet) >= growSec(p.crop) + 3);
 const isWet = p => !!(p.wet && p.wet > srvNow());
 function settleLocal(p) { p.grown = grownNow(p) ; p.tick = srvNow(); }
 const fromServer = j => ({ crop: j.crop || null, grown: +j.grown || 0, tick: +j.tick || 0, wet: j.wet ? +j.wet : null });
@@ -1212,7 +1244,7 @@ const ERR = {
   nothing_to_sell: '沒有東西可以賣', bad_qty: '數量不對', bad_crop: '沒有這種作物',
   bad_name: '名字要 1 到 8 個字', bad_look: '造型資料不對', bad_username: '帳號格式不對', username_taken: '這個帳號已經有人用了',
   bad_invite: '邀請碼無效或已被使用', not_gm: '只有 GM 可以這樣做', nothing_to_revoke: '這組邀請碼已經被使用或不存在',
-  village_full: '這個村莊已經滿 8 人了', bad_village_code: '村莊邀請碼要 6 個字元', bad_mode: '操作不對', too_fast: '別急，再等一下', max_rod: '已經是最高級的釣竿了', no_user: '找不到這位玩家', friend_self: '不能加自己為好友', already_friends: '已經是好友了', already_sent: '已經送出過申請了，等對方回覆吧', too_many_requests: '送出的申請太多了，先等對方回覆吧', friend_full: '你的好友已經滿了', target_full: '對方的好友已經滿了', no_request: '這個申請已經不存在了', bad_fish: '沒有這種魚', bad_bug: '沒有這種蟲', bug_gone: '這隻已經飛走了', nothing_to_claim: '現在沒有可以領的獎勵'
+  village_full: '這個村莊已經滿 8 人了', bad_village_code: '村莊邀請碼要 6 個字元', bad_mode: '操作不對', too_fast: '別急，再等一下', max_rod: '已經是最高級的釣竿了', no_user: '找不到這位玩家', friend_self: '不能加自己為好友', already_friends: '已經是好友了', already_sent: '已經送出過申請了，等對方回覆吧', too_many_requests: '送出的申請太多了，先等對方回覆吧', friend_full: '你的好友已經滿了', target_full: '對方的好友已經滿了', no_request: '這個申請已經不存在了', bad_fish: '沒有這種魚', bad_bug: '沒有這種蟲', bug_gone: '這隻已經飛走了', nothing_to_claim: '現在沒有可以領的獎勵', not_friend: '只能拜訪好友的家', bad_slot: '這個格子不能用', no_item: '找不到這個家具', bad_item: '這個家具不能這樣用', cannot_place: '這裡放不下', house_full: '家裡的家具太多了'
 };
 const errText = e => {
   const m = String((e && (e.message || e.msg)) || e || '');
@@ -1274,6 +1306,7 @@ const have = k => inv[k] | 0;
 
 /* ---------- 動作 ---------- */
 function act() {
+  if (pose) { standUp(); return; }
   const [x, y] = facing();
   if (x < 0 || y < 0 || x >= W || y >= H) return;
   if (scene === 'plaza') {
@@ -1284,12 +1317,16 @@ function act() {
     else if (k2 === WA && curTool().id === 'rod') startFish(x, y);
     else if (k2 === WA) pop(x, y, '這是池塘（換成釣竿就能釣魚）', '#cfe8f7');
     else if (rp) openFriends(rp);
+    else if (k2 === BN) takeBench(x, y);
     return;
   }
   if (scene === 'house') {
     if (K[y][x] === GT) { leaveHouse(); return; }
     const lx = x - RX, ly = y - RY, hit = house && lx >= 0 && lx < RW && ly >= -2 && ly < RH ? itemAtLocal(lx, ly) : null;
-    if (hit) pop(x, y, (defOf(hit.k) || {}).name || '', '#fff3b0');
+    if (hit && DISP[hit.k]) { if (visiting) visitShowList(hit); else openDisplay(hit.id); }
+    else if (hit && STYLER[hit.k] && !edit.on && !visiting) openMaker(false);
+    else if (hit && SEAT[hit.k] && !edit.on) takeSeat(hit, x, y);
+    else if (hit) pop(x, y, (defOf(hit.k) || {}).name || '', '#fff3b0');
     return;
   }
   const k = K[y][x], key = pk(x, y), p = plots.get(key), t = curTool();
@@ -1303,8 +1340,8 @@ function act() {
     pop(x, y, t.id === 'can' ? '水壺永遠是滿的' : '這是池塘', '#cfe8f7'); if (t.id === 'can') splash(x, y); return;
   }
   if (k !== G) { if (t.id === 'net') swingNet(x, y); return; }
-  if (t.id === 'net' && !(p && p.crop && progress(p) >= 1)) { swingNet(x, y); return; }
-  if (p && p.crop && progress(p) >= 1) {
+  if (t.id === 'net' && !ripeNow(p)) { swingNet(x, y); return; }
+  if (ripeNow(p)) {
     const c = p.crop;
     p.crop = null; p.grown = 0; p.tick = srvNow();
     inv['c:' + c] = have('c:' + c) + 1;
@@ -1492,11 +1529,13 @@ function bagDetail(it) {
   else if (it.t === 'fish') {
     const rc = RARITY[it.f.rarity] || ['', ''];
     info = rc[0] + ' · 到雜貨攤賣，每條 ' + it.f.price + ' G。';
-    const can = scene === 'plaza' && net && net.ok && (fishLog[it.k] | 0) > 0;
-    a.push('<button type="button" class="btn small"' + (can ? '' : ' disabled') + ' data-b="show">展示給大家看</button>' + (can ? '' : '<small class="empty">（在廣場才能展示）</small>'));
+    const can = canShowHere() && (fishLog[it.k] | 0) > 0;
+    a.push('<button type="button" class="btn small"' + (can ? '' : ' disabled') + ' data-b="show">' + (scene === 'plaza' && net && net.ok ? '展示給大家看' : '展示') + '</button>' + (can ? '' : '<small class="empty">（還沒抓到過）</small>'));
   } else if (it.t === 'bug') {
     const rc = RARITY[it.f.rarity] || ['', ''];
     info = rc[0] + ' · 到雜貨攤賣，每隻 ' + it.f.price + ' G。';
+    const can = canShowHere() && (bugLog[it.k] | 0) > 0;
+    a.push('<button type="button" class="btn small"' + (can ? '' : ' disabled') + ' data-b="show">' + (scene === 'plaza' && net && net.ok ? '展示給大家看' : '展示') + '</button>' + (can ? '' : '<small class="empty">（還沒抓到過）</small>'));
   } else if (it.t === 'furn') {
     const st = it.d.layer === 'wall_style' || it.d.layer === 'floor_style';
     info = st ? '已購買的款式，在家具店可以隨時換上。' : '回家進入「布置模式」就能擺放。不要的話，在布置模式可以賣掉，得 ' + Math.floor(it.d.price / 2) + ' G。';
@@ -1544,7 +1583,7 @@ bagCard.addEventListener('click', e => {
   const d = b.dataset;
   if (d.b === 'close') { closeBag(); return; }
   if (d.b === 'eq' && bagSel) { const idx = catIdx(bagSel); if (idx >= 0) { setSlot(+d.s, idx); renderBag(); } return; }
-  if (d.b === 'show' && bagSel) { showFish(bagSel.k); closeBag(); return; }
+  if (d.b === 'show' && bagSel && (bagSel.t === 'fish' || bagSel.t === 'bug')) { showItem(bagSel.t, bagSel.k); closeBag(); return; }
   if (d.t) { bagSel = { t: d.t, k: d.k }; renderBag(); }
 });
 bagEl.addEventListener('click', e => { if (e.target === bagEl) closeBag(); });
@@ -1727,6 +1766,7 @@ $('dock').addEventListener('click', e => {
   else if (k === 'fr') openFriends();
   else if (k === 'dex') openDex();
   else if (k === 'quest') openQuests();
+  else if (k === 'set') openSettings();
   else if (k === 'tut') { if (tutI >= 0) { tutDone(true); } else tutStart(0); }
 });
 $('dock').addEventListener('pointerdown', e => e.stopPropagation());
@@ -1789,6 +1829,7 @@ function updateClock() {
   wx.classList.toggle('rain', w.wet);
 }
 function refreshHud() {
+  $('emobtn').hidden = !(ready && me);
   $('gold').textContent = (me ? me.coins : 0) + ' G';
   $('who').textContent = me ? me.name : '未登入';
   $('gmbtn').hidden = !(me && me.gm);
@@ -1808,27 +1849,31 @@ function updateTip() {
   if (fishing) {
     s = fishing.phase === 'bite' ? '魚咬鉤了！快按動作鍵拉竿！' : fishing.phase === 'cast' ? '拋竿…' : fishing.phase === 'reel' ? '拉起來…' : '等魚上鉤…看到「!」立刻按動作鍵。太早拉會嚇跑魚。';
   } else if (scene === 'house') {
-    s = '這是你的家。按「布置模式」可以擺放家具。';
+    s = visiting ? '這是 ' + visiting.name + ' 的家，隨意參觀吧。' : '這是你的家。按「布置模式」可以擺放家具。';
+    if (pose) s = (pose.type === 'lie' ? '躺著休息中…' : '坐著休息中…') + '按方向鍵或動作鍵起身。';
+    else
     if (x >= 0 && y >= 0 && x < W && y < H) {
       const lx = x - RX, ly = y - RY, hit = house && lx >= 0 && lx < RW && ly >= -2 && ly < RH ? itemAtLocal(lx, ly) : null;
       if (K[y][x] === GT) s = '門口：按動作鍵回農場。';
-      else if (hit) s = (defOf(hit.k) || {}).name || '';
+      else if (hit) s = ((defOf(hit.k) || {}).name || '') + (DISP[hit.k] ? '：按動作鍵' + (visiting ? '看展示品' : '換展示品') : STYLER[hit.k] && !visiting && !edit.on ? '：按動作鍵換造型' : SEAT[hit.k] && !edit.on ? '：按動作鍵' + (SEAT[hit.k] === 'lie' ? '躺下' : '坐下') : '');
     }
   } else if (scene === 'plaza') {
     s = '和朋友聊聊天吧，下方可以打字。';
+    if (pose) s = '坐著休息中…按方向鍵或動作鍵起身。';
+    else
     if (x >= 0 && y >= 0 && x < W && y < H) {
       const rp = remoteAt(x, y);
       if (K[y][x] === GT) s = '出口：按動作鍵回農場。';
       else if (rp) s = '這是 ' + rp.name + '。';
       else if (K[y][x] === WA) s = curTool().id === 'rod' ? '池塘：按動作鍵拋竿釣魚。' : '池塘。（換成釣竿就能釣魚）';
       else if (K[y][x] === FR) s = '噴水池。';
-      else if (K[y][x] === BN) s = '長椅。';
+      else if (K[y][x] === BN) s = '長椅：按動作鍵坐下。';
     }
   } else if (false) {
     s = fishing.phase === 'bite' ? '魚咬鉤了！快按動作鍵拉竿！' : fishing.phase === 'cast' ? '拋竿…' : fishing.phase === 'reel' ? '拉起來…' : '等魚上鉤…看到「!」立刻按動作鍵。太早拉會嚇跑魚。';
   } else if (x >= 0 && y >= 0 && x < W && y < H) {
     const p = plots.get(pk(x, y)), k = K[y][x];
-    if (curTool().id === 'net' && !(p && p.crop && progress(p) >= 1)) s = critters.length ? '捕蟲網：蟲蝶靠近時，面向牠按動作鍵揮網！' : '捕蟲網：這一輪的蟲蝶都被你抓光了。每 5 分鐘會有新的一輪。';
+    if (curTool().id === 'net' && !ripeNow(p)) s = critters.length ? '捕蟲網：蟲蝶靠近時，面向牠按動作鍵揮網！' : '捕蟲網：這一輪的蟲蝶都被你抓光了。每 5 分鐘會有新的一輪。';
     else if (p && p.crop) {
       const need = growSec(p.crop) - grownNow(p);
       const nm = CROPS[p.crop].n;
@@ -1855,20 +1900,19 @@ function updateTip() {
 /* ---------- 釣魚（魚種、咬鉤時間都由伺服器決定，拉竿也由伺服器判定） ---------- */
 const catchEl = $('catch'), catchCv = $('catch-cv'), catchT = $('catch-t'), catchS = $('catch-s');
 let fishing = null, fishSeq = 0, fishCool = 0, catchTimer = 0, catchShown = false;
-$('catch-show').addEventListener('click', () => { showFish(catchKey); hideCatch(); });
+$('catch-show').addEventListener('click', () => { showItem(catchKind, catchKey); hideCatch(); });
 function hideCatch() { catchShown = false; catchEl.hidden = true; clearTimeout(catchTimer); }
-let catchKey = '';
+let catchKey = '', catchKind = 'fish';
 function showCatch(f, first, isBug) {
-  catchKey = f.key;
+  catchKey = f.key; catchKind = isBug ? 'bug' : 'fish';
   if (isBug) drawBug(catchCv.getContext('2d'), f.key, false); else drawFish(catchCv.getContext('2d'), f.key, false);
   const rc = RARITY[f.rarity] || ['', '#888'];
   catchT.textContent = f.name;
   catchS.textContent = rc[0] + ' · ' + f.price + ' G' + (first ? ' · 新發現！' : '');
   catchEl.style.setProperty('--rc', rc[1]);
-  const canShow = !isBug && scene === 'plaza' && net && net.ok;
+  const canShow = true;
   $('catch-show').hidden = !canShow;
   catchShown = true; catchEl.hidden = false; clearTimeout(catchTimer); catchTimer = setTimeout(hideCatch, canShow ? 6000 : 3200);
-  if (!isBug) renderVFish();
 }
 
 /* ---------- 抓蟲與蝴蝶（農場草地上會有蟲蝶飛、爬；打中之後抓到哪一種由伺服器依時段和天氣決定） ---------- */
@@ -2026,26 +2070,28 @@ function drawFishing(now) {
 
 /* 魚的小圖（快取）與展示卡 */
 const fishSprites = {};
-function fishSprite(key) {
-  if (!fishSprites[key]) {
+function showSprite(kind, key) {
+  const id = kind + ':' + key;
+  if (!fishSprites[id]) {
     const cv = document.createElement('canvas'); cv.width = 16; cv.height = 16;
-    drawFish(cv.getContext('2d'), key, false); fishSprites[key] = cv;
+    if (kind === 'bug') drawBug(cv.getContext('2d'), key, false); else drawFish(cv.getContext('2d'), key, false);
+    fishSprites[id] = cv;
   }
-  return fishSprites[key];
+  return fishSprites[id];
 }
 function showCard(s, cx, cy, now) {
-  const age = now - s.at;
-  if (age > 7000) return;
+  const age = now - s.at, dur = s.dur || 7000;
+  if (age > dur) return;
   ctx.font = '800 5px "Chiron GoRound TC", "Noto Sans TC", sans-serif';
   ctx.textAlign = 'center';
   const label = s.name;
   const w = Math.max(30, Math.ceil(ctx.measureText(label).width) + 8), h = 29;
   const x = Math.round(cx - w / 2), y = cy - h;
-  ctx.globalAlpha = clamp((7000 - age) / 700, 0, 1);
+  ctx.globalAlpha = clamp((dur - age) / 700, 0, 1);
   const bob = Math.round(Math.sin(now / 260) * 1);
   ob('#fffaf0', s.col, x, y + bob, w, h);
   r(s.col, cx - 1, y + h + bob, 3, 1); r('#fffaf0', cx, y + h - 1 + bob, 1, 1);
-  ctx.drawImage(fishSprite(s.k), cx - 8, y + 2 + bob);
+  ctx.drawImage(showSprite(s.kind || 'fish', s.k), cx - 8, y + 2 + bob);
   ctx.fillStyle = INK; ctx.fillText(label, cx, y + 25 + bob);
   ctx.globalAlpha = 1;
 }
@@ -2072,6 +2118,13 @@ window.addEventListener('keydown', e => {
   if (e.key === 'Escape' && vmOpen) { closeVMenu(); return; }
   if (e.key === 'Escape' && gmOpen) { closeGM(); return; }
   if (e.key === 'Escape' && fOpen) { closeFShop(); return; }
+  if (e.key === 'Escape' && stOpen) { closeSettings(); return; }
+  if (e.key === 'Escape' && dsOpen) { closeDisplay(); return; }
+  if (e.key === 'Escape' && emOpen) { closeEmote(); return; }
+  if ((e.key === 'x' || e.key === 'X') && !e.ctrlKey && !e.metaKey && !e.altKey && !/^(INPUT|TEXTAREA|SELECT)$/.test((e.target && e.target.tagName) || '')) {
+    if (emOpen) closeEmote(); else if (!paused() && me) openEmote();
+    return;
+  }
   if (e.key === 'Escape' && makerOpen && !firstTime) { closeMaker(); return; }
   if (paused()) return;
   const d = KEYMAP[e.key];
@@ -2151,11 +2204,46 @@ if (docEl.requestFullscreen && document.fullscreenEnabled) {
     try {
       if (document.fullscreenElement) { await document.exitFullscreen(); return; }
       await docEl.requestFullscreen();
-      if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(() => {});
+      if (orientPref !== 'auto') applyOrient(false);
     } catch (_) {}
   });
   document.addEventListener('fullscreenchange', () => { fsBtn.textContent = document.fullscreenElement ? '離開全螢幕' : '全螢幕'; });
 }
+
+
+/* ---------- 設定：畫面方向、音樂與音量、全螢幕、登出 ---------- */
+const stEl = $('stm'), stCard = $('stcard');
+const orientOK = !!(window.matchMedia && matchMedia('(pointer:coarse)').matches);
+let orientPref = 'auto';
+try { const v = localStorage.getItem('dw_orient'); if (v === 'portrait' || v === 'landscape') orientPref = v; } catch (e) { /* 略過 */ }
+function syncOrientUI() { document.querySelectorAll('#st-orient button').forEach(b => b.classList.toggle('on', b.dataset.o === orientPref)); }
+async function applyOrient(interactive) {
+  const so = screen.orientation;
+  if (orientPref === 'auto') { try { so && so.unlock && so.unlock(); } catch (e) { /* 略過 */ } return; }
+  if (!so || !so.lock) { if (interactive) toast('這個瀏覽器不支援鎖定方向，請用手機的「自動旋轉」開關', 3200); return; }
+  const mode = orientPref;
+  try { await so.lock(mode); return; } catch (e) { /* 多數手機要先進入全螢幕才能鎖定 */ }
+  if (docEl.requestFullscreen && document.fullscreenEnabled && !document.fullscreenElement) {
+    try { await docEl.requestFullscreen(); await so.lock(mode); return; } catch (e) { /* 略過 */ }
+  }
+  if (interactive) toast('無法鎖定方向，請改用手機的「自動旋轉」開關', 3200);
+}
+document.addEventListener('fullscreenchange', () => { if (document.fullscreenElement && orientPref !== 'auto') applyOrient(false); });
+function openSettings() {
+  if (!ready || !me || authOpen || paused() || stOpen) return;
+  stOpen = true; pressed.length = 0; $('st-orient-row').hidden = !orientOK; syncOrientUI(); stEl.hidden = false; stCard.focus();
+}
+function closeSettings() { stOpen = false; stEl.hidden = true; }
+$('st-close').addEventListener('click', closeSettings);
+stEl.addEventListener('pointerdown', e => { if (e.target === stEl) closeSettings(); });
+$('st-orient').addEventListener('click', e => {
+  const b = e.target.closest('button[data-o]');
+  if (!b) return;
+  orientPref = b.dataset.o; syncOrientUI();
+  try { localStorage.setItem('dw_orient', orientPref); } catch (err) { /* 略過 */ }
+  applyOrient(true);
+});
+$('logout').addEventListener('click', closeSettings);
 
 /* ---------- 角色外觀 ---------- */
 const mk = $('maker'), optsEl = $('opts'), pctx = $('pv').getContext('2d');
@@ -2257,7 +2345,6 @@ $('mk-rand').addEventListener('click', () => {
   syncMaker();
 });
 $('pvturn').addEventListener('click', () => { pvFace = (pvFace + 1) % 4; drawPreview(); });
-$('restyle').addEventListener('click', () => { if (ready && !authOpen) openMaker(false); });
 
 /* ---------- 登入與註冊 ---------- */
 const authEl = $('auth'), bootEl = $('boot');
@@ -2477,7 +2564,7 @@ const FACEIDX = { down: 0, right: 1, up: 2, left: 3 };
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const remotes = new Map();
 let net = null, roomInfo = null, myUid = '', pingTimer = 0, myBubble = null, myShow = null;
-let lastPosKey = '', posAcc = 0, lastMoveAt = 0, lastChat = 0, lastTrackAt = 0;
+let lastPosKey = '', posAcc = 0, lastMoveAt = 0, lastChat = 0, lastTrackAt = 0, lastSendAt = 0;
 const vPanel = $('village'), vList = $('v-list'), vLog = $('v-log');
 
 function nameTag(txt, cx, cy, col) {
@@ -2531,23 +2618,10 @@ function renderVillage() {
   const names = [esc(me.name) + '（你）'];
   remotes.forEach(rp => names.push(esc(rp.name)));
   vList.innerHTML = names.map(x => '<span class="pchip">' + x + '</span>').join('');
-  renderVFish();
 }
-function renderVFish() {
-  const el = $('v-fish');
-  if (!el) return;
-  const mine = fishCat.filter(f => (fishLog[f.key] | 0) > 0);
-  el.hidden = !mine.length;
-  el.innerHTML = mine.length ? '<span class="optlabel">展示我釣到的魚</span><div class="v-quick">' +
-    mine.map(f => '<button type="button" class="qbtn" data-fk="' + esc(f.key) + '">' + esc(f.name) + '</button>').join('') + '</div>' : '';
-}
-$('v-fish').addEventListener('click', e => {
-  const b = e.target.closest('button[data-fk]');
-  if (b) showFish(b.dataset.fk);
-});
 function trackSelf() {
   if (!net || !net.ok) return;
-  try { net.ch.track({ n: me.name, c: me.look, x: pl.x, y: pl.y, f: FACEIDX[pl.face] }); } catch (e) { /* 略過 */ }
+  try { net.ch.track({ n: me.name, c: me.look, x: pl.x, y: pl.y, f: FACEIDX[pl.face], s: pose && pose.bench ? 1 : 0 }); } catch (e) { /* 略過 */ }
 }
 function onSync(ch) {
   if (!net || net.ch !== ch) return;
@@ -2561,12 +2635,12 @@ function onSync(ch) {
     seen.add(id);
     let rp = remotes.get(id);
     if (!rp) {
-      rp = { id, name, char: toChar(name, m.c), x, y, tx: x, ty: y, f, bubble: null };
+      rp = { id, name, char: toChar(name, m.c), x, y, tx: x, ty: y, f, bubble: null, sit: m.s === 1 && pkind[y][x] === BN };
       remotes.set(id, rp);
       if (net.synced) addSys(name + ' 來到廣場');
     } else {
       rp.name = name; rp.char = toChar(name, m.c);
-      if (performance.now() - (rp.posAt || 0) > 800) { rp.tx = x; rp.ty = y; rp.f = f; }   // 剛收到更新的走動訊息就不要被舊位置蓋回去
+      if (performance.now() - (rp.posAt || 0) > 800) { rp.tx = x; rp.ty = y; rp.f = f; rp.sit = m.s === 1 && pkind[y][x] === BN; }   // 剛收到更新的走動訊息就不要被舊位置蓋回去
     }
   });
   remotes.forEach((rp, id) => { if (!seen.has(id)) { remotes.delete(id); addSys(rp.name + ' 離開了'); } });
@@ -2580,6 +2654,7 @@ function onPos(p) {
   const nx = intIn(p.x, 0, W - 1, rp.tx), ny = intIn(p.y, 0, H - 1, rp.ty);
   if (nx !== rp.tx || ny !== rp.ty) rp.fish = null;
   rp.tx = nx; rp.ty = ny; rp.f = intIn(p.f, 0, 3, rp.f); rp.posAt = performance.now();
+  rp.sit = p.s === 1 && pkind[ny][nx] === BN;                  // 只有真的在長椅那一格才當作坐著
 }
 /* 別人釣魚：只畫釣竿和浮標（收到的資料一律檢查：座標要在範圍內、而且要是池塘的水面） */
 function onFish(p) {
@@ -2594,14 +2669,15 @@ function onFish(p) {
   else rp.fish = { x, y, phase: bite ? 'bite' : 'cast', t0: Date.now() };
   if (rp.fish.phase === 'cast') setTimeout(() => { if (rp.fish && rp.fish.phase === 'cast') rp.fish.phase = 'wait'; }, 400);
 }
-/* 別人展示魚：只認得自己魚種清單裡的魚，名字和稀有度用本機的資料，不用對方送來的文字 */
+/* 別人展示魚或蟲蝶：只認得自己清單裡的種類，名字和稀有度用本機的資料，不用對方送來的文字 */
 function onShow(p) {
   if (!p || typeof p !== 'object') return;
   const rp = typeof p.i === 'string' ? remotes.get(p.i) : null;
-  const f = typeof p.k === 'string' ? fishCat.find(x => x.key === p.k) : null;
+  const kd = p.t === 'bug' ? 'bug' : 'fish';
+  const f = typeof p.k === 'string' ? (kd === 'bug' ? bugCat : fishCat).find(x => x.key === p.k) : null;
   if (!rp || !f) return;
   const rc = RARITY[f.rarity] || ['', '#e0b896'];
-  rp.show = { k: f.key, name: f.name, col: rc[1], at: performance.now() };
+  rp.show = { kind: kd, k: f.key, name: f.name, col: rc[1], at: performance.now() };
   addLog(rp.name, '展示了「' + f.name + '」（' + rc[0] + '）', false);
 }
 function onChat(p) {
@@ -2628,17 +2704,19 @@ function startNet(rm, priv) {
   netGate.then(() => {
     if (tok !== netTok) return;                // 等待期間已經離開或換房了
     const ch = sb.channel('village:' + rm, { config: { private: priv, presence: { key: myUid }, broadcast: { self: false, ack: false } } });
-    net = { ch, room: rm, ok: false, synced: false };
+    net = { ch, room: rm, priv, ok: false, wasOk: false, bad: 0, synced: false };
     ch.on('presence', { event: 'sync' }, () => onSync(ch))
       .on('broadcast', { event: 'pos' }, m => onPos(m && m.payload))
       .on('broadcast', { event: 'chat' }, m => onChat(m && m.payload))
       .on('broadcast', { event: 'fish' }, m => onFish(m && m.payload))
       .on('broadcast', { event: 'show' }, m => onShow(m && m.payload))
+      .on('broadcast', { event: 'emo' }, m => onEmo(m && m.payload))
       .subscribe(status => {
         if (!net || net.ch !== ch) return;
-        if (status === 'SUBSCRIBED') { net.ok = true; trackSelf(); }
-        else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          if (net.ok) return;
+        if (status === 'SUBSCRIBED') { net.ok = true; net.wasOk = true; net.bad = 0; lastSendAt = 0; trackSelf(); }
+        else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+          if (net.ok || net.wasOk) { net.ok = false; return; }   // 連上後才斷線：supabase-js 會自動重連，netWatch 看門狗負責兜底
+          if (status === 'CLOSED') return;
           if (priv) startNet(rm, false);          // 備援：改用公開頻道
           else { addSys('連不上即時連線，暫時只能看到自己。'); toast('廣場的即時連線失敗，請重新整理再試'); }
         }
@@ -2646,7 +2724,7 @@ function startNet(rm, priv) {
   });
 }
 function enterPlaza(info) {
-  roomInfo = info; scene = 'plaza'; K = pkind;
+  roomInfo = info; scene = 'plaza'; K = pkind; pose = null;
   remotes.clear(); vLog.innerHTML = ''; myBubble = null; myShow = null; lastPosKey = ''; posAcc = 0;
   pl.x = pl.sx = 10; pl.y = pl.sy = 11; pl.prog = 1; pl.face = 'up'; pressed.length = 0;
   vPanel.hidden = false; renderVillage();
@@ -2664,7 +2742,7 @@ function enterPlaza(info) {
   }, 20000);
 }
 function leaveVillage(silent) {
-  stopNet(); clearInterval(pingTimer);
+  stopNet(); clearInterval(pingTimer); if (pose && pose.bench) pose = null;
   const was = scene === 'plaza';
   scene = 'farm'; K = kind; roomInfo = null; remotes.clear(); myBubble = null; myShow = null;
   vPanel.hidden = true;
@@ -2674,38 +2752,68 @@ function leaveVillage(silent) {
     if (!silent) toast('回到農場了');
   }
 }
-async function joinVillage(mode, code) {
+async function joinVillage(mode, code, k) {
   try {
-    const info = await rpc('village_join', { p_mode: mode, p_code: code || null });
+    const info = mode === 'room' ? await rpc('village_join_pub', { p_k: k }) : await rpc('village_join', { p_mode: mode, p_code: code || null });
     closeVMenu(); enterPlaza(info);
-  } catch (e) { toast(errText(e)); renderVMenu(); }
+  } catch (e) { toast(errText(e)); renderVMenu(); loadVRooms(); }
 }
 function sendPos(dt) {
   posAcc += dt;
-  const key = pl.x + ',' + pl.y + ',' + pl.face;
-  if (key !== lastPosKey && posAcc >= 110 && net && net.ok) {
-    posAcc = 0; lastPosKey = key; lastMoveAt = performance.now();
-    try { net.ch.send({ type: 'broadcast', event: 'pos', payload: { i: myUid, x: pl.x, y: pl.y, f: FACEIDX[pl.face] } }); } catch (e) { /* 略過 */ }
-    if (lastMoveAt - lastTrackAt > 250) { lastTrackAt = lastMoveAt; trackSelf(); }   // 同時更新 presence：就算廣播訊息被丟掉，別人也看得到你在動
+  const now = performance.now();
+  const key = pl.x + ',' + pl.y + ',' + pl.face + ',' + (pose && pose.bench ? 1 : 0);
+  const moved = key !== lastPosKey && posAcc >= 120;
+  const beat = !!(net && net.ok) && now - lastSendAt > 3000;   // 心跳：站著不動也每 3 秒補一次位置，弄丟的訊息會自己補回來
+  if ((moved || beat) && net && net.ok) {
+    posAcc = 0; lastPosKey = key; lastSendAt = now;
+    if (moved) lastMoveAt = now;
+    try { net.ch.send({ type: 'broadcast', event: 'pos', payload: { i: myUid, x: pl.x, y: pl.y, f: FACEIDX[pl.face], s: pose && pose.bench ? 1 : 0 } }); } catch (e) { /* 略過 */ }
+    if (moved && now - lastTrackAt > 1500) { lastTrackAt = now; trackSelf(); }   // presence 只當備援，降低頻率以免超過 Realtime 的訊息上限
   }
-  if (lastMoveAt && performance.now() - lastMoveAt > 500) { lastMoveAt = 0; trackSelf(); }
+  if (lastMoveAt && now - lastMoveAt > 500) { lastMoveAt = 0; trackSelf(); }
 }
+/* 看門狗：頻道連上後如果掉線又沒自己恢復，就整條重建；回到前景、網路恢復時也會檢查 */
+function netWatch(force) {
+  if (!ready || !sb) return;
+  if (scene === 'plaza' && roomInfo && net) {
+    const st = net.ch.state;
+    if (st === 'joined') { net.bad = 0; if (!net.ok) { net.ok = true; trackSelf(); } }
+    else if (net.wasOk && (force || ++net.bad >= 2)) { addSys('連線中斷，重新連線中…'); startNet(net.room, net.priv); return; }
+  }
+  if (pres) {
+    if (pres.ch.state === 'joined') { pres.bad = 0; if (!pres.ok) { pres.ok = true; trackWhere(true); } }
+    else if (pres.ok && (force || (pres.bad = (pres.bad || 0) + 1) >= 2)) startPresence();
+  }
+}
+setInterval(netWatch, 4000);
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden || !ready) return;
+  netWatch(false);
+  setTimeout(() => { if (net && net.ok) { lastSendAt = 0; trackSelf(); } if (pres && pres.ok) trackWhere(true); }, 600);   // 回到前景：重新宣告自己的位置與狀態
+});
+window.addEventListener('online', () => setTimeout(() => netWatch(true), 3000));
 function netFish(p) {
   if (scene !== 'plaza' || !net || !net.ok) return;
   try { net.ch.send({ type: 'broadcast', event: 'fish', payload: { i: myUid, ...p } }); } catch (e) { /* 略過 */ }
 }
 let lastShow = 0;
-function showFish(key) {
-  const f = fishCat.find(x => x.key === key);
-  if (!f || !(fishLog[key] > 0) || scene !== 'plaza' || !net || !net.ok) return;
+const canShowHere = () => true;
+/* 展示魚或蟲蝶：在廣場會廣播給大家；在家裡只有自己看得到，卡片會停留較久 */
+function showItem(kind, key) {
+  kind = kind === 'bug' ? 'bug' : 'fish';
+  const f = (kind === 'bug' ? bugCat : fishCat).find(x => x.key === key);
+  if (!f || !((kind === 'bug' ? bugLog : fishLog)[key] > 0)) return;
   const now = performance.now();
   if (now - lastShow < 1500) { toast('慢一點，別洗頻喔', 1200); return; }
   lastShow = now;
   const rc = RARITY[f.rarity] || ['', '#e0b896'];
-  try { net.ch.send({ type: 'broadcast', event: 'show', payload: { i: myUid, k: key } }); } catch (e) { return; }
-  myShow = { k: key, name: f.name, col: rc[1], at: now };
-  addLog(me.name, '展示了「' + f.name + '」（' + rc[0] + '）', true);
+  if (scene === 'plaza' && net && net.ok) {
+    try { net.ch.send({ type: 'broadcast', event: 'show', payload: { i: myUid, k: key, t: kind } }); } catch (e) { return; }
+    addLog(me.name, '展示了「' + f.name + '」（' + rc[0] + '）', true);
+  } else toast('展示中：' + f.name + '（' + rc[0] + '）' + (scene === 'plaza' ? '（尚未連上廣場，只有你看得到）' : ''), 1800);
+  myShow = { kind, k: key, name: f.name, col: rc[1], at: now, dur: scene === 'plaza' && net && net.ok ? 7000 : 20000 };
 }
+const showFish = key => showItem('fish', key);
 function sendChat(text) {
   text = clean(text, 40).trim();
   if (!text || !net || !net.ok) return;
@@ -2749,9 +2857,8 @@ function applyFriends(d) {
   const row = o => ({ uid: typeof o.uid === 'string' ? o.uid.slice(0, 40) : '', username: clean(o.username, 16), name: clean(o.name, 8) || '旅人' });
   const before = fr.incoming.length;
   fr = { friends: arr(d && d.friends).map(row), incoming: arr(d && d.incoming).map(row), outgoing: arr(d && d.outgoing).map(row), max: intIn(d && d.max, 1, 500, 50) };
-  $('frbtn').textContent = '好友' + (fr.incoming.length ? '（' + fr.incoming.length + '）' : '');
   const bd = $('dockbadge'); bd.hidden = !fr.incoming.length; bd.textContent = fr.incoming.length;
-  if (fr.incoming.length > before) toast('收到新的好友申請！按 F 或點「好友」查看', 4000);
+  if (fr.incoming.length > before) toast('收到新的好友申請！按 F 或點右上角的好友圖示查看', 4000);
   if (frOpen) renderFriends();
 }
 async function loadFriends() {
@@ -2805,7 +2912,7 @@ function renderFriends() {
   if (frTarget) {
     const t = frTarget;
     let act;
-    if (isFriend(t.id)) act = '<p class="empty">你們已經是好友了。</p>';
+    if (isFriend(t.id)) act = '<p class="empty">你們已經是好友了。</p><button type="button" class="btn wide" data-a="visit" data-u="' + esc(t.id) + '">拜訪 ' + esc(t.name) + ' 的家</button>';
     else if (fr.incoming.some(f => f.uid === t.id)) act = '<button type="button" class="btn wide" data-a="accept" data-u="' + esc(t.id) + '">接受 ' + esc(t.name) + ' 的好友申請</button>';
     else if (fr.outgoing.some(f => f.uid === t.id)) act = '<p class="empty">已送出申請，等對方同意。</p>';
     else act = '<button type="button" class="btn wide" data-a="reqid" data-u="' + esc(t.id) + '">加 ' + esc(t.name) + ' 為好友</button>';
@@ -2823,6 +2930,7 @@ function renderFriends() {
     h += list.map(f => {
       const w = onlineMap.get(f.uid);
       return '<div class="frow"><div class="meta"><b><span class="fdot' + (w ? ' on' : '') + '"></span>' + esc(f.name) + '</b><small>@' + esc(f.username) + ' · ' + (w ? WHERE[w] : '離線') + '</small></div><div class="acts">' +
+        '<button type="button" class="btn small" data-a="visit" data-u="' + esc(f.uid) + '">拜訪</button>' +
         (frConfirm === f.uid ? '<button type="button" class="btn small" data-a="remove" data-u="' + esc(f.uid) + '">確定刪除</button>'
                              : '<button type="button" class="btn small ghost" data-a="rmask" data-u="' + esc(f.uid) + '">刪除</button>') + '</div></div>';
     }).join('');
@@ -2860,6 +2968,10 @@ frCard.addEventListener('click', async e => {
   const a = b.dataset.a, u = b.dataset.u;
   if (a === 'close') { closeFriends(); return; }
   if (a === 'rmask') { frConfirm = u; renderFriends(); return; }
+  if (a === 'visit') {
+    const f = fr.friends.find(x => x.uid === u) || (frTarget && frTarget.id === u ? frTarget : null);
+    closeFriends(); visitHouse(u, f && f.name); return;
+  }
   frConfirm = '';
   if (a === 'reqid') await frCall('friend_request_uid', { p_uid: u }, '已送出好友申請', u);
   else if (a === 'accept') await frCall('friend_accept', { p_uid: u }, '已接受', u);
@@ -2873,27 +2985,44 @@ frCard.addEventListener('click', async e => {
     if (hit) { notifyFriend(hit.uid); $('fr-user').value = ''; }
   }
 });
-$('frbtn').addEventListener('click', () => { if (ready && me && !authOpen) openFriends(); });
 
 /* ---------- 出門選單（村莊大門） ---------- */
 const vmEl = $('vmenu'), vmCard = $('vmcard');
+let vmRooms = null, vmSeq = 0;
 function renderVMenu() {
+  const rooms = vmRooms
+    ? '<h3>公開廣場（目前人數）</h3><div class="v-quick">' + vmRooms.map(r => {
+        const full = r.n >= r.cap;
+        return '<button type="button" class="qbtn" data-a="room" data-k="' + r.k + '"' + (full ? ' disabled' : '') + '>#' + r.k + ' · ' + r.n + '/' + r.cap + (full ? ' 已滿' : r.n ? ' 人' : ' 空') + '</button>';
+      }).join('') + '</div>'
+    : '';
   vmCard.innerHTML = '<div class="shop-h"><h2>村莊大門</h2></div>' +
     '<p class="empty">廣場上最多 8 個人，可以一起走動、聊天。</p>' +
-    '<button type="button" class="btn wide" data-a="public">去公開廣場（自動分配）</button>' +
+    '<button type="button" class="btn wide" data-a="public">去公開廣場（自動分配）</button>' + rooms +
     '<button type="button" class="btn wide" data-a="new">建立私人村（只有知道邀請碼的人能進）</button>' +
     '<h3>加入朋友的私人村</h3>' +
     '<div class="gmrow"><input class="nameinput" id="vm-code" type="text" maxlength="8" autocapitalize="characters" autocomplete="off" placeholder="6 碼村莊邀請碼"><button type="button" class="btn small" data-a="join">加入</button></div>' +
     '<button type="button" class="btn ghost wide" data-a="close">先不要</button>';
 }
-function openVMenu() { vmOpen = true; pressed.length = 0; renderVMenu(); vmEl.hidden = false; vmCard.focus(); }
-function closeVMenu() { vmOpen = false; vmEl.hidden = true; }
+async function loadVRooms() {
+  const my = ++vmSeq;
+  try {
+    const list = await rpc('village_rooms');
+    if (my !== vmSeq || !vmOpen || !Array.isArray(list)) return;
+    vmRooms = list.filter(r => r && Number.isInteger(r.k) && Number.isInteger(r.n) && Number.isInteger(r.cap));
+    const code = $('vm-code') ? $('vm-code').value : '';
+    renderVMenu(); if ($('vm-code')) $('vm-code').value = code;
+  } catch (e) { /* 還沒跑 SQL 補丁就照舊，只是看不到人數 */ }
+}
+function openVMenu() { vmOpen = true; pressed.length = 0; vmRooms = null; renderVMenu(); vmEl.hidden = false; vmCard.focus(); loadVRooms(); }
+function closeVMenu() { vmOpen = false; vmSeq++; vmEl.hidden = true; }
 vmCard.addEventListener('click', e => {
   const b = e.target.closest('button[data-a]');
   if (!b) return;
   const a = b.dataset.a;
   if (a === 'close') closeVMenu();
   else if (a === 'public') joinVillage('public');
+  else if (a === 'room') joinVillage('room', null, +b.dataset.k);
   else if (a === 'new') joinVillage('private_new');
   else if (a === 'join') joinVillage('private_join', $('vm-code').value);
 });
@@ -3112,14 +3241,79 @@ const FURN = {
     r('#8fe09a', px + 5, py + 4, 3, 5); r('#ff9b7a', px + 4, py + 7, 5, 3);
     r('#ff8fa8', px + 14, py + 3, 3, 6); r('#8fc8f4', px + 17, py + 4, 3, 5); r('#ffd27a', px + 20, py + 5, 3, 4);
     ob('#ffffff', '#cfcfd8', px + 25, py + 5, 4, 5);
+  },
+  wardrobe(px, py) {                               // 衣櫥（2x2）：按動作鍵換造型
+    r('rgba(90,60,40,.18)', px + 2, py + 30, 28, 2);
+    ob('#d9a066', '#9b6a44', px + 2, py + 3, 28, 28);
+    r('#e8b27a', px + 4, py + 5, 11, 24); r('#e8b27a', px + 17, py + 5, 11, 24);
+    r('#9b6a44', px + 15, py + 3, 2, 28);
+    r('#fff3b0', px + 12, py + 16, 2, 3); r('#fff3b0', px + 18, py + 16, 2, 3);
+    r('#ff8fa8', px + 7, py + 8, 5, 3); r('#8fc8f4', px + 20, py + 8, 5, 3);
+    r('#9b6a44', px + 4, py + 31, 3, 1); r('#9b6a44', px + 25, py + 31, 3, 1);
+  },
+  mirror(px, py) {                                 // 鏡子（掛牆 1x2）：按動作鍵換造型
+    ob('#d9a066', '#9b6a44', px + 1, py + 2, 14, 28);
+    r('#cfeaf7', px + 3, py + 4, 10, 24); r('#eaf7fd', px + 4, py + 5, 3, 10); r('#ffffff', px + 4, py + 6, 1, 6);
+    r('#b4d9ea', px + 9, py + 18, 3, 8);
+  },
+  aquarium(px, py, now) {                          // 魚缸（2x2）：只畫缸體，裡面的魚由 DCONT 疊上去
+    r('rgba(90,60,40,.18)', px + 2, py + 30, 28, 2);
+    ob('#d9a066', '#9b6a44', px + 1, py + 26, 30, 6);
+    r('#e8b27a', px + 3, py + 27, 26, 1);
+    ob('#e4f3fb', '#8e9db0', px + 1, py + 2, 30, 25);
+    r('#8fd3f4', px + 3, py + 5, 26, 20);
+    r('#bfe9fb', px + 3, py + 5, 26, 2);
+    r('#f3dc9a', px + 3, py + 22, 26, 3);
+    r('#e0c477', px + 7, py + 23, 2, 1); r('#e0c477', px + 15, py + 22, 2, 1); r('#e0c477', px + 23, py + 23, 2, 1);
+    r('#5fbf6a', px + 5, py + 15, 2, 8); r('#8fe09a', px + 7, py + 17, 1, 6); r('#5fbf6a', px + 25, py + 14, 2, 9); r('#8fe09a', px + 24, py + 17, 1, 6);
+    const b = (now / 800) % 1;
+    r('#ffffff', px + 16, py + 21 - Math.floor(b * 15), 1, 1); r('#e4f7ff', px + 19, py + 21 - Math.floor(((b + 0.5) % 1) * 15), 1, 1);
+    r('rgba(255,255,255,.55)', px + 4, py + 6, 1, 9);
+  },
+  specimen(px, py) {                               // 標本架（掛牆 3x2）：6 個小格，蟲蝶由 DCONT 疊上去
+    ob('#c98f62', '#9b6a44', px + 1, py + 1, 46, 30);
+    for (let rr_ = 0; rr_ < 2; rr_++) for (let c = 0; c < 3; c++) {
+      const x = px + 2 + c * 15, y = py + 2 + rr_ * 14;
+      r('#fff6dc', x, y, 14, 13); r('#efe0bd', x, y + 12, 14, 1);
+    }
+  }
+};
+const SEAT = { chair: 'sit', sofa: 'sit', bed: 'lie' };   // 可以坐／躺的家具
+const STYLER = { wardrobe: 1, mirror: 1 };   // 在自己家按動作鍵就能換造型
+const DISP = { aquarium: { n: 4, kind: 'fish' }, specimen: { n: 6, kind: 'bug' } };   // 要和 SQL 的 _display_slots / _display_kind 一致
+const dispOf = it => (house && house.disp && house.disp[it.id]) || [];
+/* 展示品（疊在家具上面；不跟著翻轉，所以魚永遠朝游動方向） */
+const DCONT = {
+  aquarium(it, px, py, now) {
+    const arr = dispOf(it);
+    if (!arr.some(Boolean)) return;
+    g.save(); g.beginPath(); g.rect(px + 3, py + 5, 26, 20); g.clip();
+    for (let s = 0; s < 4; s++) {
+      if (!arr[s]) continue;
+      const ph = now / 1500 + s * 1.9, dir = Math.cos(ph) >= 0 ? 1 : -1;
+      const cx = Math.round(px + 16 + Math.sin(ph) * 7), cy = py + 6 + (s % 2) * 7 + Math.round(Math.sin(now / 900 + s * 2.1) * 1.5);
+      g.save(); g.translate(cx, cy); if (dir < 0) g.scale(-1, 1);
+      g.drawImage(showSprite('fish', arr[s].k), -6, 0, 12, 12);
+      g.restore();
+    }
+    g.restore();
+  },
+  specimen(it, px, py) {
+    const arr = dispOf(it);
+    for (let s = 0; s < 6; s++) {
+      const x = px + 2 + (s % 3) * 15, y = py + 2 + ((s / 3) | 0) * 14;
+      if (arr[s]) g.drawImage(showSprite('bug', arr[s].k), x + 1, y, 12, 12);
+      else r('#e3d3ae', x + 6, y + 6, 2, 2);
+    }
   }
 };
 
 function drawFurn(it, px, py, now) {
   const f = FURN[it.k], d = defOf(it.k);
   if (!f || !d) return;
-  if (!it.f) { f(px, py, now); return; }
-  g.save(); g.translate(2 * px + d.w * T, 0); g.scale(-1, 1); f(px, py, now); g.restore();
+  if (!it.f) f(px, py, now);
+  else { g.save(); g.translate(2 * px + d.w * T, 0); g.scale(-1, 1); f(px, py, now); g.restore(); }
+  if (it.id != null && DCONT[it.k]) DCONT[it.k](it, px, py, now);
 }
 const defOf = k => (house && house.cat[k]) || null;
 const itemRect = it => { const d = defOf(it.k); return d ? { x: it.x, y: it.y, w: d.w, h: d.h, layer: d.layer } : null; };
@@ -3152,7 +3346,9 @@ const itemAtLocal = (lx, ly) => {
 function applyHouse(d) {
   const cat = {}, list = [];
   (d.catalog || []).forEach(c => { cat[c.key] = c; list.push(c); });
-  house = { style: d.style || { wall: 0, floor: 0 }, items: (d.items || []).map(i => ({ id: +i.id, k: i.k, x: i.x | 0, y: i.y | 0, f: !!i.f })), cat, list };
+  const disp = {};
+  (d.display || []).forEach(x => { const id = +x.id, s = x.s | 0; if (s < 0 || s > 15 || (x.t !== 'fish' && x.t !== 'bug')) return; (disp[id] || (disp[id] = []))[s] = { t: x.t, k: String(x.k) }; });
+  house = { style: d.style || { wall: 0, floor: 0 }, items: (d.items || []).map(i => ({ id: +i.id, k: i.k, x: i.x | 0, y: i.y | 0, f: !!i.f })), cat, list, disp };
 }
 async function loadHouse() { applyHouse(await rpc('house_get')); }
 function reloadHouse() {
@@ -3171,13 +3367,188 @@ async function enterHouse() {
   tutEvent('house');
   scene = 'house'; K = hkind;
   pl.x = pl.sx = 10; pl.y = pl.sy = 11; pl.prog = 1; pl.face = 'up'; pressed.length = 0;
-  edit.on = false; edit.hold = null; edit.sel = null;
+  edit.on = false; edit.hold = null; edit.sel = null; myShow = null;
   $('hpanel').hidden = false; $('game').classList.remove('editing');
   renderHousePanel();
 }
+/* ---------- 拜訪好友的家（唯讀：看得到擺設與展示品，不能動） ---------- */
+/* ---------- 表情與動作：在廣場會同步給其他玩家，其他地方只有自己看得到 ---------- */
+const EMOTES = [
+  { id: 'heart', ic: '❤️', n: '愛心' }, { id: 'happy', ic: '😄', n: '開心' }, { id: 'laugh', ic: '😂', n: '大笑' }, { id: 'wow', ic: '😮', n: '驚訝' },
+  { id: 'angry', ic: '💢', n: '生氣' }, { id: 'sad', ic: '😢', n: '難過' }, { id: 'sleepy', ic: '💤', n: '想睡' }, { id: 'music', ic: '🎵', n: '哼歌' },
+  { id: 'what', ic: '❓', n: '疑問' }, { id: 'idea', ic: '💡', n: '靈感' }, { id: 'star', ic: '✨', n: '閃亮' }, { id: 'like', ic: '👍', n: '讚' }
+];
+const ANIMS = {
+  wave: { ic: '👋', n: '揮手', dur: 1800 }, jump: { ic: '🦘', n: '跳躍', dur: 1000 }, dance: { ic: '💃', n: '跳舞', dur: 3000 },
+  spin: { ic: '🌀', n: '轉圈', dur: 1200 }, bow: { ic: '🙇', n: '鞠躬', dur: 1300 }
+};
+let myEmo = null, anim = null, lastEmo = 0;
+/* 動作在這一刻的樣子：位移、朝向、壓扁（鞠躬）、舉手（揮手） */
+function animFx(a, now) {
+  if (!a) return null;
+  const A = ANIMS[a.id], t = now - a.t0;
+  if (!A || t < 0 || t > A.dur) return null;
+  const fx = { dx: 0, dy: 0, face: null, sy: 1, hand: 0, mv: false, ph: null };
+  if (a.id === 'jump') fx.dy = -Math.abs(Math.sin(t / A.dur * Math.PI * 2)) * 6;
+  else if (a.id === 'dance') {
+    fx.dx = Math.round(Math.sin(t / 160) * 2); fx.dy = -Math.abs(Math.sin(t / 160)) * 2;
+    fx.mv = true; fx.ph = Math.floor(t / 160) % 2; fx.face = ['down', 'right', 'down', 'left'][Math.floor(t / 320) % 4];
+  } else if (a.id === 'spin') fx.face = ['down', 'right', 'up', 'left'][Math.floor(t / 100) % 4];
+  else if (a.id === 'bow') fx.sy = 1 - Math.sin(t / A.dur * Math.PI) * 0.22;
+  else if (a.id === 'wave') fx.hand = 1 + (Math.floor(t / 180) % 2);
+  return fx;
+}
+function drawPlayerFx(px, py, face, moving, phase, ch, fx) {
+  if (!fx) { drawPlayer(px, py, face, moving, phase, ch); return; }
+  g.save();
+  if (fx.sy !== 1) { g.translate(0, py + 14); g.scale(1, fx.sy); g.translate(0, -(py + 14)); }
+  drawPlayer(px + fx.dx, py + Math.round(fx.dy), fx.face || face, fx.mv || moving, fx.ph != null ? fx.ph : phase, ch);
+  g.restore();
+  if (fx.hand) {
+    const skin = SKINS[(ch || DEF_CHAR).skin] || SKINS[0], hx = px + fx.dx + 13 + (fx.hand === 2 ? 1 : 0);
+    r(shade(skin, 0.82), hx, py + 1, 3, 7); r(skin, hx + 1, py + 2, 1, 5);
+  }
+}
+/* 頭旁邊的表情泡泡（cx, cy = 泡泡左下角） */
+function emoteBubble(e, cx, cy, now) {
+  const age = now - e.at, em = EMOTES.find(x => x.id === e.id);
+  if (!em || age < 0 || age > 3200) return;
+  const w = 14, h = 14, bob = Math.round(Math.sin(now / 220)), y = cy - h + bob - (age < 160 ? Math.round((1 - age / 160) * 4) : 0);
+  ctx.globalAlpha = clamp((3200 - age) / 500, 0, 1);
+  ob('#ffffff', '#e0b896', cx, y, w, h);
+  r('#e0b896', cx + 1, y + h, 2, 1); r('#ffffff', cx + 2, y + h - 1, 1, 1);
+  ctx.font = '9px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#000';
+  ctx.fillText(em.ic, cx + w / 2, y + h / 2 + 1);
+  ctx.textBaseline = 'alphabetic'; ctx.globalAlpha = 1;
+}
+function doEmote(kind, id) {
+  if (!ready || !me) return;
+  const now = performance.now();
+  if (now - lastEmo < 700) return;
+  if (kind === 'a') {
+    if (!ANIMS[id]) return;
+    if (pose) { toast('起身後才能做動作', 1500); return; }
+    if (fishing) { toast('釣魚的時候不能做動作', 1500); return; }
+    anim = { id, t0: now };
+  } else if (EMOTES.some(x => x.id === id)) myEmo = { id, at: now };
+  else return;
+  lastEmo = now;
+  if (scene === 'plaza' && net && net.ok) {
+    try { net.ch.send({ type: 'broadcast', event: 'emo', payload: { i: myUid, k: kind === 'a' ? 'a' : 'e', e: id } }); } catch (e) { /* 略過 */ }
+  }
+}
+/* 別人的表情與動作：只認得清單裡的 id，其他一律丟掉 */
+function onEmo(p) {
+  if (!p || typeof p !== 'object') return;
+  const rp = typeof p.i === 'string' ? remotes.get(p.i) : null;
+  if (!rp || typeof p.e !== 'string') return;
+  const now = performance.now();
+  if (p.k === 'a' && ANIMS[p.e] && !rp.sit) rp.anim = { id: p.e, t0: now };
+  else if (p.k === 'e' && EMOTES.some(x => x.id === p.e)) rp.emo = { id: p.e, at: now };
+}
+const emEl = $('emm'), emCard = $('emcard');
+function openEmote() {
+  if (!ready || !me || authOpen || paused()) return;
+  const btn = (k, id, ic, n) => '<button type="button" data-k="' + k + '" data-e="' + id + '" title="' + n + '" aria-label="' + n + '">' + ic + '</button>';
+  emCard.innerHTML = '<div class="eg">' + EMOTES.map(e => btn('e', e.id, e.ic, e.n)).join('') + '</div>' +
+    '<div class="eg">' + Object.keys(ANIMS).map(id => btn('a', id, ANIMS[id].ic, ANIMS[id].n)).join('') + '</div>';
+  emOpen = true; emEl.hidden = false;
+}
+function closeEmote() { emOpen = false; emEl.hidden = true; }
+emCard.addEventListener('click', e => {
+  const b = e.target.closest('button[data-k]');
+  if (!b) return;
+  closeEmote(); doEmote(b.dataset.k, b.dataset.e);
+});
+document.addEventListener('pointerdown', e => { if (emOpen && !emEl.contains(e.target) && e.target !== $('emobtn')) closeEmote(); });
+$('emobtn').addEventListener('click', () => { if (emOpen) closeEmote(); else openEmote(); });
+$('emobtn').addEventListener('pointerdown', e => e.stopPropagation());
+
+/* ---------- 坐椅子、躺床（在自己家或朋友家都可以） ---------- */
+let pose = null;                                // { type: 'sit' | 'lie', id, ix, iy, ox, oy, face0, tile, sort, t }
+function takeSeat(it, x, y) {
+  const d = defOf(it.k); if (!d || pose) return;
+  pose = { type: SEAT[it.k], id: it.id, ix: it.x, iy: it.y, ox: pl.x, oy: pl.y, face0: pl.face, tile: x - (RX + it.x), sort: RY + it.y + d.h - 1 + 0.02, t: 0 };
+  pl.x = pl.sx = x; pl.y = pl.sy = y; pl.prog = 1; pl.face = 'down'; pressed.length = 0;
+  if (pose.type === 'lie') pop(x, y - 0.6, 'Zzz', '#cfe8f7');
+}
+/* 廣場的長椅：位置與「坐著」的狀態會同步給其他玩家 */
+function takeBench(x, y) {
+  if (pose || fishing || !net || !net.ok) return;
+  pose = { type: 'sit', bench: true, ox: pl.x, oy: pl.y, face0: pl.face, tile: 0, t: 0 };
+  pl.x = pl.sx = x; pl.y = pl.sy = y; pl.prog = 1; pl.face = 'down'; pressed.length = 0;
+  lastPosKey = ''; posAcc = 999; trackSelf();
+}
+function drawBenchSeated(px, py, ch) {
+  g.save(); g.beginPath(); g.rect(px - 4, py - 14, 24, 24); g.clip();
+  drawPlayer(px, py - 2, 'down', false, 0, ch);
+  g.restore();
+  ob('#d9a066', '#9b6a44', px + 1, py + 10, 14, 3);
+  r('#9b6a44', px + 2, py + 13, 2, 2); r('#9b6a44', px + 12, py + 13, 2, 2);
+}
+function standUp() {
+  if (!pose) return;
+  const wasBench = !!pose.bench;
+  pl.x = pl.sx = pose.ox; pl.y = pl.sy = pose.oy; pl.prog = 1; pl.face = pose.face0; pose = null;
+  if (wasBench) { lastPosKey = ''; posAcc = 999; trackSelf(); }
+}
+/* 坐著：只畫上半身（腿被椅面擋住），再把椅面前緣蓋回去 */
+function drawSeated(px, py, it, ch) {
+  g.save(); g.beginPath(); g.rect(px - 4, py - 14, 24, 24); g.clip();
+  drawPlayer(px, py - 2, 'down', false, 0, ch);
+  g.restore();
+  if (it.k === 'sofa') {
+    const t = pose ? pose.tile : 0, xs = t === 0 ? px + 5 : px, xw = t === 0 ? 11 : 10;
+    r('#ffb3c6', xs, py + 10, xw, 3); r('#d4688a', xs, py + 13, xw, 1);
+  } else {
+    r('#ffb3c6', px + 3, py + 10, 10, 2); r('#9b6a44', px + 3, py + 12, 10, 1);
+    r('#9b6a44', px + 4, py + 12, 2, 3); r('#9b6a44', px + 10, py + 12, 2, 3);
+  }
+}
+/* 躺著：頭枕在枕頭上，身體蓋在被子下 */
+function drawLying(it, ch) {
+  const bx = (RX + it.x) * T, by = (RY + it.y) * T, hx = it.f ? bx + 18 : bx + 4;
+  const skin = SKINS[ch.skin] || SKINS[0], hair = HAIRS[ch.hair] || HAIRS[0];
+  ob(skin, shade(skin, 0.82), hx + 1, by + 4, 8, 7);
+  r(hair, hx + 1, by + 4, 8, 3); r(hair, hx + 1, by + 5, 1, 3); r(hair, hx + 8, by + 5, 1, 3);
+  r('#4a2c2c', hx + 3, by + 8, 2, 1); r('#4a2c2c', hx + 6, by + 8, 2, 1);
+  r('#ffa0b0', hx + 2, by + 9, 1, 1); r('#ffa0b0', hx + 8, by + 9, 1, 1);
+  ob('#ff9bb3', '#d4688a', bx + 3, by + 12, 26, 18);
+  r('#ffc2d2', bx + 3, by + 15, 26, 2);
+  r('#fffaf0', bx + 14, by + 21, 2, 2); r('#fffaf0', bx + 13, by + 20, 4, 1); r('#fffaf0', bx + 12, by + 21, 1, 1); r('#fffaf0', bx + 17, by + 21, 1, 1);
+}
+let visiting = null, ownHouse = null;
+async function visitHouse(uid, name) {
+  if (!ready || !me || enterBusy || dsOpen) return;
+  enterBusy = true;
+  try {
+    const d = await withTimeout(rpc('house_visit', { p_uid: uid }), 12000);
+    if (scene === 'plaza') leaveVillage(true);
+    if (scene === 'house') leaveHouse(true);
+    closeFriends();
+    pose = null; ownHouse = house; applyHouse(d);
+    visiting = { uid, name: clean(d.owner && d.owner.name, 8) || name || '朋友' };
+    scene = 'house'; K = hkind;
+    pl.x = pl.sx = 10; pl.y = pl.sy = 11; pl.prog = 1; pl.face = 'up'; pressed.length = 0;
+    edit.on = false; edit.hold = null; edit.sel = null; myShow = null;
+    $('hpanel').hidden = false; $('game').classList.remove('editing');
+    renderHousePanel();
+    toast('來到 ' + visiting.name + ' 的家了', 2200);
+  } catch (e) { toast(errText(e)); }
+  enterBusy = false;
+}
+function visitShowList(it) {
+  const dd = DISP[it.k], arr = dispOf(it), cat = dd.kind === 'fish' ? fishCat : bugCat;
+  const names = [];
+  for (let s = 0; s < dd.n; s++) if (arr[s]) { const f = cat.find(x => x.key === arr[s].k); if (f) names.push(f.name); }
+  toast((defOf(it.k) || {}).name + '：' + (names.length ? names.join('、') : '還沒有展示品'), 3500);
+}
 function leaveHouse(silent) {
   if (scene !== 'house') return;
-  scene = 'farm'; K = kind; edit.on = false; edit.hold = null; edit.sel = null;
+  pose = null;
+  if (visiting) { house = ownHouse; ownHouse = null; visiting = null; }
+  scene = 'farm'; K = kind; edit.on = false; edit.hold = null; edit.sel = null; myShow = null;
   $('hpanel').hidden = true; $('game').classList.remove('editing');
   pl.x = pl.sx = 4; pl.y = pl.sy = 4; pl.prog = 1; pl.face = 'down'; pressed.length = 0;
   if (!silent) toast('回到農場了');
@@ -3187,8 +3558,63 @@ $('h-look').addEventListener('click', () => { if (ready && !authOpen) openMaker(
 
 /* ---------- 布置 ---------- */
 const sellPrice = k => Math.floor(((defOf(k) || {}).price || 0) / 2);
+/* ---------- 魚缸／標本架：換展示品 ---------- */
+const dsEl = $('dsm'), dsCard = $('dscard');
+let dsId = null;
+function openDisplay(id) {
+  const it = house && house.items.find(i => i.id === id);
+  if (!it || !DISP[it.k] || visiting || paused()) return;
+  if (typeof id !== 'number' || !isFinite(id)) { toast('家具還在存檔，等一下再試', 1800); return; }
+  dsId = id; dsOpen = true; pressed.length = 0; renderDisplay(); dsEl.hidden = false; dsCard.focus();
+}
+function closeDisplay() { dsOpen = false; dsEl.hidden = true; dsId = null; renderHousePanel(); }
+function renderDisplay() {
+  const it = house && house.items.find(i => i.id === dsId), dd = it && DISP[it.k];
+  if (!dd) { closeDisplay(); return; }
+  const isFish = dd.kind === 'fish', cat = isFish ? fishCat : bugCat, log = isFish ? fishLog : bugLog;
+  const mine = cat.filter(f => (log[f.key] | 0) > 0), arr = house.disp[dsId] || [];
+  let rows = '';
+  for (let s = 0; s < dd.n; s++) {
+    const cur = arr[s] && arr[s].k;
+    rows += '<div class="row"><canvas class="fico" width="16" height="16" data-ds="' + (cur ? esc(cur) : '') + '"></canvas><div class="meta"><b>第 ' + (s + 1) + ' 格</b></div>' +
+      '<select class="sel" data-s="' + s + '" aria-label="第 ' + (s + 1) + ' 格"><option value="">（空）</option>' +
+      mine.map(f => '<option value="' + esc(f.key) + '"' + (f.key === cur ? ' selected' : '') + '>' + esc(f.name) + '</option>').join('') + '</select></div>';
+  }
+  dsCard.innerHTML = '<div class="shop-h"><h2>' + esc((defOf(it.k) || {}).name || '') + '</h2></div>' +
+    '<p class="empty">' + (isFish ? '放進你釣到過的魚。' : '放進你抓到過的蟲蝶。') + '展示品不會扣背包裡的數量，也不能拿去賣；好友來拜訪時也看得到。家具收回或賣出時，展示品會一起清掉。</p>' +
+    (mine.length ? '' : '<p class="empty">你還沒有' + (isFish ? '釣到過魚' : '抓到過蟲蝶') + '，先去收集吧。</p>') + rows +
+    '<button type="button" class="btn ghost wide" data-a="close">關閉</button>';
+  dsCard.querySelectorAll('canvas[data-ds]').forEach(cv => {
+    const k = cv.dataset.ds, c2d = cv.getContext('2d');
+    if (!k) c2d.clearRect(0, 0, 16, 16); else if (isFish) drawFish(c2d, k, false); else drawBug(c2d, k, false);
+  });
+}
+function setDisplay(id, slot, key) {
+  const it = house.items.find(i => i.id === id), dd = it && DISP[it.k];
+  if (!dd || slot < 0 || slot >= dd.n) return;
+  const arr = house.disp[id] || (house.disp[id] = []);
+  arr[slot] = key ? { t: dd.kind, k: key } : null;
+  enqueue(() => rpc('house_display_set', { p_id: id, p_slot: slot, p_key: key || null })).catch(e => { toast(errText(e)); reloadHouse(); });
+}
+dsCard.addEventListener('change', e => {
+  const sel = e.target.closest && e.target.closest('select[data-s]');
+  if (!sel || dsId == null) return;
+  setDisplay(dsId, +sel.dataset.s, sel.value);
+  renderDisplay();
+});
+dsCard.addEventListener('click', e => { if (e.target.closest('button[data-a=close]')) closeDisplay(); });
+dsEl.addEventListener('click', e => { if (e.target === dsEl) closeDisplay(); });
+
 function renderHousePanel() {
   if (!house) return;
+  const vis = !!visiting;
+  $('h-title').textContent = vis ? visiting.name + ' 的家' : '我的家';
+  $('h-quick').hidden = vis;
+  if (vis) {
+    $('h-edit-box').hidden = true; $('h-sel').hidden = true;
+    $('h-hint').textContent = '走到門口按動作鍵離開；面向魚缸、標本架可以看展示品';
+    return;
+  }
   const hold = edit.hold, selIt = house.items.find(i => i.id === edit.sel);
   $('h-edit').textContent = '布置模式：' + (edit.on ? '開' : '關');
   $('h-edit').setAttribute('aria-pressed', edit.on ? 'true' : 'false');
@@ -3201,7 +3627,7 @@ function renderHousePanel() {
   const sb_ = $('h-sel');
   if (selIt) {
     sb_.hidden = false;
-    sb_.innerHTML = '<span class="v-count">' + esc((defOf(selIt.k) || {}).name || '') + '</span><button type="button" class="btn small" data-s="move">移動</button><button type="button" class="btn small" data-s="flip">翻轉</button><button type="button" class="btn small ghost" data-s="pick">收回背包</button><button type="button" class="btn small ghost" data-s="sell">賣出 +' + sellPrice(selIt.k) + 'G</button><button type="button" class="btn small ghost" data-s="cancel">取消</button>';
+    sb_.innerHTML = '<span class="v-count">' + esc((defOf(selIt.k) || {}).name || '') + '</span><button type="button" class="btn small" data-s="move">移動</button><button type="button" class="btn small" data-s="flip">翻轉</button>' + (DISP[selIt.k] ? '<button type="button" class="btn small" data-s="disp">展示品</button>' : '') + '<button type="button" class="btn small ghost" data-s="pick">收回背包</button><button type="button" class="btn small ghost" data-s="sell">賣出 +' + sellPrice(selIt.k) + 'G</button><button type="button" class="btn small ghost" data-s="cancel">取消</button>';
   } else if (hold && hold.fromId) {
     sb_.hidden = false;
     sb_.innerHTML = '<button type="button" class="btn small" data-s="flip-hold">翻轉</button><button type="button" class="btn small ghost" data-s="cancel">取消移動</button>';
@@ -3230,6 +3656,7 @@ $('h-sel').addEventListener('click', e => {
   else if (a === 'move' && it) { edit.hold = { k: it.k, fromId: it.id, f: it.f }; edit.sel = null; }
   else if (a === 'pick' && it) { doPickup(it); edit.sel = null; }
   else if (a === 'flip' && it) doFlip(it);
+  else if (a === 'disp' && it) openDisplay(it.id);
   else if (a === 'flip-hold' && edit.hold) edit.hold.f = !edit.hold.f;
   else if (a === 'sell' && it) { doSell(it); edit.sel = null; }
   else if (a === 'sell-bag' && edit.hold && !edit.hold.fromId) { doSellBag(edit.hold.k); if (have('f:' + edit.hold.k) <= 0) edit.hold = null; }
@@ -3418,6 +3845,17 @@ function update(dt) {
   if (moodAcc > 1000) { moodAcc = 0; if (Music) Music.setMood(darkness(world().min), scene === 'plaza'); }
   fishTick();
   if (paused()) { actQueued = false; return; }
+  if (anim && (pressed.length || pose || pl.prog < 1)) anim = null;   // 走動或坐下就中斷動作
+  if (pose) {                                   // 坐著或躺著：家具被搬走、離開屋子或按方向鍵就起身
+    const pit = !pose.bench && scene === 'house' && house ? house.items.find(i => i.id === pose.id) : null;
+    if (scene !== (pose.bench ? 'plaza' : 'house')) pose = null;
+    else if (!pose.bench && (!pit || pit.x !== pose.ix || pit.y !== pose.iy)) standUp();
+    else {
+      pose.t += dt;
+      if (pose.type === 'lie' && pose.t > 2400) { pose.t = 0; pop(pl.x, pl.y - 0.6, 'Zzz', '#cfe8f7'); }
+      if (pressed.length) standUp();
+    }
+  }
   updateCritters(dt);
   if (pl.prog < 1) pl.prog = Math.min(1, pl.prog + dt / stepMs());
   if (pl.prog >= 1) {
@@ -3468,8 +3906,25 @@ function draw(now) {
   const ents = [];
   if (ready) {
     const ch = myChar();
-    ents.push({ y: ry, draw: () => {
-      drawPlayer(Math.round(rx * T), Math.round(ry * T), pl.face, pl.prog < 1, (Math.floor(pl.prog * 2) + pl.step) % 2, ch);
+    const pit = pose && scene === 'house' && house ? house.items.find(i => i.id === pose.id) : null;
+    if (pit) {
+      ents.push({ y: pose.sort, draw: () => {
+        const px = Math.round(pl.x * T), py = Math.round(pl.y * T);
+        if (pose.type === 'lie') {
+          drawLying(pit, ch);
+          nameTag(ch.name, (RX + pit.x) * T + (pit.f ? 23 : 9), (RY + pit.y) * T + 1, '#ffffff');
+        } else {
+          drawSeated(px, py, pit, ch);
+          nameTag(ch.name, px + 8, py - 7, '#ffffff');
+        }
+      } });
+    } else if (pose && pose.bench && scene === 'plaza') {
+      ents.push({ y: ry, draw: () => {
+        drawBenchSeated(Math.round(pl.x * T), Math.round(pl.y * T), ch);
+        nameTag(ch.name, Math.round(pl.x * T) + 8, Math.round(pl.y * T) - 7, '#ffffff');
+      } });
+    } else ents.push({ y: ry, draw: () => {
+      drawPlayerFx(Math.round(rx * T), Math.round(ry * T), pl.face, pl.prog < 1, (Math.floor(pl.prog * 2) + pl.step) % 2, ch, pl.prog < 1 ? null : animFx(anim, now));
       nameTag(ch.name, Math.round(rx * T) + 8, Math.round(ry * T) - 5, '#ffffff');
     } });
   }
@@ -3485,11 +3940,19 @@ function draw(now) {
   if (scene === 'plaza') remotes.forEach(rp => ents.push({ y: rp.y, draw: () => {
     const mv = Math.abs(rp.tx - rp.x) + Math.abs(rp.ty - rp.y) > 0.05;
     const px = Math.round(rp.x * T), py = Math.round(rp.y * T);
-    drawPlayer(px, py, FACES[rp.f], mv, Math.floor(now / 140) % 2, rp.char);
+    const seated = rp.sit && !mv;
+    if (seated) drawBenchSeated(px, py, rp.char);
+    else {
+      if (mv) rp.anim = null;
+      drawPlayerFx(px, py, FACES[rp.f], mv, Math.floor(now / 140) % 2, rp.char, mv ? null : animFx(rp.anim, now));
+    }
     if (rp.fish && !mv) drawRod(px, py, FACES[rp.f], rp.fish, now);
-    nameTag(rp.name, px + 8, py - 5, '#fff3b0');
+    nameTag(rp.name, px + 8, py - (seated ? 7 : 5), '#fff3b0');
   } }));
   ents.sort((a, b) => a.y - b.y).forEach(en => en.draw());
+  if (ready && myEmo) emoteBubble(myEmo, Math.round(rx * T) + 13, Math.round(ry * T) - 6, now);
+  if (scene === 'plaza') remotes.forEach(rp => { if (rp.emo) emoteBubble(rp.emo, Math.round(rp.x * T) + 13, Math.round(rp.y * T) - 6, now); });
+  if (scene !== 'plaza' && myShow) showCard(myShow, Math.round(rx * T) + 8, Math.round(ry * T) - 11, now);
   if (scene === 'plaza') {
     if (myBubble) bubble(myBubble, Math.round(rx * T) + 8, Math.round(ry * T) - 11, now);
     if (myShow) showCard(myShow, Math.round(rx * T) + 8, Math.round(ry * T) - (myBubble && now - myBubble.at < 6000 ? 23 : 11), now);
@@ -3541,7 +4004,7 @@ function draw(now) {
   }
 
   const [fx_, fy_] = facing();
-  if (fx_ >= 0 && fy_ >= 0 && fx_ < W && fy_ < H && !paused()) {
+  if (fx_ >= 0 && fy_ >= 0 && fx_ < W && fy_ < H && !paused() && !pose) {
     ctx.globalAlpha = 0.65 + 0.35 * Math.sin(now / 160);
     const bx = fx_ * T, by = fy_ * T, c = '#ff5f8a';
     r(c, bx, by, 3, 1); r(c, bx, by, 1, 3);
