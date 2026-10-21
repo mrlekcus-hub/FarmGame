@@ -257,10 +257,6 @@ kbd{font:600 12px/1 var(--f-display);color:var(--ink);background:var(--panel);pa
 .empop button:active{transform:translateY(1px);background:#fde9c9}
 .empop button:focus-visible{outline:2px solid #e8833a}
 @media (max-width:520px){.empop{right:5px;bottom:48px;width:178px}.empop button{font-size:17px}}
-.emobtn{position:absolute;right:8px;bottom:8px;z-index:3;width:42px;height:42px;padding:0;border-radius:50%;border:3px solid var(--edge);
-  background:rgba(255,250,240,.94);box-shadow:0 3px 0 var(--edge);font-size:21px;line-height:1;cursor:pointer;-webkit-user-select:none;user-select:none}
-.emobtn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--edge)}
-@media (max-width:520px){.emobtn{right:5px;bottom:5px;width:38px;height:38px;font-size:19px}}
 .dock{position:absolute;right:8px;top:8px;z-index:3;display:flex;flex-direction:column;gap:6px;line-height:1}
 .dockbtn{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;width:52px;padding:6px 0 5px;cursor:pointer;
   color:var(--ink);background:rgba(255,250,240,.94);border:3px solid var(--edge);border-radius:16px;box-shadow:0 3px 0 var(--edge);-webkit-user-select:none;user-select:none}
@@ -287,6 +283,10 @@ kbd{font:600 12px/1 var(--f-display);color:var(--ink);background:var(--panel);pa
 /* ---- 背包 ---- */
 .hbpages{display:flex;gap:6px;margin:2px 0 8px}
 .hbpages .chipbtn{padding:7px 12px}
+.hbtip{font-size:12px;line-height:1.5;color:var(--muted);margin:0 0 8px}
+.hbtip.on{color:var(--ink);background:#fff0f3;border-radius:10px;padding:6px 8px}
+button.hbs{padding:0;cursor:pointer;font:inherit}
+.hbs.has{border-color:var(--sun-deep)}
 .hbrow{display:flex;gap:6px;flex-wrap:wrap}
 .hbs{position:relative;width:44px;height:44px;border:3px solid var(--edge);border-radius:12px;background:#fff}
 .hbs canvas{position:absolute;left:5px;top:6px;width:28px;height:28px;image-rendering:pixelated}
@@ -400,7 +400,7 @@ body.imm{padding:0!important;height:100dvh;overflow:hidden;overscroll-behavior:n
 body.imm .app{position:fixed;inset:0;max-width:none;margin:0;display:block;height:auto}
 body.imm .stage{position:absolute;inset:0;width:100%!important;height:100%!important;max-width:none;margin:0;border:0;border-radius:0;box-shadow:none;background:#8fd08a;grid-area:auto}
 body.imm canvas#game{position:absolute;inset:0;width:100%;height:100%;aspect-ratio:auto}
-body.imm .dock,body.imm .emobtn{display:none!important}
+body.imm .dock{display:none!important}
 body.imm .top{position:fixed;z-index:6;left:max(12px,env(safe-area-inset-left,0px));top:max(12px,env(safe-area-inset-top,0px));display:block;width:auto}
 body.imm .top h1,body.imm #wx,body.imm #who,body.imm #sn{display:none}
 body.imm .stats{flex-wrap:nowrap;flex-direction:row!important;gap:6px}
@@ -470,6 +470,50 @@ body.imm .immgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;flex:
   body.imm .sideclose{display:block!important}
   body.imm .sidebtns{right:0;top:50%;transform:translateY(-50%)}
   body.imm .menubtn{writing-mode:vertical-rl;text-orientation:upright;letter-spacing:.1em;padding:16px 7px;border-radius:14px 0 0 14px;border-right:0}
+}
+
+/* ---- 浮動聊天：訊息浮在畫面上、💬 開輸入列＋快捷語（手機與電腦共用） ---- */
+.v-send,#v-quick{display:none}
+#cfeed{position:absolute;left:8px;bottom:8px;z-index:3;max-width:min(300px,calc(100% - 120px));display:flex;flex-direction:column;align-items:flex-start;gap:3px;pointer-events:none;line-height:1.35}
+#cfeed[hidden],.cbar[hidden],.cfab[hidden]{display:none}
+.cfl{font-size:12px;color:#3b2a2a;background:rgba(255,255,255,.88);padding:2px 8px;border-radius:10px;border:1px solid #e0b896;overflow-wrap:anywhere;transition:opacity .8s}
+.cfl b{color:var(--pink-deep);font-weight:700}.cfl.me b{color:#3f98c8}.cfl.old{opacity:0}
+body:not(.imm) .stage.cbo #cfeed{bottom:calc(14px + var(--cbh,90px))}
+.cbar{position:absolute;left:8px;bottom:8px;z-index:4;width:min(340px,calc(100% - 120px));box-sizing:border-box;line-height:1.4;background:rgba(255,250,240,.97);border:3px solid var(--edge);border-radius:14px;box-shadow:0 3px 0 var(--edge);padding:7px;display:flex;flex-direction:column;gap:6px}
+.cbar .cq{display:flex;flex-wrap:wrap;gap:5px}
+.cbar .qbtn{padding:6px 10px;font-size:12px}
+.cbar form{display:flex;gap:6px}
+.cbar .nameinput{flex:1;min-width:0;padding:7px 12px;border-width:2px}
+.cbar .btn{min-height:0;padding:6px 12px;font-size:13px;flex:none}
+.cfab{position:absolute;right:8px;bottom:8px;z-index:3;width:42px;height:42px;padding:0;border-radius:50%;border:3px solid var(--edge);background:rgba(255,250,240,.94);box-shadow:0 3px 0 var(--edge);font-size:20px;line-height:1;cursor:pointer;-webkit-user-select:none;user-select:none}
+.cfab:active{transform:translateY(2px);box-shadow:0 1px 0 var(--edge)}.cfab.on{background:#fde9c9}
+@media (max-width:520px){.cfab{right:5px;width:38px;height:38px;font-size:18px}#cfeed,.cbar{max-width:calc(100% - 100px)}}
+.empop .eg+.eg.qq{grid-template-columns:repeat(2,1fr)}
+.empop .eg.qq button{font-size:12px;font-weight:600;padding:6px 0}
+body.imm .cfab{position:fixed;z-index:7;right:max(8px,env(safe-area-inset-right,0px));bottom:calc(max(38px,env(safe-area-inset-bottom,0px)) + 114px);width:46px;height:46px;font-size:22px;opacity:.92}
+body.imm #cfeed{position:fixed;z-index:6;left:max(18px,env(safe-area-inset-left,0px));bottom:calc(max(26px,env(safe-area-inset-bottom,0px)) + 166px);max-width:62vw}
+body.imm .cbar{position:fixed;z-index:30;left:auto;right:max(12px,env(safe-area-inset-right,0px));bottom:calc(max(38px,env(safe-area-inset-bottom,0px)) + 168px);width:min(250px,calc(100vw - 24px));max-width:none}
+body.imm.cht .cbar{left:max(8px,env(safe-area-inset-left,0px));right:max(8px,env(safe-area-inset-right,0px));width:auto;bottom:calc(var(--kb,0px) + 8px)}
+body.imm.cht .dpad,body.imm.cht .act,body.imm.cht .hotbar,body.imm.cht .sidebtns,body.imm.cht .cfab{visibility:hidden}
+body.imm .stage.cbo #cfeed{bottom:calc(max(38px,env(safe-area-inset-bottom,0px)) + 176px + var(--cbh,90px))}
+body.imm.cht .stage.cbo #cfeed{left:max(8px,env(safe-area-inset-left,0px));max-width:calc(100vw - 16px);bottom:calc(var(--kb,0px) + var(--cbh,90px) + 16px)}
+body.imm.modal .cfab,body.imm.modal #cfeed,body.imm.modal .cbar{visibility:hidden!important;pointer-events:none!important}
+body.imm .empop{right:max(8px,env(safe-area-inset-right,0px));bottom:calc(max(38px,env(safe-area-inset-bottom,0px)) + 166px)}
+body.imm.idle .cfab{opacity:.5}
+body.imm .cfab,body.imm #cfeed{transition:opacity .45s}
+@media (orientation:landscape){
+  body.imm .cfab{right:max(30px,env(safe-area-inset-right,0px));bottom:calc(max(22px,env(safe-area-inset-bottom,0px)) + 100px)}
+  body.imm .empop{right:calc(max(30px,env(safe-area-inset-right,0px)) + 100px);bottom:max(10px,env(safe-area-inset-bottom,0px));width:min(340px,calc(100vw - 260px));max-height:calc(100dvh - 20px);overflow:auto}
+  body.imm .empop .eg{grid-template-columns:repeat(6,1fr)}
+  body.imm .empop .eg+.eg{grid-template-columns:repeat(5,1fr)}
+  body.imm .empop .eg+.eg.qq{grid-template-columns:repeat(4,1fr)}
+  body.imm .empop button{font-size:17px;padding:3px 0}
+  body.imm .cbar{right:max(36px,env(safe-area-inset-right,0px))}
+  body.imm #cfeed{bottom:calc(max(18px,env(safe-area-inset-bottom,0px)) + 142px)}
+  body.imm .stage.cbo #cfeed{bottom:calc(max(22px,env(safe-area-inset-bottom,0px)) + 164px + var(--cbh,90px))}
+  body.imm.cht .stage.cbo #cfeed{bottom:calc(var(--kb,0px) + var(--cbh,90px) + 16px)}
+  body.imm .cbar{bottom:calc(max(22px,env(safe-area-inset-bottom,0px)) + 156px)}
+  body.imm.cht .cq{display:none}
 }
 
 /* ---- 塔羅小攤 ---- */
@@ -556,7 +600,15 @@ body.imm .immgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;flex:
     <div class="toast" id="toast" hidden></div>
     <div class="tut" id="tut" hidden></div>
     <div class="empop" id="emm" hidden role="dialog" aria-label="表情與動作"><div id="emcard" tabindex="-1"></div></div>
-    <button type="button" class="emobtn" id="emobtn" aria-label="表情與動作（X）" hidden>😊</button>
+    <div id="cfeed" hidden aria-live="polite"></div>
+    <div class="cbar" id="cbar" hidden role="dialog" aria-label="聊天">
+      <div class="cq" id="cq"></div>
+      <form id="cform" autocomplete="off">
+        <input class="nameinput" id="cinput" type="text" maxlength="40" placeholder="說點什麼（/ 開啟）" enterkeyhint="send" aria-label="聊天訊息">
+        <button type="submit" class="btn">送出</button>
+      </form>
+    </div>
+    <button type="button" class="cfab" id="cfab" aria-label="聊天與表情（X）" hidden>💬</button>
     <div class="dock" id="dock" aria-label="快捷功能">
       <button type="button" class="dockbtn dockfold" id="dockfold" aria-label="收起快捷列" aria-expanded="true"><span class="di">▸</span><small>收起</small><i class="dbadge" id="foldbadge" hidden></i></button>
       <button type="button" class="dockbtn" data-k="bag" aria-label="背包（B）"><span class="di">🎒</span><small>背包</small></button>
@@ -589,7 +641,7 @@ body.imm .immgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;flex:
     <button type="button" class="imi" data-k="lv"><span class="di">⭐</span>等級</button>
     <button type="button" class="imi" data-k="card"><span class="di">🪪</span>名片</button>
     <button type="button" class="imi" data-k="set"><span class="di">⚙️</span>設定</button>
-    <button type="button" class="imi" data-k="emo"><span class="di">😊</span>表情</button>
+    <button type="button" class="imi" data-k="emo"><span class="di">💬</span>聊天表情</button>
     <button type="button" class="imi" data-k="tut"><span class="di">❓</span>教學</button>
   </div>
   <div class="tip" id="tip" aria-live="polite">走到田邊，面向一塊草地，按動作鍵。</div>
@@ -675,6 +727,7 @@ body.imm .immgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;flex:
 
 <div class="maker" id="dexm" hidden><div class="card maker-card" id="dexcard" tabindex="-1"></div></div>
 <div class="maker" id="bagm" hidden><div class="card maker-card" id="bagcard" tabindex="-1"></div></div>
+<div class="maker" id="sym" hidden><div class="card maker-card" id="sycard" tabindex="-1"></div></div>
 <div class="maker" id="fshop" hidden><div class="card maker-card" id="fshopcard" tabindex="-1"></div></div>
 <div class="maker" id="mlm" hidden><div class="card maker-card" id="mlcard" tabindex="-1"></div></div>
 <div class="maker" id="frmenu" hidden><div class="card maker-card" id="frcard" tabindex="-1"></div></div>
@@ -986,11 +1039,12 @@ function drawShop(lit, now) {
 const SKINS = ['#ffe0c4', '#f6c9a0', '#e3ab7f', '#bd8560', '#8f5f43'];
 const HAIRS = ['#8a5a44', '#4a3a3a', '#f2d27a', '#ff9bb3', '#8fc8f4', '#b79bf0', '#e9e4de', '#2f2a33', '#d96a6a', '#7bd1b0', '#ffb86b'];
 const OUTFITS = ['#7fb2f0', '#ff9bb3', '#8fe09a', '#ffd27a', '#c9a8f5', '#ff8c7a', '#f4f0e8', '#5a6a9a', '#e65f7a', '#6fcf97', '#ffd1e0', '#4a4a58'];
-const FITS = ['T 恤', '吊帶褲', '洋裝', '外套', '圍裙', '連帽衫'];
+const FITS = ['T 恤', '吊帶褲', '洋裝', '外套', '圍裙', '連帽衫', '水手服', '針織毛衣', '晚宴長裙'];
 const GENDERS = ['女生', '男生'];
 const HATCOL = ['#ffe08a', '#ffb3c6', '#a8e6cf', '#a8d8f0', '#d5b8ff', '#ffffff'];
-const STYLES = ['短髮', '雙馬尾', '長髮', '丸子頭', '馬尾', '鮑伯頭', '側邊辮子', '蓬蓬頭', '刺刺短髮', '公主頭', '寸頭'];
+const STYLES = ['短髮', '雙馬尾', '長髮', '丸子頭', '馬尾', '鮑伯頭', '側邊辮子', '蓬蓬頭', '刺刺短髮', '公主頭', '寸頭', '雙丸子頭', '大波浪', '雙麻花辮'];
 const HATS = ['草帽', '貓耳', '蝴蝶結', '無'];
+const FREE_N = { style: 11, fits: 6 };   // 這個編號以前的款式免費，之後的要到小村的店購買
 const DEF_CHAR = { name: '小農夫', gender: 0, skin: 0, hair: 0, style: 0, hat: 3, hatc: 0, outfit: 0, fits: 0 };
 const shade = (h, f) => {
   const n = parseInt(h.slice(1), 16);
@@ -1023,6 +1077,18 @@ function drawBody(x, y, face, ch, skin, fit, fitO) {
     ob(fit, fitO, bx, y + 10, bw, 5);
     r(shade(fit, 0.85), bx + 1, y + 10, bw - 2, 2);
     if (front) { r('#ffffff', x + 6, y + 12, 1, 2); r('#ffffff', x + 9, y + 12, 1, 2); r(shade(fit, 0.88), x + 6, y + 14, 4, 1); }
+  } else if (fs === 6) {                            // 水手服
+    ob('#ffffff', '#d8d0c4', bx, y + 10, bw, 5);
+    if (front) { r(fit, x + 5, y + 10, 6, 2); r('#ff6b8a', x + 7, y + 12, 2, 1); }
+    else r(fit, bx, y + 10, bw, 2);
+  } else if (fs === 7) {                            // 針織毛衣
+    ob(fit, fitO, bx, y + 10, bw, 5);
+    r(shade(fit, 1.25), bx + 1, y + 10, bw - 2, 1); r(shade(fit, 1.25), bx, y + 12, bw, 1); r(shade(fit, 0.85), bx, y + 14, bw, 1);
+  } else if (fs === 8) {                            // 晚宴長裙
+    ob(fit, fitO, x + 4, y + 10, 8, 3);
+    ob(fit, fitO, x + 2, y + 12, 12, 4);
+    r('#ffd27a', x + 2, y + 15, 12, 1);
+    if (front) { r('#ffd27a', x + 6, y + 12, 4, 1); r('#ffffff', x + 4, y + 13, 1, 1); r('#ffffff', x + 11, y + 14, 1, 1); }
   } else {                                          // T 恤
     ob(fit, fitO, bx, y + 10, bw, 5);
     r('#ffffff', x + 6, y + 10, 4, 2);
@@ -1039,7 +1105,7 @@ function drawPlayer(px, py, face, moving, phase, ch) {
   const band = hc === '#ffb3c6' ? '#ffffff' : '#ff8fa8';
   const yb = py - 2, x = px, y = yb + (moving && phase ? -1 : 0);
   const side = face === 'left' || face === 'right', st_ = ch.style | 0, male = ch.gender === 1;
-  const legc = male && (ch.fits | 0) !== 2 ? '#6d7fa8' : '#8a5a44';
+  const legc = male && ![2, 8].includes(ch.fits | 0) ? '#6d7fa8' : '#8a5a44';
   r('rgba(107,72,72,.22)', px + 3, py + 13, 10, 2);
   r(legc, px + 5, yb + 13, 2, 3 - (moving && phase ? 1 : 0));
   r(legc, px + 9, yb + 13, 2, 3 - (moving && !phase ? 1 : 0));
@@ -1047,6 +1113,13 @@ function drawPlayer(px, py, face, moving, phase, ch) {
   drawBody(x, y, face, ch, skin, fit, fitO);
   /* 頭後面的頭髮（先畫，頭會蓋在上面） */
   if (st_ === 7) ob(hair, hairO, x, y, 16, 10);
+  if (st_ === 11) { ob(hair, hairO, x + 1, y - 1, 5, 5); ob(hair, hairO, x + 10, y - 1, 5, 5); }
+  if (st_ === 12 && face !== 'up') { ob(hair, hairO, x, y + 4, 16, 10); r(hairO, x + 2, y + 9, 1, 3); r(hairO, x + 13, y + 9, 1, 3); }
+  if (st_ === 13) {
+    (face === 'down' || face === 'up' ? [x, x + 13] : face === 'left' ? [x + 12] : [x + 1]).forEach(b_ => {
+      ob(hair, hairO, b_, y + 5, 3, 9); r(hairO, b_, y + 8, 3, 1); r(hairO, b_, y + 11, 3, 1); r('#ff8fa8', b_, y + 13, 3, 1);
+    });
+  }
   if (st_ === 1) {
     if (face === 'down' || face === 'up' || face === 'right') { ob(hair, hairO, x, y + 5, 3, 7); r('#ff8fa8', x, y + 6, 3, 1); }
     if (face === 'down' || face === 'up' || face === 'left') { ob(hair, hairO, x + 13, y + 5, 3, 7); r('#ff8fa8', x + 13, y + 6, 3, 1); }
@@ -1070,6 +1143,7 @@ function drawPlayer(px, py, face, moving, phase, ch) {
     ob(hair, hairO, x + 2, y + 3, 12, 9);
     if (st_ === 2 || st_ === 9) ob(hair, hairO, x + 2, y + 9, 12, 5);
     if (st_ === 5) ob(hair, hairO, x + 1, y + 7, 14, 5);
+    if (st_ === 12) { ob(hair, hairO, x + 1, y + 9, 14, 6); r(hairO, x + 4, y + 12, 1, 3); r(hairO, x + 11, y + 12, 1, 3); }
     if (st_ === 4) { ob(hair, hairO, x + 6, y + 9, 4, 7); r('#ff8fa8', x + 6, y + 10, 4, 1); }
     if (st_ === 6) { ob(hair, hairO, x + 6, y + 9, 4, 7); r(hairO, x + 6, y + 12, 4, 1); r('#ff8fa8', x + 6, y + 15, 4, 1); }
   } else {
@@ -1398,8 +1472,8 @@ let pendingInvite = '';
 const pressed = [];
 let frOpen = false;
 let lkOpen = false, bdOpen = false, ckOpen = false, rcOpen = false, mcOpen = false, dgOpen = false;
-let lvOpen = false, cdOpen = false, dexOpen = false, qOpen = false, dsOpen = false, emOpen = false, stOpen = false, imm = false, sheetOpen = false, trOpen = false;
-const paused = () => lkOpen || bdOpen || ckOpen || rcOpen || mcOpen || dgOpen || lvOpen || cdOpen || dexOpen || qOpen || dsOpen || stOpen || trOpen || (imm && sheetOpen) || frOpen || mlOpen || bagOpen || shopOpen || makerOpen || authOpen || vmOpen || gmOpen || fOpen || !ready;
+let syOpen = false, lvOpen = false, cdOpen = false, dexOpen = false, qOpen = false, dsOpen = false, emOpen = false, stOpen = false, imm = false, sheetOpen = false, trOpen = false;
+const paused = () => lkOpen || bdOpen || ckOpen || rcOpen || mcOpen || dgOpen || lvOpen || cdOpen || dexOpen || qOpen || dsOpen || stOpen || trOpen || (imm && sheetOpen) || frOpen || mlOpen || bagOpen || shopOpen || makerOpen || authOpen || vmOpen || gmOpen || fOpen || syOpen || !ready;
 
 /* ---------- 小提示與特效 ---------- */
 const toastEl = $('toast');
@@ -1563,6 +1637,7 @@ function fmtDur(s) {
 /* ---------- 地圖規則（要和 schema.sql 的 _farmable 一致） ---------- */
 /* 農場右邊多一道村莊大門，通往公共廣場 */
 const GT = 7, FR = 8, BN = 9, TS = 10, BD = 11, BR = 12, RK = 13, NP = 14, HB = 15, FG = 16, WL = 17, TG = 18;   // HB 建築 FG 小村通往農場的門 WL 水井 TG 農場通往小村的門
+const CS = 29, BS = 30;   // CS 裁縫鋪的門  BS 理髮店的門（走進去是室內場景 'stylist'）
    // BD：委託布告欄（農場）   // TS：塔羅小攤（3×2 格，不能走進去，面向它按動作鍵占卜）
 for (let x = 15; x <= 18; x++) kind[5][x] = P;
 kind[5][19] = GT;
@@ -1584,12 +1659,14 @@ const TW = 32, TH = 22;
 const tkind = Array.from({ length: TH }, () => Array(TW).fill(G));
 for (let y = 0; y < TH; y++) for (let x = 0; x < TW; x++) if (x === 0 || y === 0 || x === TW - 1 || y === TH - 1) tkind[y][x] = TR;
 const TOWN_BLD = [
-  { x: 3, y: 3, w: 5, h: 3, t: 'cottage' },    // 桂花婆婆的家，門在 (5,5)
+  { x: 3, y: 3, w: 5, h: 3, t: 'cottage', sign: 'cloth' },    // 桂花婆婆的家，門在 (5,5)
   { x: 11, y: 2, w: 5, h: 4, t: 'chief' },     // 村長家，門在 (13,5)
   { x: 18, y: 3, w: 5, h: 3, t: 'ranch' },     // 牧場小屋，門在 (20,5)
-  { x: 25, y: 2, w: 5, h: 4, t: 'mine' }       // 礦坑入口，在 (27,5)
+  { x: 25, y: 2, w: 5, h: 4, t: 'mine' },       // 礦坑入口，在 (27,5)
+  { x: 19, y: 12, w: 5, h: 3, t: 'salon' }      // 理髮店，門在 (21,14)，站在 (21,15) 面向上
 ];
 TOWN_BLD.forEach(b => { for (let y = b.y; y < b.y + b.h; y++) for (let x = b.x; x < b.x + b.w; x++) tkind[y][x] = HB; });
+tkind[5][5] = CS; tkind[14][21] = BS;   // 兩間店的門
 for (let x = 1; x <= 30; x++) tkind[11][x] = P;                               // 東西向大路
 [5, 13, 20, 27].forEach(x => { for (let y = 6; y <= 10; y++) tkind[y][x] = P; }); // 各家門前的小路
 for (let y = 10; y <= 14; y++) for (let x = 13; x <= 17; x++) tkind[y][x] = P;   // 中央小廣場
@@ -1656,7 +1733,7 @@ const ERR = {
   nothing_to_sell: '沒有東西可以賣', bad_qty: '數量不對', bad_crop: '沒有這種作物',
   bad_name: '名字要 1 到 8 個字', bad_look: '造型資料不對', bad_username: '帳號格式不對', username_taken: '這個帳號已經有人用了',
   bad_invite: '邀請碼無效或已被使用', not_gm: '只有 GM 可以這樣做', nothing_to_revoke: '這組邀請碼已經被使用或不存在',
-  village_full: '這個村莊已經滿 8 人了', bad_village_code: '村莊邀請碼要 6 個字元', bad_mode: '操作不對', too_fast: '別急，再等一下', max_rod: '已經是最高級的釣竿了', no_user: '找不到這位玩家', bond_locked: '友情等級還不夠，這個動作還沒解鎖', no_pending: '對方的邀請已經過期了', bad_act: '沒有這個動作', friend_self: '不能加自己為好友', already_friends: '已經是好友了', already_sent: '已經送出過申請了，等對方回覆吧', too_many_requests: '送出的申請太多了，先等對方回覆吧', friend_full: '你的好友已經滿了', target_full: '對方的好友已經滿了', no_request: '這個申請已經不存在了', bad_fish: '沒有這種魚', bad_bug: '沒有這種蟲', bug_gone: '這隻已經飛走了', nothing_to_claim: '現在沒有可以領的獎勵', not_friend: '只能拜訪好友的家', bad_slot: '這個格子不能用', bad_msg: '信的內容要 1～200 字', mail_limit: '今天寄太多了，明天再寄吧（一天最多 30 張）', no_item: '找不到這個家具', bad_item: '這個家具不能這樣用', cannot_place: '這裡放不下', house_full: '家裡的家具太多了',
+  village_full: '這個村莊已經滿 8 人了', bad_village_code: '村莊邀請碼要 6 個字元', bad_mode: '操作不對', look_locked: '這個造型還沒買', too_fast: '別急，再等一下', max_rod: '已經是最高級的釣竿了', no_user: '找不到這位玩家', bond_locked: '友情等級還不夠，這個動作還沒解鎖', no_pending: '對方的邀請已經過期了', bad_act: '沒有這個動作', friend_self: '不能加自己為好友', already_friends: '已經是好友了', already_sent: '已經送出過申請了，等對方回覆吧', too_many_requests: '送出的申請太多了，先等對方回覆吧', friend_full: '你的好友已經滿了', target_full: '對方的好友已經滿了', no_request: '這個申請已經不存在了', bad_fish: '沒有這種魚', bad_bug: '沒有這種蟲', bug_gone: '這隻已經飛走了', nothing_to_claim: '現在沒有可以領的獎勵', not_friend: '只能拜訪好友的家', bad_slot: '這個格子不能用', bad_msg: '信的內容要 1～200 字', mail_limit: '今天寄太多了，明天再寄吧（一天最多 30 張）', no_item: '找不到這個家具', bad_item: '這個家具不能這樣用', cannot_place: '這裡放不下', house_full: '家裡的家具太多了',
   no_kitchen: '家裡要先擺一台廚房灶台才能做料理', not_enough_items: '材料不夠', bad_recipe: '沒有這道料理', not_edible: '這道菜不能吃，拿去賣或交委託吧', no_dish: '背包裡沒有這道料理了',
   order_done: '這張委託已經完成了', bad_order: '沒有這張委託', max_tool: '已經是最高等級了', bad_tool: '沒有這種工具',
   no_hay: '沒有乾草了，到雜貨攤買', nothing_to_feed: '動物都吃飽了', nothing_to_collect: '現在沒有可以收的', barn_full: '穀倉住滿了（玩家升級會變大）', rock_busy: '這顆礦石還在恢復', sold_out: '今天已經買過或賣滿了', merchant_away: '旅行商人今天不在', already_fert: '已經施過肥了', story_end: '故事暫時告一段落，之後還會有新章節', yard_full: '庭院已經擺滿 60 件了', cannot_sell: '這個不能賣'
@@ -1770,6 +1847,8 @@ function act() {
   }
   if (scene === 'house') {
     if (K[y][x] === GT) { leaveHouse(); return; }
+    const rpH = remoteAt(x, y);
+    if (rpH) { openFriends(rpH); return; }
     const lx = x - RX, ly = y - RY, hit = house && lx >= 0 && lx < RW && ly >= -2 && ly < RH ? itemAtLocal(lx, ly) : null;
     if (hit && DISP[hit.k]) { if (visiting) visitShowList(hit); else openDisplay(hit.id); }
     else if (hit && hit.k === 'kitchen' && !edit.on && !visiting) openKitchen();
@@ -1778,9 +1857,10 @@ function act() {
     else if (hit) pop(x, y, (defOf(hit.k) || {}).name || '', '#fff3b0');
     return;
   }
-  if (scene === 'tarot') { lekcusRoomAct(x, y); return; }
+  if (scene === 'tarot') { const rpT = remoteAt(x, y); if (rpT) { openFriends(rpT); return; } lekcusRoomAct(x, y); return; }
   if (scene === 'town') { townAct(x, y); return; }
   if (scene === 'barn') { barnAct(x, y); return; }
+  if (scene === 'stylist') { stylistAct(x, y); return; }
   const k = K[y][x], key = pk(x, y), p = plots.get(key), t = curTool();
   if (k === GT) { openVMenu(); return; }
   if (k === DR) { enterHouse(); return; }
@@ -2015,6 +2095,8 @@ function townAct(x, y) {
   if (catchShown) { hideCatch(); return; }
   if (fishing) { fishAct(); return; }
   if (k === FG) { leaveTown(); return; }
+  if (k === CS) { enterStylist('fit'); return; }
+  if (k === BS) { enterStylist('hair'); return; }
   if (k === NP) { openNpc(NPCS.findIndex(q => q.x === x && q.y === y)); return; }
   if (k === BD) { openBoard(); return; }
   if (x === MXT && y === MYT && merchantHere()) { openMerchant(); return; }
@@ -2031,7 +2113,8 @@ const BLD_PAL = {
   chief:   { wall: '#fff0d4', wo: '#d9b88a', roof: '#8c5b3c', ro: '#5e3a24', dot: '#a8764d' },
   cottage: { wall: '#fff0d4', wo: '#d9b88a', roof: '#f58fa5', ro: '#d9667f', dot: '#ffd3de' },
   ranch:   { wall: '#e0786a', wo: '#9b3f3a', roof: '#9b6a44', ro: '#6e4a2e', dot: '#b88458' },
-  mine:    { wall: '#9a9ca8', wo: '#5e616e', roof: '#8d909b', ro: '#5e616e', dot: '#b4b8c4' }
+  mine:    { wall: '#9a9ca8', wo: '#5e616e', roof: '#8d909b', ro: '#5e616e', dot: '#b4b8c4' },
+  salon:   { wall: '#f6fff2', wo: '#b8d9b0', roof: '#7fcfa8', ro: '#4f9e7c', dot: '#c5f0dc' }
 };
 function drawBldg(b, now, lit) {
   const ox = b.x * T, oy = b.y * T, w = b.w * T, h = b.h * T, P_ = BLD_PAL[b.t], dx = ox + (w >> 1);
@@ -2053,6 +2136,12 @@ function drawBldg(b, now, lit) {
   if (b.t === 'ranch') { r('#ffffff', dx - 4, oy + h - 9, 8, 1); r('#ffffff', dx - 1, oy + h - 14, 1, 14); }
   const win = lit ? '#fff3b0' : '#cfe8f7';
   ob(win, '#7aa8c8', ox + 8, oy + (h >> 1) + 4, 9, 8); ob(win, '#7aa8c8', ox + w - 17, oy + (h >> 1) + 4, 9, 8);
+  if (b.sign || b.t === 'salon') {                  // 店的招牌
+    const sc = b.t === 'salon' ? '#6a7a8a' : '#e26b88';
+    ob('#fffaf0', '#c9a37a', dx - 6, oy + 7, 12, 9);
+    if (b.t === 'salon') { [[-3, 9], [2, 9], [-2, 10], [1, 10], [-1, 11], [0, 11], [-2, 12], [1, 12], [-3, 13], [2, 13]].forEach(([a, c]) => r(sc, dx + a, oy + c, 1, 1)); }
+    else { r(sc, dx - 4, oy + 9, 3, 1); r(sc, dx + 1, oy + 9, 3, 1); r(sc, dx - 4, oy + 10, 8, 1); r(sc, dx - 3, oy + 11, 6, 3); }
+  }
   if (b.t === 'chief') { ob('#e9a98b', '#c97f6a', ox + w - 14, oy - 4, 7, 9); for (let i = 0; i < 2; i++) { const ph = ((now / 1100) + i / 2) % 1; g.globalAlpha = .8 * (1 - ph); rr('#ffffff', ox + w - 13 + Math.round(Math.sin(ph * 6 + i) * 2), oy - 7 - Math.round(ph * 10), 4, 3); } g.globalAlpha = 1; }
 }
 
@@ -2062,7 +2151,9 @@ const NPC_LOOK = {
   gui:  { hair: '#cfcfd6', hat: null, cloth: '#f2a3b8', bun: true },
   li:   { hair: '#7a6a5a', hat: '#e8c872', cloth: '#6a9ac4', rod: true },
   luo:  { hair: '#5a3a2a', hat: '#ffc83d', cloth: '#e8873a', lamp: true },
-  mo:   { hair: '#a06a3a', hat: null, cloth: '#7ab0e8', ribbon: true }
+  mo:   { hair: '#a06a3a', hat: null, cloth: '#7ab0e8', ribbon: true },
+  tao:  { hair: '#7a4a3a', hat: null, cloth: '#ff9bb3', ribbon: true },
+  jian: { hair: '#2f2a33', hat: null, cloth: '#8fd3c0' }
 };
 function npcArt(px, py, key, bob) {
   const L = NPC_LOOK[key] || NPC_LOOK.oak, o = 'rgba(90,60,40,.55)';
@@ -2534,13 +2625,14 @@ function enterLekcus() {
   scene = 'tarot'; K = rkind; W = RMW; H = RMH;
   pl.x = pl.sx = 6; pl.y = pl.sy = RMH - 2; pl.prog = 1; pl.face = 'up'; pressed.length = 0;
   view.snap = true; fitView(); toast('歡迎光臨 Lekcus 塔羅小屋');
+  lastPosKey = ''; posAcc = 999; trackSelf();
 }
 function leaveLekcus(silent) {
   if (scene !== 'tarot') return;
   closeLekcus();
   scene = 'plaza'; K = pkind; W = BW; H = BH;
   pl.x = pl.sx = 10; pl.y = pl.sy = 3; pl.prog = 1; pl.face = 'down'; pressed.length = 0;
-  view.snap = true; fitView(); lastPosKey = ''; posAcc = 999;
+  view.snap = true; fitView(); lastPosKey = ''; posAcc = 999; trackSelf();
   if (!silent) toast('回到廣場了');
 }
 function lekcusRoomAct(x, y) {
@@ -2971,14 +3063,10 @@ function bagGroups() {
 /* 物品在 TOOLS 目錄裡的編號（只有工具和種子能放進快捷列） */
 const catIdx = it => it.t === 'tool' ? +it.k : it.t === 'seed' ? TOOLS.findIndex(x => x.crop === it.k) : (it.t === 'misc' && /^x:/.test(it.k)) ? TOOLS.findIndex(x => x.id === 'fert') : -1;
 function equipRow(it) {
-  const idx = catIdx(it);
-  const on = idx >= 0 && hot[tool] === idx;
-  return '<div class="v-quick eqrow"><span class="v-count">放到第 ' + (hotPage + 1) + ' 組：</span>' + [0, 1, 2, 3, 4, 5].map(s =>
-    '<button type="button" class="chipbtn" data-b="eq" data-s="' + s + '" aria-pressed="' + (hot[s] === idx ? 'true' : 'false') + '">' + (s + 1) + '</button>').join('') + '</div>' +
-    '<small class="empty">再按一次已裝備的號碼就會取下；放到已有東西的格子會互換。</small>';
+  return catIdx(it) >= 0 ? '<small class="empty">要放進快捷列：點上方快捷列的格子。</small>' : '';
 }
 function bagDetail(it) {
-  if (!it) return '<p class="empty">點一個工具或種子，可以放進快捷列的 1～6 號格。點其他物品看說明。</p>';
+  if (!it) return '<p class="empty">點一個工具或種子，再點上方快捷列的格子放進去。點其他物品看說明。</p>';
   const a = [];
   let info = '';
   if (it.t === 'tool') {
@@ -3002,12 +3090,12 @@ function bagDetail(it) {
     const rc = RARITY[it.f.rarity] || ['', ''];
     info = rc[0] + ' · 到雜貨攤賣，每條 ' + it.f.price + ' G。';
     const can = canShowHere() && (fishLog[it.k] | 0) > 0;
-    a.push('<button type="button" class="btn small"' + (can ? '' : ' disabled') + ' data-b="show">' + (scene === 'plaza' && net && net.ok ? '展示給大家看' : '展示') + '</button>' + (can ? '' : '<small class="empty">（還沒抓到過）</small>'));
+    a.push('<button type="button" class="btn small"' + (can ? '' : ' disabled') + ' data-b="show">' + (syncScene() && net && net.ok ? '展示給大家看' : '展示') + '</button>' + (can ? '' : '<small class="empty">（還沒抓到過）</small>'));
   } else if (it.t === 'bug') {
     const rc = RARITY[it.f.rarity] || ['', ''];
     info = rc[0] + ' · 到雜貨攤賣，每隻 ' + it.f.price + ' G。';
     const can = canShowHere() && (bugLog[it.k] | 0) > 0;
-    a.push('<button type="button" class="btn small"' + (can ? '' : ' disabled') + ' data-b="show">' + (scene === 'plaza' && net && net.ok ? '展示給大家看' : '展示') + '</button>' + (can ? '' : '<small class="empty">（還沒抓到過）</small>'));
+    a.push('<button type="button" class="btn small"' + (can ? '' : ' disabled') + ' data-b="show">' + (syncScene() && net && net.ok ? '展示給大家看' : '展示') + '</button>' + (can ? '' : '<small class="empty">（還沒抓到過）</small>'));
   } else if (it.t === 'dish') {
     info = it.rc.descr + ' 每份賣 ' + it.rc.price + ' G；到家裡的廚房灶台可以吃，也能交委託。';
   } else if (it.t === 'furn') {
@@ -3021,9 +3109,13 @@ function renderBag() {
   const all = groups.flatMap(x => x[1]);
   if (bagSel && !all.some(i => i.t === bagSel.t && i.k === bagSel.k)) bagSel = null;
   const sel = bagSel ? all.find(i => i.t === bagSel.t && i.k === bagSel.k) : null;
+  const selIdx = sel ? catIdx(sel) : -1;
+  const hint = selIdx >= 0
+    ? '<p class="hbtip on">已選「' + esc(TOOLS[selIdx].n) + '」：點下面哪一格，就放進那一格。放到有東西的格子會互換，再點一次放著它的那一格就取下。</p>'
+    : '<p class="hbtip">換快捷列的方法：先點下面的工具或種子，再點這排的格子放進去。</p>';
   const hb = '<h3>快捷列（遊戲畫面下方 1～6 號格）</h3><div class="hbpages">' + [0, 1, 2].map(p =>
-    '<button type="button" class="chipbtn" data-b="hpage" data-p="' + p + '" aria-pressed="' + (hotPage === p ? 'true' : 'false') + '">第 ' + (p + 1) + ' 組</button>').join('') + '</div><div class="hbrow">' + hot.map((h, i) =>
-    '<span class="hbs' + (tool === i ? ' on' : '') + '" title="' + (i + 1) + ' 號格：' + esc((TOOLS[h] || { n: '空' }).n) + '"><i>' + (i + 1) + '</i><canvas width="16" height="16" data-hb="' + i + '"></canvas></span>').join('') + '</div>';
+    '<button type="button" class="chipbtn" data-b="hpage" data-p="' + p + '" aria-pressed="' + (hotPage === p ? 'true' : 'false') + '">第 ' + (p + 1) + ' 組</button>').join('') + '</div>' + hint + '<div class="hbrow">' + hot.map((h, i) =>
+    '<button type="button" class="hbs' + (tool === i ? ' on' : '') + (selIdx >= 0 && h === selIdx ? ' has' : '') + '" data-b="hslot" data-s="' + i + '" aria-label="' + (i + 1) + ' 號格：' + esc((TOOLS[h] || { n: '空' }).n) + '"><i>' + (i + 1) + '</i><canvas width="16" height="16" data-hb="' + i + '"></canvas></button>').join('') + '</div>';
   bagCard.innerHTML = '<div class="shop-h"><h2>背包</h2><span class="chip gold">' + (me ? me.coins : 0) + ' G</span></div>' + hb +
     (groups.length ? groups.map(([title, items]) => '<h3>' + title + '</h3><div class="bagg">' + items.map(i =>
       '<button type="button" class="bagc" data-t="' + i.t + '" data-k="' + esc(i.k) + '" aria-pressed="' + (sel && sel.t === i.t && sel.k === i.k ? 'true' : 'false') + '">' +
@@ -3063,7 +3155,11 @@ bagCard.addEventListener('click', e => {
   if (d.b === 'close') { closeBag(); return; }
   if (d.b === 'ysel' && bagSel && bagSel.t === 'yard') { yardSel = bagSel.k; toast('擺放時會用「' + itemName('y:' + yardSel) + '」'); renderBag(); return; }
   if (d.b === 'hpage') { setHotPage(+d.p, true); renderBag(); return; }
-  if (d.b === 'eq' && bagSel) { const idx = catIdx(bagSel); if (idx >= 0) { setSlot(+d.s, idx); renderBag(); } return; }
+  if (d.b === 'hslot') {
+    const idx = bagSel ? catIdx(bagSel) : -1;
+    if (idx >= 0) { setSlot(+d.s, idx); renderBag(); } else toast('先點下面的工具或種子，再點這一格', 1600);
+    return;
+  }
   if (d.b === 'show' && bagSel && (bagSel.t === 'fish' || bagSel.t === 'bug')) { showItem(bagSel.t, bagSel.k); closeBag(); return; }
   if (d.t) { bagSel = { t: d.t, k: d.k }; renderBag(); }
 });
@@ -3577,7 +3673,6 @@ function updateClock() {
   $('sn').textContent = SEASON_N[sea];
 }
 function refreshHud() {
-  $('emobtn').hidden = !(ready && me);
   $('gold').textContent = (me ? me.coins : 0) + ' G';
   $('who').textContent = me ? me.name : '未登入';
   $('gmbtn').hidden = !(me && me.gm);
@@ -3636,6 +3731,13 @@ function updateTip() {
       else if (y <= 1 && x >= 4 && x <= 7) s = '招牌：按動作鍵，選擇前往 Lekcus 的直播或 Instagram。';
       else if (k === LK || k === TBL) s = 'Lekcus：按動作鍵打招呼、抽牌。';
     }
+  } else if (scene === 'stylist') {
+    s = '店員站在櫃檯後面，面對櫃檯按動作鍵和他說話。';
+    if (x >= 0 && y >= 0 && x < W && y < H) {
+      const k = K[y][x];
+      if (k === BX) s = '門口：按動作鍵回小村。';
+      else if (k === SYK || k === SYC) s = SHOP_STY[styRoom].clerk + '：按動作鍵說話。';
+    }
   } else if (scene === 'town') {
     s = '雷克斯小村：找村民聊聊，頭上有「!」的人有故事要告訴你；布告欄和旅行商人也在這裡。';
     if (x >= 0 && y >= 0 && x < W && y < H) {
@@ -3646,6 +3748,8 @@ function updateTip() {
       else if (x === MXT && y === MYT && merchantHere()) s = '旅行商人 米羅：按動作鍵，看今天賣什麼、收什麼。';
       else if (k === WL) s = '村子的水井。';
       else if (k === WA) s = curTool().id === 'rod' ? '池塘：按動作鍵拋竿釣魚。' : '池塘。（換成釣竿就能釣魚）';
+      else if (k === CS) s = '裁縫鋪：按動作鍵走進去。';
+      else if (k === BS) s = '理髮店：按動作鍵走進去。';
       else if (k === HB) s = '村民的家。';
     }
   } else if (false) {
@@ -3920,6 +4024,7 @@ window.addEventListener('keydown', e => {
   if (e.key === 'Escape' && shopOpen) { closeShop(); return; }
   if (e.key === 'Escape' && vmOpen) { closeVMenu(); return; }
   if (e.key === 'Escape' && gmOpen) { closeGM(); return; }
+  if (e.key === 'Escape' && syOpen) { closeSty(); return; }
   if (e.key === 'Escape' && fOpen) { closeFShop(); return; }
   if (e.key === 'Escape' && trOpen) { closeTarot(); return; }
   if (e.key === 'Escape' && stOpen) { closeSettings(); return; }
@@ -4223,7 +4328,10 @@ function drawPreview() {
   g = ctx;
 }
 function syncMaker() {
-  ROWS.forEach(row => rowEls[row.k].btns.forEach((b, i) => b.setAttribute('aria-pressed', draft[row.k] === i ? 'true' : 'false')));
+  ROWS.forEach(row => rowEls[row.k].btns.forEach((b, i) => {
+    b.setAttribute('aria-pressed', draft[row.k] === i ? 'true' : 'false');
+    if (FREE_N[row.k] != null && i >= FREE_N[row.k]) { const own = styOwned(row.k, i); b.disabled = !own; b.textContent = (own ? '' : '🔒 ') + row.names[i]; }
+  }));
   rowEls.hatc.wrap.hidden = draft.hat === 3;
   drawPreview();
 }
@@ -4273,7 +4381,7 @@ $('mk-ok').addEventListener('click', async () => {
 $('mk-cancel').addEventListener('click', () => { if (!firstTime) closeMaker(); });
 $('mk-rand').addEventListener('click', () => {
   const rnd = n => Math.floor(Math.random() * n);
-  for (const k in LIMIT) draft[k] = rnd(LIMIT[k]);
+  for (const k in LIMIT) draft[k] = rnd(FREE_N[k] != null ? FREE_N[k] : LIMIT[k]);
   syncMaker();
 });
 $('pvturn').addEventListener('click', () => { pvFace = (pvFace + 1) % 4; drawPreview(); });
@@ -4337,7 +4445,7 @@ $('auth-form').addEventListener('submit', async e => {
 });
 function showAuth() {
   tutI = -1; tutEl.hidden = true;
-  leaveLekcus(true); leaveVillage(true); leaveHouse(true); leaveTown(true); leaveBarn(true); stopPresence(); closeFriends(); fr = { friends: [], incoming: [], outgoing: [], max: 50 }; house = null; ready = false; authOpen = true; closeMaker(); closeShop(); closeVMenu(); closeGM(); closeFShop(); closeDex(); closeBag();
+  leaveLekcus(true); leaveVillage(true); leaveHouse(true); leaveStylist(true); leaveTown(true); leaveBarn(true); stopPresence(); closeFriends(); fr = { friends: [], incoming: [], outgoing: [], max: 50 }; house = null; ready = false; authOpen = true; closeMaker(); closeShop(); closeVMenu(); closeGM(); closeFShop(); closeDex(); closeBag();
   bootEl.hidden = true; authEl.hidden = false; me = null; refreshHud();
   closeBoard(); closeKitchen(); closeRanch(); closeMerchant(); closeDlg();
   closeQuests(); qs = { day: 0, c: {}, claimed: {} }; qBadge();
@@ -4520,9 +4628,18 @@ function bubble(b, cx, cy, now) {
   ctx.fillStyle = INK; ctx.fillText(t, cx, y + 7);
   ctx.globalAlpha = 1;
 }
+/* 同步的「世界」：p 廣場、t 塔羅屋、h 屋子（拜訪朋友或自己的家，各屋子有自己的頻道）。
+   廣場和塔羅屋共用同一條村頻道，靠位置訊息裡的 w 分開；只有和自己同一個世界的人才會畫出來。 */
+const worldKey = () => scene === 'tarot' ? 't' : scene === 'house' ? 'h' : 'p';
+const syncScene = () => scene === 'plaza' || scene === 'tarot' || (scene === 'house' && !!net);
+const hereRp = rp => (rp.w || 'p') === worldKey();
+const worldOf = w => w === 't' ? 't' : w === 'h' ? 'h' : 'p';
+const worldW = w => w === 't' ? RMW : BW;
+const worldH = w => w === 't' ? RMH : BH;
+const WORLD_IN = { p: '來到廣場', t: '進了塔羅屋', h: '來到屋子裡' };
 const remoteAt = (x, y) => {
   let hit = null;
-  remotes.forEach(rp => { if (rp.tx === x && rp.ty === y) hit = rp; });
+  remotes.forEach(rp => { if (rp.tx === x && rp.ty === y && hereRp(rp)) hit = rp; });
   return hit;
 };
 const intIn = (v, a, b, d) => (typeof v === 'number' && isFinite(v)) ? clamp(Math.round(v), a, b) : d;
@@ -4537,25 +4654,35 @@ function addLog(name, text, mine, sys) {
     line.appendChild(b); line.appendChild(sp);
   }
   vLog.appendChild(line);
+  if (!sys) { try { feedPush(name, text, mine); } catch (e) { /* 略過 */ } }
   while (vLog.children.length > 60) vLog.removeChild(vLog.firstChild);
   vLog.scrollTop = vLog.scrollHeight;
 }
 const addSys = text => addLog('', text, false, true);
 
 function renderVillage() {
-  if (!roomInfo) return;
+  const inHouse = scene === 'house' && !!net;          // 在屋子裡：同一個聊天欄，標題改成屋子，沒有邀請碼，也沒有「離開廣場」
+  if (!roomInfo && !inHouse) return;
   const n = remotes.size + 1;
-  $('v-title').textContent = roomInfo.kind === 'public' ? '公開廣場 ' + roomInfo.room.replace('pub-', '#') : '私人村 ' + roomInfo.code;
-  $('v-count').textContent = n + '/' + (roomInfo.cap || 8) + ' 人';
-  $('v-copy').hidden = roomInfo.kind !== 'private';
+  $('v-input').placeholder = inHouse ? '對屋子裡的朋友說點什麼' : '對廣場上的朋友說點什麼';
+  $('v-leave').hidden = inHouse;
+  if (inHouse) {
+    $('v-title').textContent = visiting ? visiting.name + ' 的家' : '我的家';
+    $('v-count').textContent = n + ' 人';
+    $('v-copy').hidden = true;
+  } else {
+    $('v-title').textContent = roomInfo.kind === 'public' ? '公開廣場 ' + roomInfo.room.replace('pub-', '#') : '私人村 ' + roomInfo.code;
+    $('v-count').textContent = n + '/' + (roomInfo.cap || 8) + ' 人';
+    $('v-copy').hidden = roomInfo.kind !== 'private';
+  }
   const names = [esc(me.name) + '（你）'];
   remotes.forEach(rp => names.push(esc(rp.name)));
   vList.innerHTML = names.map(x => '<span class="pchip">' + x + '</span>').join('');
 }
-const sitCode = () => pose ? (pose.ground ? 2 : pose.bench ? 1 : 0) : 0;   // 0 站著、1 坐長椅、2 坐在地上（並肩坐）
+const sitCode = () => pose ? (pose.ground ? 2 : pose.bench ? 1 : 0) : 0;   // 0 站著、1 坐長椅、2 坐在地上
 function trackSelf() {
   if (!net || !net.ok) return;
-  try { net.ch.track({ n: me.name, c: me.look, x: pl.x, y: pl.y, f: FACEIDX[pl.face], s: sitCode() }); } catch (e) { /* 略過 */ }
+  try { net.ch.track({ n: me.name, c: me.look, w: worldKey(), x: pl.x, y: pl.y, f: FACEIDX[pl.face], s: sitCode() }); } catch (e) { /* 略過 */ }
 }
 function onSync(ch) {
   if (!net || net.ch !== ch) return;
@@ -4565,17 +4692,21 @@ function onSync(ch) {
     if (id === myUid) return;
     const m = (state[id] && state[id][0]) || {};
     const name = clean(m.n, 8) || '旅人';
-    const x = intIn(m.x, 0, BW - 1, 10), y = intIn(m.y, 0, BH - 1, 11), f = intIn(m.f, 0, 3, 0);
+    const wk = worldOf(m.w);
+    const x = intIn(m.x, 0, worldW(wk) - 1, 10), y = intIn(m.y, 0, worldH(wk) - 1, 11), f = intIn(m.f, 0, 3, 0);
     seen.add(id);
     let rp = remotes.get(id);
     if (!rp) {
-      rp = { id, name, char: toChar(name, m.c), x, y, tx: x, ty: y, f, bubble: null, sit: m.s === 1 && pkind[y][x] === BN, gsit: m.s === 2, heard: performance.now() };
+      rp = { id, name, w: wk, char: toChar(name, m.c), x, y, tx: x, ty: y, f, bubble: null, sit: wk === 'p' && m.s === 1 && pkind[y][x] === BN, gsit: m.s === 2, heard: performance.now() };
       remotes.set(id, rp);
-      if (net.synced) addSys(name + ' 來到廣場');
+      if (net.synced) addSys(name + ' ' + WORLD_IN[wk]);
     } else {
       rp.heard = performance.now();
       rp.name = name; rp.char = toChar(name, m.c);
-      if (performance.now() - (rp.posAt || 0) > 800) { rp.tx = x; rp.ty = y; rp.f = f; rp.sit = m.s === 1 && pkind[y][x] === BN; rp.gsit = m.s === 2; }   // 剛收到更新的走動訊息就不要被舊位置蓋回去
+      if (performance.now() - (rp.posAt || 0) > 800) {
+        if (rp.w !== wk) { rp.w = wk; rp.x = x; rp.y = y; }       // 換了世界（進出塔羅屋）：直接放到新位置，不要從舊位置滑過去
+        rp.tx = x; rp.ty = y; rp.f = f; rp.sit = wk === 'p' && m.s === 1 && pkind[y][x] === BN; rp.gsit = m.s === 2;
+      }   // 剛收到更新的走動訊息就不要被舊位置蓋回去
     }
   });
   /* 這次 presence 沒看到的人，不要馬上刪：網路抖一下、Realtime 丟包時 presence 常常漏掉人。
@@ -4589,25 +4720,27 @@ const UID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 function onPos(p) {
   if (!p || typeof p !== 'object' || typeof p.i !== 'string' || p.i === myUid) return;
   let rp = remotes.get(p.i);
-  const nx = intIn(p.x, 0, BW - 1, rp ? rp.tx : 10), ny = intIn(p.y, 0, BH - 1, rp ? rp.ty : 11);
+  const wk = worldOf(p.w);
+  const nx = intIn(p.x, 0, worldW(wk) - 1, rp ? rp.tx : 10), ny = intIn(p.y, 0, worldH(wk) - 1, rp ? rp.ty : 11);
   if (!rp) {
     /* presence 漏掉的人：靠位置廣播（心跳裡帶名字和造型）補回來 */
     if (!UID_RE.test(p.i) || remotes.size >= 16) return;
     const name = clean(p.n, 8) || '旅人';
-    rp = { id: p.i, name, char: toChar(name, p.c), x: nx, y: ny, tx: nx, ty: ny, f: intIn(p.f, 0, 3, 0), bubble: null, sit: false, heard: performance.now() };
+    rp = { id: p.i, name, w: wk, char: toChar(name, p.c), x: nx, y: ny, tx: nx, ty: ny, f: intIn(p.f, 0, 3, 0), bubble: null, sit: false, heard: performance.now() };
     remotes.set(p.i, rp);
-    if (net && net.synced) addSys(name + ' 來到廣場');
+    if (net && net.synced) addSys(name + ' ' + WORLD_IN[wk]);
     renderVillage();
   } else if (typeof p.n === 'string') { rp.name = clean(p.n, 8) || rp.name; rp.char = toChar(rp.name, p.c); }
   rp.heard = performance.now();
   if (nx !== rp.tx || ny !== rp.ty) rp.fish = null;
+  if (rp.w !== wk) { rp.w = wk; rp.x = nx; rp.y = ny; rp.fish = null; rp.bubble = null; }   // 換了世界：直接放到新位置
   rp.tx = nx; rp.ty = ny; rp.f = intIn(p.f, 0, 3, rp.f); rp.posAt = performance.now();
-  rp.sit = p.s === 1 && pkind[ny][nx] === BN; rp.gsit = p.s === 2;                  // 只有真的在長椅那一格才當作坐著
+  rp.sit = wk === 'p' && p.s === 1 && pkind[ny][nx] === BN; rp.gsit = p.s === 2;                  // 只有真的在長椅那一格才當作坐著
 }
 function onBye(p) { if (p && typeof p.i === 'string') dropRemote(p.i); }
 /* 清道夫：很久沒收到位置廣播、presence 也沒有他的人才移除 */
 setInterval(() => {
-  if (scene !== 'plaza' || !net || !net.ok) return;
+  if (!syncScene() || !net || !net.ok) return;
   const now = performance.now(), st = (net.ch.presenceState && net.ch.presenceState()) || {};
   remotes.forEach((rp, id) => {
     if (now - (rp.heard || 0) < 12000) return;
@@ -4679,7 +4812,7 @@ function startNet(rm, priv) {
           if (net.ok || net.wasOk) { net.ok = false; return; }   // 連上後才斷線：supabase-js 會自動重連，netWatch 看門狗負責兜底
           if (status === 'CLOSED') return;
           if (priv) startNet(rm, false);          // 備援：改用公開頻道
-          else { addSys('連不上即時連線，暫時只能看到自己。'); toast('廣場的即時連線失敗，請重新整理再試'); }
+          else { addSys('連不上即時連線，暫時只能看到自己。'); if (rm.indexOf('house-') !== 0) toast('廣場的即時連線失敗，請重新整理再試'); }
         }
       });
   });
@@ -4706,7 +4839,7 @@ function sayBye() { try { if (net && net.ok) net.ch.send({ type: 'broadcast', ev
 window.addEventListener('pagehide', sayBye);
 function leaveVillage(silent) {
   leaveLekcus(true);
-  pAct = null; pIn = null; hidePactBox(); sayBye(); stopNet(); clearInterval(pingTimer); if (pose && pose.bench) pose = null;
+  pAct = null; pIn = null; hidePactBox(); sayBye(); stopNet(); clearInterval(pingTimer); if (pose && (pose.bench || pose.ground)) pose = null;
   const was = scene === 'plaza';
   scene = 'farm'; K = kind; roomInfo = null; remotes.clear(); myBubble = null; myShow = null;
   vPanel.hidden = true;
@@ -4725,13 +4858,13 @@ async function joinVillage(mode, code, k) {
 function sendPos(dt) {
   posAcc += dt;
   const now = performance.now();
-  const key = pl.x + ',' + pl.y + ',' + pl.face + ',' + (sitCode());
+  const key = worldKey() + ',' + pl.x + ',' + pl.y + ',' + pl.face + ',' + (sitCode());
   const moved = key !== lastPosKey && posAcc >= 120;
   const beat = !!(net && net.ok) && now - lastSendAt > 3000;   // 心跳：站著不動也每 3 秒補一次位置，弄丟的訊息會自己補回來
   if ((moved || beat) && net && net.ok) {
     posAcc = 0; lastPosKey = key; lastSendAt = now;
     if (moved) lastMoveAt = now;
-    try { net.ch.send({ type: 'broadcast', event: 'pos', payload: beat ? { i: myUid, x: pl.x, y: pl.y, f: FACEIDX[pl.face], s: sitCode(), n: me.name, c: me.look } : { i: myUid, x: pl.x, y: pl.y, f: FACEIDX[pl.face], s: sitCode() } }); } catch (e) { /* 略過 */ }
+    try { net.ch.send({ type: 'broadcast', event: 'pos', payload: beat ? { i: myUid, w: worldKey(), x: pl.x, y: pl.y, f: FACEIDX[pl.face], s: sitCode(), n: me.name, c: me.look } : { i: myUid, w: worldKey(), x: pl.x, y: pl.y, f: FACEIDX[pl.face], s: sitCode() } }); } catch (e) { /* 略過 */ }
     if (moved && now - lastTrackAt > 1500) { lastTrackAt = now; trackSelf(); }   // presence 只當備援，降低頻率以免超過 Realtime 的訊息上限
   }
   if (lastMoveAt && now - lastMoveAt > 500) { lastMoveAt = 0; trackSelf(); }
@@ -4739,7 +4872,7 @@ function sendPos(dt) {
 /* 看門狗：頻道連上後如果掉線又沒自己恢復，就整條重建；回到前景、網路恢復時也會檢查 */
 function netWatch(force) {
   if (!ready || !sb) return;
-  if (scene === 'plaza' && roomInfo && net) {
+  if (net && (scene === 'plaza' || scene === 'tarot' || scene === 'house')) {
     const st = net.ch.state;
     if (st === 'joined') { net.bad = 0; if (!net.ok) { net.ok = true; trackSelf(); } }
     else if (net.wasOk && (force || ++net.bad >= 2)) { addSys('連線中斷，重新連線中…'); startNet(net.room, net.priv); return; }
@@ -4771,11 +4904,11 @@ function showItem(kind, key) {
   if (now - lastShow < 1500) { toast('慢一點，別洗頻喔', 1200); return; }
   lastShow = now;
   const rc = RARITY[f.rarity] || ['', '#e0b896'];
-  if (scene === 'plaza' && net && net.ok) {
+  if (syncScene() && net && net.ok) {
     try { net.ch.send({ type: 'broadcast', event: 'show', payload: { i: myUid, k: key, t: kind } }); } catch (e) { return; }
     addLog(me.name, '展示了「' + f.name + '」（' + rc[0] + '）', true);
   } else toast('展示中：' + f.name + '（' + rc[0] + '）' + (scene === 'plaza' ? '（尚未連上廣場，只有你看得到）' : ''), 1800);
-  myShow = { kind, k: key, name: f.name, col: rc[1], at: now, dur: scene === 'plaza' && net && net.ok ? 7000 : 20000 };
+  myShow = { kind, k: key, name: f.name, col: rc[1], at: now, dur: syncScene() && net && net.ok ? 7000 : 20000 };
 }
 const showFish = key => showItem('fish', key);
 function sendChat(text) {
@@ -4800,6 +4933,78 @@ $('v-form').addEventListener('submit', e => {
   b.addEventListener('click', () => sendChat(t));
   $('v-quick').appendChild(b);
 });
+/* ---------- 浮動聊天（手機與電腦共用）：最近訊息浮在畫面上；💬 或 / 開輸入列，快捷語一點就送；輸入框才會叫出鍵盤 ---------- */
+const QUICK_CHAT = ['你好！', '一起來玩', '好可愛', '哈哈', '謝謝', '再見'];
+const cFeed = $('cfeed'), cBar = $('cbar'), cFab = $('cfab'), cIn = $('cinput'), cForm = $('cform'), cQ = $('cq'), stageEl = document.querySelector('.stage');
+const coarseNow = () => !!(window.matchMedia && matchMedia('(pointer:coarse)').matches);
+let cOpen = false, cWas = false;
+const chatOn = () => !vPanel.hidden && ready && !!me;
+function feedPush(name, text, mine) {
+  const d = document.createElement('div'), b = document.createElement('b'), sp = document.createElement('span');
+  d.className = 'cfl' + (mine ? ' me' : '');
+  b.textContent = name; sp.textContent = ' ' + text;
+  d.appendChild(b); d.appendChild(sp); cFeed.appendChild(d);
+  while (cFeed.children.length > 3) cFeed.removeChild(cFeed.firstChild);
+  setTimeout(() => d.classList.add('old'), 8000);
+  setTimeout(() => { if (d.parentNode) d.parentNode.removeChild(d); }, 9000);
+}
+function openChat(focus) {
+  if (!chatOn() || paused()) return;
+  if (emOpen) closeEmote();
+  cOpen = true; cBar.hidden = false; cFab.classList.add('on'); stageEl.classList.add('cbo');
+  stageEl.style.setProperty('--cbh', cBar.offsetHeight + 'px');
+  pressed.length = 0;
+  if (focus) { try { cIn.focus({ preventScroll: true }); } catch (e) { cIn.focus(); } }
+}
+function closeChat() {
+  if (!cOpen) return;
+  cOpen = false; cBar.hidden = true; if (!emOpen) cFab.classList.remove('on'); stageEl.classList.remove('cbo');
+  document.body.classList.remove('cht');
+  if (document.activeElement === cIn) cIn.blur();
+}
+function chatTick() {
+  const on = chatOn();
+  if (on !== cWas) {
+    cWas = on; cFeed.hidden = !on;
+    if (!on) { closeChat(); cFeed.innerHTML = ''; }
+  }
+  const fabOn = !!(ready && me);   // 💬 在沒有聊天的場景（農場等）也顯示：只開表情與動作
+  if (cFab.hidden === fabOn) { cFab.hidden = !fabOn; if (!fabOn) closeEmote(); }
+  if (cOpen && paused()) closeChat();
+}
+QUICK_CHAT.forEach(t => {
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'qbtn'; b.textContent = t;
+  b.addEventListener('click', () => { sendChat(t); closeChat(); });
+  cQ.appendChild(b);
+});
+cBar.addEventListener('pointerdown', e => { if (e.target.closest('button')) e.preventDefault(); });   // 點按鈕時不要讓輸入框失焦，鍵盤才不會先縮回去
+const syncCbh = () => requestAnimationFrame(() => { if (cOpen) stageEl.style.setProperty('--cbh', cBar.offsetHeight + 'px'); });
+cIn.addEventListener('focus', () => { pressed.length = 0; document.body.classList.add('cht'); syncCbh(); });
+cIn.addEventListener('blur', () => { document.body.classList.remove('cht'); syncCbh(); });
+cIn.addEventListener('keydown', e => { if (e.key === 'Escape') { e.preventDefault(); closeChat(); } });
+cForm.addEventListener('submit', e => {
+  e.preventDefault();
+  const v = cIn.value;
+  if (!v.trim()) { closeChat(); return; }
+  cIn.value = '';
+  sendChat(v); closeChat();
+});
+cFab.addEventListener('click', () => { if (cOpen) closeChat(); else if (emOpen) closeEmote(); else openEmote(); });   // 💬 統一入口：表情、動作、快捷語；要打字從面板裡的「自己輸入」或按 /
+cFab.addEventListener('pointerdown', e => e.stopPropagation());
+document.addEventListener('pointerdown', e => { if (cOpen && !cBar.contains(e.target) && !cFab.contains(e.target)) closeChat(); });
+window.addEventListener('keydown', e => {
+  const tg = e.target && e.target.tagName;
+  if (tg === 'INPUT' || tg === 'TEXTAREA' || tg === 'SELECT') return;
+  if (e.key === 'Escape' && cOpen) { closeChat(); return; }
+  if (e.key === '/' && !e.ctrlKey && !e.metaKey && !e.altKey && chatOn() && !paused()) { e.preventDefault(); openChat(true); }
+});
+/* 手機鍵盤：讓輸入列貼著鍵盤上緣 */
+if (window.visualViewport) {
+  const vv = window.visualViewport;
+  const updKb = () => document.documentElement.style.setProperty('--kb', Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop)) + 'px');
+  vv.addEventListener('resize', updKb); vv.addEventListener('scroll', updKb); updKb();
+}
 $('v-leave').addEventListener('click', () => leaveVillage());
 function copyText(t) {
   const done = () => toast('已複製：' + t, 2200);
@@ -5670,6 +5875,7 @@ async function enterHouse() {
   edit.on = false; edit.hold = null; edit.sel = null; myShow = null;
   $('hpanel').hidden = false; $('game').classList.remove('editing');
   renderHousePanel();
+  joinHouseRoom(myUid);        // 自己的家也連上頻道，朋友來拜訪時才看得到你
 }
 /* ---------- 拜訪好友的家（唯讀：看得到擺設與展示品，不能動） ---------- */
 /* ---------- 表情與動作：在廣場會同步給其他玩家，其他地方只有自己看得到 ---------- */
@@ -5741,7 +5947,7 @@ function doEmote(kind, id) {
   } else if (EMOTES.some(x => x.id === id)) myEmo = { id, at: now };
   else return;
   lastEmo = now;
-  if (scene === 'plaza' && net && net.ok) {
+  if (syncScene() && net && net.ok) {
     try { net.ch.send({ type: 'broadcast', event: 'emo', payload: { i: myUid, k: kind === 'a' ? 'a' : 'e', e: id } }); } catch (e) { /* 略過 */ }
   }
 }
@@ -5757,26 +5963,28 @@ function onEmo(p) {
 const emEl = $('emm'), emCard = $('emcard');
 function openEmote() {
   if (!ready || !me || authOpen || paused()) return;
+  if (cOpen) closeChat();
   const btn = (k, id, ic, n) => '<button type="button" data-k="' + k + '" data-e="' + id + '" title="' + n + '" aria-label="' + n + '">' + ic + '</button>';
   emCard.innerHTML = '<div class="eg">' + EMOTES.map(e => btn('e', e.id, e.ic, e.n)).join('') + '</div>' +
-    '<div class="eg">' + Object.keys(ANIMS).filter(id => !ANIMS[id].pair).map(id => btn('a', id, ANIMS[id].ic, ANIMS[id].n)).join('') + '</div>';
-  emOpen = true; emEl.hidden = false;
+    '<div class="eg">' + Object.keys(ANIMS).filter(id => !ANIMS[id].pair).map(id => btn('a', id, ANIMS[id].ic, ANIMS[id].n)).join('') + '</div>' +
+    (chatOn() ? '<div class="eg qq">' + QUICK_CHAT.map(t => btn('q', t, t, t)).join('') + btn('t', '', '✏️ 自己輸入', '自己輸入') + '</div>' : '');
+  emOpen = true; emEl.hidden = false; cFab.classList.add('on');
 }
-function closeEmote() { emOpen = false; emEl.hidden = true; }
+function closeEmote() { emOpen = false; emEl.hidden = true; if (!cOpen) cFab.classList.remove('on'); }
 emCard.addEventListener('click', e => {
   const b = e.target.closest('button[data-k]');
   if (!b) return;
+  if (b.dataset.k === 'q') { closeEmote(); sendChat(b.dataset.e); return; }
+  if (b.dataset.k === 't') { closeEmote(); openChat(true); return; }
   closeEmote(); doEmote(b.dataset.k, b.dataset.e);
 });
-document.addEventListener('pointerdown', e => { if (emOpen && !emEl.contains(e.target) && e.target !== $('emobtn')) closeEmote(); });
-$('emobtn').addEventListener('click', () => { if (emOpen) closeEmote(); else openEmote(); });
-$('emobtn').addEventListener('pointerdown', e => e.stopPropagation());
+document.addEventListener('pointerdown', e => { if (emOpen && !emEl.contains(e.target) && !cFab.contains(e.target)) closeEmote(); });
 
 /* ---------- 友情互動：雙人動作（要對方按同意；伺服器每對好友每天只算第一次，見 friendship.sql） ---------- */
 const PACTS = {
   clap:  { ic: '🙌', n: '擊掌',     need: 1, anim: 'p_clap' },
   dance: { ic: '💃', n: '一起跳舞', need: 2, anim: 'p_dance' },
-  sit:   { ic: '🧘', n: '並肩坐',   need: 3 },
+  sit:   { ic: '🧘', n: '坐在地上', need: 3 },
   hug:   { ic: '🤗', n: '擁抱',     need: 4, anim: 'p_hug' },
   photo: { ic: '📸', n: '合照',     need: 5, anim: 'p_photo' }
 };
@@ -5787,11 +5995,11 @@ function sendPact(to, t, a, s) {
   try { net.ch.send({ type: 'broadcast', event: 'pact', payload: { i: myUid, to, t, a, s: s ? 1 : 0 } }); } catch (e) { /* 略過 */ }
 }
 const dirTo = (dx, dy) => Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up');
-const nearRemote = rp => !!rp && Math.abs(rp.tx - pl.x) + Math.abs(rp.ty - pl.y) === 1;   // 上下左右相鄰一格
+const nearRemote = rp => !!rp && hereRp(rp) && Math.abs(rp.tx - pl.x) + Math.abs(rp.ty - pl.y) === 1;   // 上下左右相鄰一格
 async function pactInvite(uid, act) {
   const P = PACTS[act], rp = remotes.get(uid);
   if (!P || !ready || !me) return;
-  if (scene !== 'plaza' || !net || !net.ok) { toast('雙人動作只能在廣場做', 2200); return; }
+  if (!syncScene() || !net || !net.ok) { toast('要連上即時連線才能做雙人動作（廣場、塔羅屋、屋子裡都可以）', 2600); return; }
   if (!rp || !nearRemote(rp)) { toast('要站在對方旁邊（面對面）才能邀請', 2200); return; }
   if (fishing) { toast('釣魚的時候不能互動', 1800); return; }
   if (pose) { toast('起身後才能邀請', 1800); return; }
@@ -5812,11 +6020,11 @@ function onPact(p) {
   if (!p || typeof p !== 'object' || typeof p.i !== 'string' || typeof p.a !== 'string') return;
   const rp = remotes.get(p.i);
   if (!rp || !PACTS[p.a]) return;
-  if (p.t === 'up') { if (pose && pose.pair === p.i) standUp(); return; }      // 並肩坐：對方起身，我也跟著起身
+  if (p.t === 'up') { if (pose && pose.pair === p.i) standUp(); return; }      // 坐在地上：對方起身，我也跟著起身
   if (p.to !== myUid) return;
   if (p.t === 'req') {
     const P = PACTS[p.a];
-    if (!isFriend(p.i) || bondOf(p.i).lv < P.need || fishing || pose || scene !== 'plaza' || !nearRemote(rp) || pIn) { sendPact(p.i, 'no', p.a); return; }
+    if (!isFriend(p.i) || bondOf(p.i).lv < P.need || fishing || pose || !syncScene() || !nearRemote(rp) || pIn) { sendPact(p.i, 'no', p.a); return; }
     pIn = { from: p.i, act: p.a, s: p.s === 1, at: performance.now() };
     showPactBox(rp.name, P); chime([81, 88], 0.1);
     clearTimeout(pTimer); pTimer = setTimeout(() => { if (pIn && pIn.from === p.i) { pIn = null; hidePactBox(); } }, 15000);
@@ -5849,7 +6057,7 @@ async function pactAccept() {
   pIn = null; hidePactBox();
   const rp = remotes.get(q.from), P = PACTS[q.act];
   if (!rp || !P) return;
-  if (!nearRemote(rp) || fishing || pose || scene !== 'plaza') { toast('位置不對，沒辦法開始', 2000); sendPact(q.from, 'no', q.act); return; }
+  if (!nearRemote(rp) || fishing || pose || !syncScene()) { toast('位置不對，沒辦法開始', 2000); sendPact(q.from, 'no', q.act); return; }
   const b = bondOf(q.from);
   let r = null;
   if (!(q.act !== 'photo' && (b.day === todayStr() || q.s))) {   // 今天已經算過就不用打伺服器
@@ -5872,8 +6080,8 @@ function startPact(act, rp) {
   const dx = rp.tx - pl.x, dy = rp.ty - pl.y, sx = Math.sign(dx), sy = Math.sign(dy);
   const mx = (pl.x + rp.tx) / 2, my = (pl.y + rp.ty) / 2 - 0.6;
   pressed.length = 0; pl.sx = pl.x; pl.sy = pl.y; pl.prog = 1;
-  if (act === 'sit') {                         // 並肩坐：就地坐下，任一方移動就一起起身
-    pose = { type: 'sit', bench: true, ground: true, pair: rp.id, ox: pl.x, oy: pl.y, face0: pl.face, tile: 0, t: 0 };
+  if (act === 'sit') {                         // 坐在地上：就地坐下（不需要長椅），任一方起身就一起起身
+    pose = { type: 'sit', ground: true, pair: rp.id, ox: pl.x, oy: pl.y, face0: pl.face, tile: 0, t: 0 };
     pl.face = 'down'; lastPosKey = ''; posAcc = 999; trackSelf();
     pop(mx, my, '🧘', '#ffffff'); return;
   }
@@ -5913,7 +6121,7 @@ function drawBenchSeated(px, py, ch) {
 function drawGroundSeated(px, py, ch) { drawPlayerFx(px, py, 'down', false, 0, ch, { dx: 0, dy: 2, face: 'down', sy: 0.8, hand: 0, mv: false, ph: null }); }
 function standUp() {
   if (!pose) return;
-  const wasBench = !!pose.bench, pairUid = pose.pair;
+  const wasBench = !!(pose.bench || pose.ground), pairUid = pose.pair;
   if (pairUid) sendPact(pairUid, 'up', 'sit');
   pl.x = pl.sx = pose.ox; pl.y = pl.sy = pose.oy; pl.prog = 1; pl.face = pose.face0; pose = null;
   if (wasBench) { lastPosKey = ''; posAcc = 999; trackSelf(); }
@@ -5959,6 +6167,7 @@ async function visitHouse(uid, name) {
     edit.on = false; edit.hold = null; edit.sel = null; myShow = null;
     $('hpanel').hidden = false; $('game').classList.remove('editing');
     renderHousePanel();
+    joinHouseRoom(uid);          // 連上這間屋子的頻道：屋主和其他訪客會即時看到彼此
     toast('來到 ' + visiting.name + ' 的家了', 2200);
   } catch (e) { toast(errText(e)); }
   enterBusy = false;
@@ -5969,9 +6178,19 @@ function visitShowList(it) {
   for (let s = 0; s < dd.n; s++) if (arr[s]) { const f = cat.find(x => x.key === arr[s].k); if (f) names.push(f.name); }
   toast((defOf(it.k) || {}).name + '：' + (names.length ? names.join('、') : '還沒有展示品'), 3500);
 }
+/* 每間屋子一條頻道（house-屋主uid）；屋主在家、訪客拜訪時都連進來。用公開頻道（只傳位置和表情，不含任何資料） */
+function joinHouseRoom(ownerUid) {
+  if (!ownerUid || !sb) return;
+  remotes.clear(); myBubble = null; lastPosKey = ''; posAcc = 999;
+  vLog.innerHTML = ''; vPanel.hidden = false;
+  startNet('house-' + ownerUid, false);
+  renderVillage();
+  addSys(ownerUid === myUid ? '你的家連上了，朋友來拜訪時可以在這裡聊天。' : '來到朋友的家了，可以和屋子裡的人聊天。');
+}
 function leaveHouse(silent) {
   if (scene !== 'house') return;
   pose = null;
+  sayBye(); stopNet(); remotes.clear(); myBubble = null; vPanel.hidden = true;
   if (visiting) { house = ownHouse; ownHouse = null; visiting = null; }
   scene = 'farm'; K = kind; edit.on = false; edit.hold = null; edit.sel = null; myShow = null;
   $('hpanel').hidden = true; $('game').classList.remove('editing');
@@ -6208,6 +6427,140 @@ fsCard.addEventListener('click', async e => {
   refreshHud();
 });
 
+
+/* ---------- 造型店：裁縫鋪與理髮店（可以走進去，和店員說話才開始選） ---------- */
+/* 擁有紀錄放在背包：hs:編號 = 髮型、fs:編號 = 服裝款式。價格要和後端 buy_look 一致 */
+const SHOP_STY = {
+  hair: { title: '理髮店', clerk: '阿剪師傅', ck: 'jian', k: 'style', names: STYLES, price: { 11: 300, 12: 450, 13: 400 }, look: '看看新髮型',
+    hello: ['歡迎光臨，今天想換什麼新髮型？', '來，坐。想剪成什麼樣子都可以說。'],
+    chat: ['頭髮就像田裡的作物，要細心照顧才會好看。', '我的剪刀每天都磨，保證不會剪壞。', '換個髮型，連心情都會跟著換喔。'] },
+  fit:  { title: '裁縫鋪', clerk: '桃子姊姊', ck: 'tao', k: 'fits', names: FITS, price: { 6: 350, 7: 400, 8: 700 }, look: '看看新衣服',
+    hello: ['歡迎光臨！新做的衣服都掛在牆上喔。', '來啦，想要哪一件？我幫你量一量。'],
+    chat: ['桂花婆婆教過我縫紉，她的針腳可是整個村子最細的。', '晚宴長裙我熬了三個晚上才縫好。', '衣服穿得開心，種田也會更有力氣。'] }
+};
+const styOwned = (k, i) => i < FREE_N[k] || have((k === 'style' ? 'hs:' : 'fs:') + i) > 0;
+const syEl = $('sym'), syCard = $('sycard');
+let syKind = 'fit', syBusy = false, syStage = 'talk', syLine = '', styRoom = 'fit';
+const pickOf = a => a[Math.floor(Math.random() * a.length)];
+function renderSty() {
+  const S = SHOP_STY[syKind], coins = me ? me.coins : 0, cur = myChar();
+  const head = '<div class="shop-h"><h2>' + S.title + '</h2><span class="chip gold">' + coins + ' G</span></div>';
+  if (syStage === 'talk') {
+    syCard.innerHTML = head +
+      '<div class="row"><canvas width="16" height="16" data-clerk="1" style="width:64px;height:64px;image-rendering:pixelated;flex:none"></canvas><div class="meta"><b>' + S.clerk + '</b><small style="font-size:14px;line-height:1.5;white-space:normal">' + syLine + '</small></div></div>' +
+      '<button type="button" class="btn wide" data-a="list">' + S.look + '</button>' +
+      '<button type="button" class="btn ghost wide" data-a="chat">聊聊</button>' +
+      '<button type="button" class="btn ghost wide" data-a="close">沒事了，謝謝</button>';
+    const c2 = syCard.querySelector('canvas[data-clerk]').getContext('2d'); c2.clearRect(0, 0, 16, 16); g = c2;
+    try { npcArt(0, 0, S.ck, 0); } catch (e) { /* 略過 */ }
+    g = ctx;
+    return;
+  }
+  const rows = Object.keys(S.price).map(Number).map(i => {
+    const own = styOwned(S.k, i), now = cur[S.k] === i, pr = S.price[i];
+    return '<div class="row"><canvas width="16" height="22" data-i="' + i + '" style="width:48px;height:66px;image-rendering:pixelated;flex:none"></canvas>' +
+      '<div class="meta"><b>' + esc(S.names[i]) + '</b><small>' + (now ? '目前穿著' : own ? '已擁有' : pr + ' G') + '</small></div>' +
+      (now ? '' : '<button type="button" class="btn small" data-a="' + (own ? 'wear' : 'buy') + '" data-c="' + i + '"' + (syBusy || (!own && coins < pr) ? ' disabled' : '') + '>' + (own ? '穿上' : '買並穿上') + '</button>') + '</div>';
+  }).join('');
+  syCard.innerHTML = head + rows +
+    '<button type="button" class="btn ghost wide" data-a="talk">回去跟' + S.clerk + '說話</button>' +
+    '<button type="button" class="btn ghost wide" data-a="close">關閉</button>';
+  syCard.querySelectorAll('canvas[data-i]').forEach(cv => {
+    const c2 = cv.getContext('2d'); c2.clearRect(0, 0, 16, 22); g = c2;
+    try { drawPlayer(0, 6, 'down', false, 0, { ...cur, [S.k]: +cv.dataset.i }); } catch (e) { /* 略過 */ }
+    g = ctx;
+  });
+}
+function openSty(kind) { syKind = kind; syStage = 'talk'; syLine = pickOf(SHOP_STY[kind].hello); syOpen = true; pressed.length = 0; renderSty(); syEl.hidden = false; syCard.focus(); }
+function closeSty() { syOpen = false; syEl.hidden = true; }
+syCard.addEventListener('click', async e => {
+  const b = e.target.closest('button[data-a]');
+  if (!b || b.disabled) return;
+  const a = b.dataset.a, i = +b.dataset.c, S = SHOP_STY[syKind];
+  if (a === 'close') { closeSty(); return; }
+  if (a === 'list' || a === 'talk') { syStage = a; renderSty(); return; }
+  if (a === 'chat') { syLine = pickOf(S.chat); renderSty(); return; }
+  syBusy = true; renderSty();
+  try {
+    if (a === 'buy') {
+      const r_ = await enqueue(() => rpc('buy_look', { p_kind: S.k, p_idx: i }));
+      if (r_.inv) Object.assign(inv, r_.inv);
+      if (typeof r_.coins === 'number') me.coins = r_.coins;
+    }
+    const look = {}; const cur = myChar(); for (const k in LIMIT) look[k] = cur[k];
+    look[S.k] = i;
+    await enqueue(() => rpc('set_look', { p_name: me.name, p_look: look }));
+    me.look = look; toast(a === 'buy' ? '買下並穿上了' : '換好了', 2200);
+  } catch (err) { toast(errText(err)); await resync(); }
+  syBusy = false;
+  if (syOpen) renderSty();
+  refreshHud();
+});
+
+/* ---------- 店裡的房間（10×8）：後牆是貨架／鏡子，櫃檯後面站著店員，下方是門 ---------- */
+const SRW = 10, SRH = 8, SYK = 27, SYC = 28;   // SYK 店員 SYC 櫃檯
+const srkind = Array.from({ length: SRH }, () => Array(SRW).fill(G));
+for (let y = 0; y < SRH; y++) for (let x = 0; x < SRW; x++) if (y < 3 || y === SRH - 1 || x === 0 || x === SRW - 1) srkind[y][x] = BWL;
+srkind[SRH - 1][4] = BX; srkind[SRH - 1][5] = BX;
+[3, 4, 5].forEach(x => { srkind[4][x] = SYC; });
+srkind[3][4] = SYK;
+srkind[5][1] = DEC; srkind[5][8] = DEC;   // 試衣模特兒／理髮椅
+function enterStylist(kind) {
+  if (scene !== 'town' || !ready || !me || paused()) return;
+  styRoom = kind; pose = null; scene = 'stylist'; K = srkind; W = SRW; H = SRH;
+  pl.x = pl.sx = 4; pl.y = pl.sy = SRH - 2; pl.prog = 1; pl.face = 'up'; pressed.length = 0;
+  view.snap = true; fitView(); toast(kind === 'fit' ? '歡迎光臨裁縫鋪' : '歡迎光臨理髮店');
+}
+function leaveStylist(silent) {
+  if (scene !== 'stylist') return;
+  closeSty();
+  scene = 'town'; K = tkind; W = TW; H = TH;
+  const d = styRoom === 'fit' ? [5, 6] : [21, 15];
+  pl.x = pl.sx = d[0]; pl.y = pl.sy = d[1]; pl.prog = 1; pl.face = 'down'; pressed.length = 0;
+  view.snap = true; fitView(); if (!silent) toast('回到小村了');
+}
+function stylistAct(x, y) {
+  if (x < 0 || y < 0 || x >= W || y >= H) return;
+  if (catchShown) { hideCatch(); return; }
+  const k = K[y][x];
+  if (k === BX) leaveStylist();
+  else if (k === SYK || k === SYC) openSty(styRoom);
+  else if (k === DEC) pop(x, y, styRoom === 'fit' ? '試衣用的模特兒' : '舒服的理髮椅', '#fff3b0');
+}
+function drawStylistRoom(now) {
+  const fit = styRoom === 'fit';
+  const wall = fit ? '#ffe3ec' : '#e3f6ec', wallD = fit ? '#f3b8cb' : '#a9d9c0', fa = fit ? '#f6dcc0' : '#e8e3d6', fb = fit ? '#efd2b4' : '#ddd7c8';
+  ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#3b2a1e'; ctx.fillRect(0, 0, cv.width, cv.height); ctx.restore();
+  r('#3b2a1e', 0, 0, W * T, H * T);
+  for (let ty = 0; ty < H; ty++) for (let tx = 0; tx < W; tx++) {
+    const px = tx * T, py = ty * T;
+    if (ty < 3) { r(wall, px, py, T, T); if (ty === 2) { r(wallD, px, py + T - 2, T, 2); } }
+    else if (srkind[ty][tx] === BWL) { r(wallD, px, py, T, T); r(shade(wallD, 0.9), px + 7, py, 1, T); }
+    else { r((tx + ty) % 2 ? fa : fb, px, py, T, T); }
+  }
+  for (let tx = 1; tx < W - 1; tx++) {
+    const px = tx * T;
+    if (fit) {
+      r('#9b6a44', px, T + 4, T, 1);                                               // 吊衣桿
+      const c = OUTFITS[(tx * 5) % OUTFITS.length]; ob(c, shade(c, 0.8), px + 3, T + 5, 10, 9);
+      r('#b8895a', px, 2 * T + 9, T, 3); const c2 = OUTFITS[(tx * 7 + 3) % OUTFITS.length]; ob(c2, shade(c2, 0.8), px + 2, 2 * T + 3, 12, 6);   // 貨架上的摺好衣服
+    } else {
+      if (tx % 3 === 1) { ob('#d6ecf8', '#8a6a4a', px + 1, 3, 14, 24); r('#ffffff', px + 3, 6, 2, 6); }   // 鏡子
+      r('#b8895a', px, 2 * T + 9, T, 3);
+      if (tx % 2 === 0) { r(['#ff9bb3', '#8fd3c0', '#ffd27a'][tx % 3], px + 5, 2 * T + 3, 4, 6); r('#6a7a8a', px + 6, 2 * T + 1, 2, 2); }   // 瓶瓶罐罐
+    }
+  }
+  ob('#c98f62', '#8c5b3c', 3 * T, 4 * T + 3, 3 * T, T - 3); r('#e8b27a', 3 * T, 4 * T + 3, 3 * T, 2);   // 櫃檯
+  if (fit) { ob('#ff9bb3', '#d4688a', 3 * T + 3, 4 * T, 8, 4); } else { r('#6a7a8a', 5 * T + 4, 4 * T + 1, 1, 4); r('#6a7a8a', 5 * T + 6, 4 * T + 1, 1, 4); }
+  [[1, 5], [8, 5]].forEach(([tx, ty]) => {
+    const px = tx * T, py = ty * T;
+    if (fit) { r('#9b6a44', px + 7, py + 8, 2, 7); r('#9b6a44', px + 4, py + 14, 8, 2); ob(OUTFITS[tx % OUTFITS.length], '#8a5a44', px + 4, py + 2, 8, 7); r('#f6c9a0', px + 6, py, 4, 3); }
+    else { ob('#e26b88', '#9b3f5a', px + 3, py + 4, 10, 8); ob('#e26b88', '#9b3f5a', px + 3, py + 1, 10, 4); r('#6a7a8a', px + 7, py + 12, 2, 3); r('#6a7a8a', px + 4, py + 14, 8, 2); }
+  });
+  ob('#fff0d4', '#9b6a44', 4 * T + 1, (H - 1) * T - 1, 2 * T - 2, T + 1); r('#9b6a44', 5 * T, (H - 1) * T, 1, T);   // 門
+  drawNpc(4 * T, 3 * T, SHOP_STY[styRoom].ck, now);
+}
+
 /* ---------- 房間繪製 ---------- */
 function drawRoom(now) {
   r('#5a4040', 0, 0, W * T, H * T);
@@ -6277,7 +6630,7 @@ function update(dt) {
   }
   const lk = Math.min(1, dt / 110);
   remotes.forEach(rp => { rp.x += (rp.tx - rp.x) * lk; rp.y += (rp.ty - rp.y) * lk; });
-  if (scene === 'plaza') sendPos(dt);
+  if (syncScene()) sendPos(dt);
   if (scene === 'barn') barnTick(dt);
   moodAcc += dt;
   if (moodAcc > 1000) { moodAcc = 0; if (Music) { Music.setMood(darkness(world().min), scene === 'plaza'); syncBgm(); } updateBuffChip(); }
@@ -6285,9 +6638,10 @@ function update(dt) {
   if (paused()) { actQueued = false; return; }
   if (anim && (pressed.length || pose || pl.prog < 1)) anim = null;   // 走動或坐下就中斷動作
   if (pose) {                                   // 坐著或躺著：家具被搬走、離開屋子或按方向鍵就起身
-    const pit = !pose.bench && scene === 'house' && house ? house.items.find(i => i.id === pose.id) : null;
-    if (scene !== (pose.bench ? 'plaza' : 'house')) pose = null;
-    else if (!pose.bench && (!pit || pit.x !== pose.ix || pit.y !== pose.iy)) standUp();
+    const furn = !pose.bench && !pose.ground;             // 坐家具／躺床才需要檢查家具還在不在
+    const pit = furn && scene === 'house' && house ? house.items.find(i => i.id === pose.id) : null;
+    if (pose.ground ? !syncScene() : scene !== (pose.bench ? 'plaza' : 'house')) pose = null;
+    else if (furn && (!pit || pit.x !== pose.ix || pit.y !== pose.iy)) standUp();
     else {
       pose.t += dt;
       if (pose.type === 'lie' && pose.t > 2400) { pose.t = 0; pop(pl.x, pl.y - 0.6, 'Zzz', '#cfe8f7'); }
@@ -6321,6 +6675,7 @@ function draw(now) {
   const w = world(), dark = darkness(w.min);
   if (scene === 'house') drawRoom(now);
   else if (scene === 'barn') drawBarnRoom(now);
+  else if (scene === 'stylist') drawStylistRoom(now);
   else if (scene === 'tarot') drawTarotRoom(now);
   else {
   for (let ty = 0; ty < H; ty++) for (let tx = 0; tx < W; tx++) {
@@ -6377,7 +6732,7 @@ function draw(now) {
           nameTag(ch.name, px + 8, py - 7, '#ffffff');
         }
       } });
-    } else if (pose && pose.bench && scene === 'plaza') {
+    } else if (pose && ((pose.bench && scene === 'plaza') || (pose.ground && syncScene()))) {
       ents.push({ y: ry, draw: () => {
         (pose.ground ? drawGroundSeated : drawBenchSeated)(Math.round(pl.x * T), Math.round(pl.y * T), ch);
         nameTag(ch.name, Math.round(pl.x * T) + 8, Math.round(pl.y * T) - 7, '#ffffff');
@@ -6402,7 +6757,7 @@ function draw(now) {
       bugPix(c.key, fr, px, py - bob, false);
     } });
   });
-  if (scene === 'plaza') remotes.forEach(rp => ents.push({ y: rp.y, draw: () => {
+  if (syncScene()) remotes.forEach(rp => hereRp(rp) && ents.push({ y: rp.y, draw: () => {
     const mv = Math.abs(rp.tx - rp.x) + Math.abs(rp.ty - rp.y) > 0.05;
     const px = Math.round(rp.x * T), py = Math.round(rp.y * T);
     const seated = rp.sit && !mv, gs = rp.gsit && !mv;
@@ -6418,12 +6773,13 @@ function draw(now) {
   ents.sort((a, b) => a.y - b.y).forEach(en => en.draw());
   if (scene === 'town') NPCS.forEach(q => drawNpcMark(q.x * T, q.y * T, q.k, now));   // 任務「！」畫在最上層，不被房子遮住
   if (ready && myEmo) emoteBubble(myEmo, Math.round(rx * T) + 13, Math.round(ry * T) - 6, now);
-  if (scene === 'plaza') remotes.forEach(rp => { if (rp.emo) emoteBubble(rp.emo, Math.round(rp.x * T) + 13, Math.round(rp.y * T) - 6, now); });
-  if (scene !== 'plaza' && myShow) showCard(myShow, Math.round(rx * T) + 8, Math.round(ry * T) - 11, now);
-  if (scene === 'plaza') {
+  if (syncScene()) remotes.forEach(rp => { if (rp.emo && hereRp(rp)) emoteBubble(rp.emo, Math.round(rp.x * T) + 13, Math.round(rp.y * T) - 6, now); });
+  if (!syncScene() && myShow) showCard(myShow, Math.round(rx * T) + 8, Math.round(ry * T) - 11, now);
+  if (syncScene()) {
     if (myBubble) bubble(myBubble, Math.round(rx * T) + 8, Math.round(ry * T) - 11, now);
     if (myShow) showCard(myShow, Math.round(rx * T) + 8, Math.round(ry * T) - (myBubble && now - myBubble.at < 6000 ? 23 : 11), now);
     remotes.forEach(rp => {
+      if (!hereRp(rp)) return;
       if (rp.bubble) bubble(rp.bubble, Math.round(rp.x * T) + 8, Math.round(rp.y * T) - 11, now);
       if (rp.show) showCard(rp.show, Math.round(rp.x * T) + 8, Math.round(rp.y * T) - (rp.bubble && now - rp.bubble.at < 6000 ? 23 : 11), now);
     });
@@ -6437,7 +6793,7 @@ function draw(now) {
   });
   ctx.globalAlpha = 1;
 
-  const indoors = scene === 'house' || scene === 'barn' || scene === 'tarot';
+  const indoors = scene === 'house' || scene === 'barn' || scene === 'tarot' || scene === 'stylist';
   const warm = indoors ? 0 : Math.max(0, 1 - Math.abs(w.min - 1110) / 100) * 0.2;
   if (!indoors && SEA === 'autumn') r('rgba(255,170,70,.06)', 0, 0, W * T, H * T);
   else if (!indoors && SEA === 'winter') r('rgba(215,232,255,.07)', 0, 0, W * T, H * T);
@@ -6520,8 +6876,9 @@ let lastInputAt = performance.now();
 const wakeUI = () => { lastInputAt = performance.now(); };
 ['pointerdown', 'pointermove', 'keydown', 'touchstart'].forEach(t => document.addEventListener(t, wakeUI, { passive: true }));
 function idleTick(now) {
+  chatTick();
   /* 商店、背包、圖鑑這些全頁視窗打開時，把搖桿、動作鈕、工具列、選單把手都藏起來，才不會蓋住視窗底下的按鈕 */
-  const modal = imm && (lkOpen || bdOpen || ckOpen || rcOpen || mcOpen || dgOpen || lvOpen || cdOpen || dexOpen || qOpen || dsOpen || stOpen || trOpen || frOpen || mlOpen || bagOpen || shopOpen || makerOpen || authOpen || vmOpen || gmOpen || fOpen);
+  const modal = imm && (lkOpen || bdOpen || ckOpen || rcOpen || mcOpen || dgOpen || lvOpen || cdOpen || dexOpen || qOpen || dsOpen || stOpen || trOpen || frOpen || mlOpen || bagOpen || shopOpen || makerOpen || authOpen || vmOpen || gmOpen || fOpen || syOpen);
   if (modal !== document.body.classList.contains('modal')) document.body.classList.toggle('modal', modal);
   const idle = imm && !sheetOpen && !pressed.length && now - lastInputAt > 3000;
   if (idle !== document.body.classList.contains('idle')) document.body.classList.toggle('idle', idle);
