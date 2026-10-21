@@ -3,6 +3,14 @@
 <title>雷克斯農場</title>
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
 <meta name="claude:viewport-fit-sides" content="cover">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<meta name="theme-color" content="#d3efe3">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="雷克斯農場">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chiron+GoRound+TC:wght@400;600;800&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap">
 <style>
@@ -269,7 +277,7 @@ kbd{font:600 12px/1 var(--f-display);color:var(--ink);background:var(--panel);pa
 .mlrow.new{border-color:var(--pink-deep);background:#fff6f8}.mlrow canvas{width:80px;flex:none}.mlrow .meta{display:flex;flex-direction:column;min-width:0}
 .mlbig{border:2px solid #f0d0c8;border-radius:14px;padding:10px;background:#fffaf2;margin:8px 0}.mlbig canvas{width:100%;image-rendering:pixelated;border-radius:8px}
 .mlmsg{margin:10px 2px;line-height:1.7;word-break:break-word}.mlfrom{text-align:right;color:#a07a6a;font-size:13px}
-.dbadge{;top:-6px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;background:var(--pink-deep);color:#fff;
+.dbadge{position:absolute;right:-6px;top:-6px;z-index:2;min-width:18px;height:18px;padding:0 4px;border-radius:9px;background:var(--pink-deep);color:#fff;
   font:800 11px/18px var(--f-display);font-style:normal;text-align:center;border:2px solid #fff}
 @media (max-width:520px){.dock{right:5px;top:5px;gap:4px}.dockbtn{width:40px;padding:5px 0;border-width:2px;border-radius:13px}.dockbtn .di{font-size:17px}.dockbtn small{display:none}}
 @media (orientation:landscape) and (max-height:560px){.dock{flex-direction:row;right:5px;top:5px}.dockbtn{width:40px}.dockbtn small{display:none}.dockbtn .di{font-size:16px}}
@@ -421,6 +429,10 @@ body.imm .immgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;flex:
 .imi:active{transform:translateY(2px);box-shadow:0 1px 0 var(--edge)}
 .imi .di{font-size:22px;line-height:1}
 .imi i.dbadge{position:absolute;right:8px;top:4px}
+.dockfold .dbadge{right:-8px;top:-8px}
+#menubtn{position:relative}#menubtn .dbadge{right:-6px;top:-8px}
+.dock.folded .dockfold.hasnew{opacity:1;animation:dockpulse 1.6s ease-in-out infinite}
+@keyframes dockpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
 @media (orientation:portrait){
   body.imm .hotbar{bottom:calc(max(26px,env(safe-area-inset-bottom,0px)) + 164px)}
   body.imm .hotbar:not(.open){left:calc(50% + 21px);bottom:calc(max(26px,env(safe-area-inset-bottom,0px)) + 37px);padding:4px;border-radius:20px}
@@ -529,7 +541,7 @@ body.imm .immgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;flex:
     <div class="empop" id="emm" hidden role="dialog" aria-label="表情與動作"><div id="emcard" tabindex="-1"></div></div>
     <button type="button" class="emobtn" id="emobtn" aria-label="表情與動作（X）" hidden>😊</button>
     <div class="dock" id="dock" aria-label="快捷功能">
-      <button type="button" class="dockbtn dockfold" id="dockfold" aria-label="收起快捷列" aria-expanded="true"><span class="di">▸</span><small>收起</small></button>
+      <button type="button" class="dockbtn dockfold" id="dockfold" aria-label="收起快捷列" aria-expanded="true"><span class="di">▸</span><small>收起</small><i class="dbadge" id="foldbadge" hidden></i></button>
       <button type="button" class="dockbtn" data-k="bag" aria-label="背包（B）"><span class="di">🎒</span><small>背包</small></button>
       <button type="button" class="dockbtn" data-k="fr" aria-label="好友（F）"><span class="di">👥</span><small>好友</small><i class="dbadge" id="dockbadge" hidden></i></button>
       <button type="button" class="dockbtn" data-k="mail" aria-label="信箱（M）"><span class="di">✉️</span><small>信箱</small><i class="dbadge" id="mailbadge" hidden></i></button>
@@ -546,7 +558,7 @@ body.imm .immgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;flex:
   </div>
 
   <div class="hotbar" id="hotbar"></div>
-  <div class="sidebtns"><button type="button" class="menubtn" id="bagbtn">背包</button><button type="button" class="menubtn" id="menubtn" aria-expanded="false">☰ 選單</button></div>
+  <div class="sidebtns"><button type="button" class="menubtn" id="bagbtn">背包</button><button type="button" class="menubtn" id="menubtn" aria-expanded="false">☰ 選單<i class="dbadge" id="menubadge" hidden></i></button></div>
 
   <div class="side" id="side">
   <div class="grab" id="grab"><i></i></div>
@@ -656,6 +668,8 @@ body.imm .immgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;flex:
   <div class="strow"><b>音樂</b><button type="button" class="btn ghost small" id="music" aria-pressed="true">音樂：開</button></div>
   <div class="strow"><b>音量</b><input type="range" id="vol" min="0" max="100" value="50" aria-label="音量" style="flex:1;min-width:0;accent-color:var(--pink)"></div>
   <div class="strow" id="st-fs-row"><b>全螢幕</b><button type="button" class="btn ghost small" id="fs" hidden>全螢幕</button></div>
+  <div class="strow" id="st-app-row"><b>App 版本</b><button type="button" class="btn ghost small" id="appinst">下載 App</button></div>
+  <small class="empty" id="app-hint" hidden style="display:block;margin:-4px 0 8px;line-height:1.6"></small>
   <button type="button" class="btn ghost wide" id="logout">登出</button>
   <button type="button" class="btn wide" id="st-close">完成</button>
 </div></div>
@@ -2052,11 +2066,25 @@ function npcArt(px, py, key, bob) {
 function drawNpc(px, py, key, now) {
   const bob = Math.floor(now / 600 + key.charCodeAt(0)) % 2;
   npcArt(px, py, key, bob);
-  const di = storyDone | 0;
-  if (di < NPC_CH.length && NPC_CH[di] === key && plv() >= CH_PL[di]) {
-    const by = py - 5 + Math.round(Math.sin(now / 250));
-    ob('#ffd34d', '#c9971a', px + 6, by, 4, 5); r('#8a5a00', px + 7, by + 1, 2, 2); r('#8a5a00', px + 7, by + 4, 2, 1);
+}
+/* 頭上的「！」要在房子、樹之後才畫，不然會被屋頂蓋住 */
+function drawNpcMark(px, py, key, now) {
+  const t = storyTarget();
+  if (t && t.npc === key && plv() >= t.pl) {
+    const by = py - 10 + Math.round(Math.sin(now / 250) * 1.5);
+    r('#ffffff', px + 4, by - 1, 8, 10);                       // 白色底，冬天的淡紫色地面上才看得清楚
+    ob('#ffd34d', '#b87a00', px + 5, by, 6, 8);
+    r('#7a4a00', px + 7, by + 1, 2, 3); r('#7a4a00', px + 7, by + 5, 2, 2);
   }
+}
+/* 目前該找誰：以伺服器的章節表為準（story_get），還沒讀到時才用本地的對照表 */
+function storyTarget() {
+  const d = stData && stData.done != null ? stData.done | 0 : storyDone | 0;
+  if (stData && Array.isArray(stData.chapters) && stData.chapters.length) {
+    const c = stData.chapters.find(x => x.ch === d + 1);
+    return c ? { npc: c.npc, pl: c.pl | 0 } : null;
+  }
+  return d < NPC_CH.length ? { npc: NPC_CH[d], pl: CH_PL[d] } : null;
 }
 function npcIcon(c2d, key) { g = c2d; g.clearRect(0, 0, 16, 16); npcArt(0, 0, key, 0); g = ctx; }
 const dgEl = $('dgm'), dgCard = $('dgcard');
@@ -2907,9 +2935,23 @@ function bagGroups() {
 }
 /* 物品在 TOOLS 目錄裡的編號（只有工具和種子能放進快捷列） */
 const catIdx = it => it.t === 'tool' ? +it.k : it.t === 'seed' ? TOOLS.findIndex(x => x.crop === it.k) : (it.t === 'misc' && /^x:/.test(it.k)) ? TOOLS.findIndex(x => x.id === 'fert') : -1;
+/* 直接裝備：已在快捷列就切過去；不在就放進手上這格（手上是空的）、或第一個空格、都滿了才換掉手上這格 */
+function equipNow(idx) {
+  if (idx < 0) return;
+  let s = hot.indexOf(idx);
+  if (s < 0) {
+    s = hot[tool] < 0 ? tool : hot.indexOf(-1);
+    if (s < 0) s = tool;
+    hot[s] = idx; hotSave(); paintSlots();
+  }
+  tool = s; refreshHud();
+  toast('已裝備「' + TOOLS[idx].n + '」（' + (s + 1) + ' 號格）', 1400);
+}
 function equipRow(it) {
   const idx = catIdx(it);
-  return '<div class="v-quick eqrow"><span class="v-count">放到快捷列：</span>' + [0, 1, 2, 3, 4, 5].map(s =>
+  const on = idx >= 0 && hot[tool] === idx;
+  return '<div class="v-quick eqrow"><button type="button" class="btn small" data-b="eqnow"' + (on ? ' disabled' : '') + '>' + (on ? '✓ 手上已裝備' : '直接裝備') + '</button></div>' +
+    '<div class="v-quick eqrow"><span class="v-count">放到快捷列：</span>' + [0, 1, 2, 3, 4, 5].map(s =>
     '<button type="button" class="chipbtn" data-b="eq" data-s="' + s + '" aria-pressed="' + (hot[s] === idx ? 'true' : 'false') + '">' + (s + 1) + '</button>').join('') + '</div>' +
     '<small class="empty">再按一次已裝備的號碼就會取下；放到已有東西的格子會互換。</small>';
 }
@@ -2997,6 +3039,7 @@ bagCard.addEventListener('click', e => {
   const d = b.dataset;
   if (d.b === 'close') { closeBag(); return; }
   if (d.b === 'ysel' && bagSel && bagSel.t === 'yard') { yardSel = bagSel.k; toast('擺放時會用「' + itemName('y:' + yardSel) + '」'); renderBag(); return; }
+  if (d.b === 'eqnow' && bagSel) { equipNow(catIdx(bagSel)); renderBag(); return; }
   if (d.b === 'eq' && bagSel) { const idx = catIdx(bagSel); if (idx >= 0) { setSlot(+d.s, idx); renderBag(); } return; }
   if (d.b === 'show' && bagSel && (bagSel.t === 'fish' || bagSel.t === 'bug')) { showItem(bagSel.t, bagSel.k); closeBag(); return; }
   if (d.t) { bagSel = { t: d.t, k: d.k }; renderBag(); }
@@ -3133,7 +3176,7 @@ function lvHtml() {
     return row(ic, n + ' Lv.' + L + ' / 上限 ' + lv.cap, mx ? '已滿級' : cap ? '需要玩家 Lv.' + (lv.pl + 1) + ' 才能繼續成長' : '經驗 ' + lv['xp_' + k] + ' / ' + lv[k + '_next'], lvBar(lv[k + '_cur'], lv[k + '_next'], lv['xp_' + k], ''));
   };
   const nxt = [[2, '牧場／採集／庭院'], [3, '採礦'], [4, '高級家具']].find(a => a[0] > lv.pl);
-  return row('⭐', '玩家等級 Lv.' + lv.pl, lv.pl >= lv.max_pl ? '已滿級' : '任務與委託經驗 ' + lv.xp_player + ' / ' + lv.pl_next + '（每天最多 70）' + (nxt ? ' · Lv.' + nxt[0] + '：' + nxt[1] : '') + ' · 田地 ' + plots.size + '/' + plotCap() + (nextCap() ? '（下一級 ' + nextCap() + '）' : ''), lvBar(lv.pl_cur, lv.pl_next, lv.xp_player, '')) +
+  return row('⭐', '玩家等級 Lv.' + lv.pl, lv.pl >= lv.max_pl ? '已滿級' : '任務與委託經驗 ' + lv.xp_player + ' / ' + lv.pl_next + '（每日任務每天最多 70）' + (nxt ? ' · Lv.' + nxt[0] + '：' + nxt[1] : '') + ' · 田地 ' + plots.size + '/' + plotCap() + (nextCap() ? '（下一級 ' + nextCap() + '）' : ''), lvBar(lv.pl_cur, lv.pl_next, lv.xp_player, '')) +
     skill('🌱', '農耕', 'farm') + skill('🎣', '釣魚', 'fish') + skill('🦋', '捕蟲', 'bug');
 }
 const qEl = $('qm'), qCard = $('qcard');
@@ -3145,7 +3188,7 @@ const qNeed = q => (q.id === 'plant' || q.id === 'water' || q.id === 'harvest') 
 const qDone = q => qCount(q.id) >= qNeed(q);
 const qAllClaimed = () => QUESTS.every(q => qClaimed(q.id));
 const qReady = () => QUESTS.filter(q => qDone(q) && !qClaimed(q.id)).length + (qAllClaimed() && !qClaimed('bonus') ? 1 : 0);
-function qBadge() { const n = ready && me ? qReady() : 0, b = $('questbadge'); b.hidden = !n; b.textContent = n; const b2 = $('immqb'); if (b2) { b2.hidden = !n; b2.textContent = n; } }
+function qBadge() { const n = ready && me ? qReady() : 0, b = $('questbadge'); b.hidden = !n; b.textContent = n; const b2 = $('immqb'); if (b2) { b2.hidden = !n; b2.textContent = n; } updateFoldBadge(); }
 function qApply(d) {
   if (d) qs = { day: d.day | 0, c: d.c || {}, claimed: d.claimed || {} };
   qBadge(); if (qOpen) renderQuests();
@@ -3406,11 +3449,22 @@ function dockAct(k) {
 $('dock').addEventListener('click', e => { const b = e.target.closest('button[data-k]'); if (b) dockAct(b.dataset.k); });
 $('dock').addEventListener('pointerdown', e => e.stopPropagation());
 /* 電腦版：快捷列可以收起來，只剩一顆小鈕，狀態會記住 */
+/* 快捷列收起（電腦）或選單關著（手機）時，把好友／信箱／任務的通知數字加總，顯示在收起鈕上 */
+function updateFoldBadge() {
+  let n = 0;
+  ['dockbadge', 'mailbadge', 'questbadge'].forEach(id => { const b = $(id); if (b && !b.hidden) n += parseInt(b.textContent, 10) || 0; });
+  const txt = n > 99 ? '99+' : String(n), d = $('dock'), f = $('foldbadge'), m = $('menubadge');
+  const folded = !!d && d.classList.contains('folded');
+  if (f) { f.hidden = !(folded && n); f.textContent = txt; }
+  if (m) { m.hidden = !n; m.textContent = txt; }
+  const fb = $('dockfold'); if (fb) fb.classList.toggle('hasnew', folded && n > 0);
+}
 function setDockFold(on, save) {
   const d = $('dock'), b = $('dockfold');
   d.classList.toggle('folded', on);
   b.setAttribute('aria-expanded', on ? 'false' : 'true'); b.setAttribute('aria-label', on ? '展開快捷列' : '收起快捷列');
   b.querySelector('.di').textContent = on ? '◂' : '▸'; b.querySelector('small').textContent = on ? '展開' : '收起';
+  updateFoldBadge();
   if (save) { try { localStorage.setItem('dw_dockfold', on ? '1' : '0'); } catch (e) { /* 略過 */ } }
 }
 $('dockfold').addEventListener('click', () => setDockFold(!$('dock').classList.contains('folded'), true));
@@ -3914,6 +3968,42 @@ if (docEl.requestFullscreen && document.fullscreenEnabled) {
 }
 
 
+/* ---------- 安裝成 App（PWA）：Android／電腦 Chrome 直接跳安裝視窗，iPhone／iPad 與其他瀏覽器顯示步驟 ---------- */
+let installEvt = null;
+const isStandalone = () => (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true;
+const appHint = $('app-hint'), appBtn = $('appinst');
+function syncAppRow() {
+  $('st-app-row').hidden = isStandalone();      // 已經是 App 在跑，就不用再顯示
+  if (isStandalone()) appHint.hidden = true;
+}
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; });
+window.addEventListener('appinstalled', () => {
+  installEvt = null; appHint.hidden = true; syncAppRow();
+  toast('已安裝！到主畫面或桌面找「雷克斯農場」', 3500);
+});
+function installSteps() {
+  const ua = navigator.userAgent, ios = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  if (ios) {
+    if (/CriOS|FxiOS|EdgiOS|OPiOS|GSA\//.test(ua)) return 'iPhone／iPad 只有 Safari 能安裝：請用 Safari 開啟這個網址，點下方的分享鈕（方框加向上箭頭），選「加入主畫面」，再按「加入」。';
+    return '點 Safari 下方（或右上）的分享鈕（方框加向上箭頭），往下滑選「加入主畫面」，再按「加入」。之後從主畫面圖示打開就是全螢幕 App。';
+  }
+  if (/Macintosh/.test(ua) && /Safari/.test(ua) && !/Chrome|Chromium|Edg/.test(ua)) return 'Mac 的 Safari：選單列「檔案」→「加入 Dock」。';
+  if (/Android/.test(ua)) return '點瀏覽器右上角「⋮」選單，選「安裝應用程式」或「加到主畫面」。';
+  return '在網址列右側找安裝圖示（或瀏覽器選單裡的「安裝雷克斯農場」／「建立捷徑」並勾選「以視窗開啟」）。';
+}
+appBtn.addEventListener('click', async () => {
+  if (installEvt) {
+    try {
+      installEvt.prompt();
+      const r = await installEvt.userChoice;
+      installEvt = null;
+      if (r && r.outcome === 'accepted') { appHint.hidden = true; return; }
+    } catch (e) { /* 改顯示步驟 */ }
+  }
+  appHint.textContent = installSteps(); appHint.hidden = false;
+});
+syncAppRow();
+
 /* ---------- 設定：畫面方向、音樂與音量、全螢幕、登出 ---------- */
 const stEl = $('stm'), stCard = $('stcard');
 const orientOK = !!(window.matchMedia && matchMedia('(pointer:coarse)').matches);
@@ -3933,6 +4023,7 @@ async function applyOrient(interactive) {
 }
 document.addEventListener('fullscreenchange', () => { if (document.fullscreenElement && orientPref !== 'auto') applyOrient(false); });
 function openSettings() {
+  syncAppRow();
   if (!ready || !me || authOpen || paused() || stOpen) return;
   stOpen = true; pressed.length = 0; $('st-orient-row').hidden = !orientOK; syncOrientUI(); stEl.hidden = false; stCard.focus();
 }
@@ -4682,6 +4773,7 @@ function applyFriends(d) {
   fr = { friends: arr(d && d.friends).map(row), incoming: arr(d && d.incoming).map(row), outgoing: arr(d && d.outgoing).map(row), max: intIn(d && d.max, 1, 500, 50) };
   const bd = $('dockbadge'); bd.hidden = !fr.incoming.length; bd.textContent = fr.incoming.length;
   const bd2 = $('immfb'); if (bd2) { bd2.hidden = !fr.incoming.length; bd2.textContent = fr.incoming.length; }
+  updateFoldBadge();
   if (fr.incoming.length > before) toast('收到新的好友申請！按 F 或點右上角的好友圖示查看', 4000);
   if (frOpen) renderFriends();
 }
@@ -4745,7 +4837,7 @@ async function loadGifts() {
     if (gs.length) { toast('🎁 收到 ' + gs.map(x => clean(x.from, 8) + ' 送的' + itemName(String(x.item))).slice(0, 3).join('、') + (gs.length > 3 ? ' 等 ' + gs.length + ' 份禮物' : '')); chime([76, 81], 0.12); refreshHud(); }
   } catch (e) { /* 伺服器還沒裝送禮功能就略過 */ }
 }
-function afterReady() { touchSeen(); loadFriends(); mailLoad(true); startPresence(); loadQuests(); loadLevel(); }
+function afterReady() { touchSeen(); loadFriends(); mailLoad(true); startPresence(); loadQuests(); loadLevel(); rpc('story_get').then(d => { stData = d; }).catch(() => {}); }
 function notifyFriend(uid) {
   if (!pres || !pres.ok || !uid) return;
   try { pres.ch.send({ type: 'broadcast', event: 'fr', payload: { to: uid } }); } catch (e) { /* 略過 */ }
@@ -4866,6 +4958,7 @@ function cardArt(cv, key) {
 function mailBadge() {
   const n = ml.unread | 0;
   ['mailbadge', 'immmb'].forEach(id => { const b = $(id); if (b) { b.hidden = !n; b.textContent = n; } });
+  updateFoldBadge();
 }
 async function mailLoad(quiet) {
   try {
@@ -4922,10 +5015,10 @@ function renderMail() {
       const pr = (ml.cards.find(c => c.key === mlPick) || { price: 1 }).price;
       h += '<label class="mllab">寄給</label><select id="ml-to" class="nameinput">' + fl.map(f => '<option value="' + esc(f.uid) + '"' + (f.uid === mlTo ? ' selected' : '') + '>' + esc(f.name) + '（@' + esc(f.username) + '）</option>').join('') + '</select>' +
         '<label class="mllab">選明信片</label><div class="mlgrid">' + ml.cards.map(c => '<button type="button" class="mlpick' + (c.key === mlPick ? ' on' : '') + '" data-a="pick" data-k="' + esc(c.key) + '"><canvas width="64" height="40" data-card="' + esc(c.key) + '"></canvas><b>' + esc(c.name) + '</b><small>' + c.price + ' G</small></button>').join('') + '</div>' +
-        '<label class="mllab">附上禮物（選填，禮物要跟著明信片寄；一天最多 3 份）</label><select id="ml-item" class="nameinput"><option value="">不附禮物</option>' +
-        Object.keys(inv).filter(k => /^(c|fish|bug):[a-z0-9_]+$/.test(k) && have(k) > 0).map(k => '<option value="' + esc(k) + '"' + (k === mlItem ? ' selected' : '') + '>' + esc(itemName(k)) + ' ×' + have(k) + '</option>').join('') + '</select>' +
+        '<label class="mllab">附上禮物（選填，每張明信片只能附 1 個；一天最多 3 份）</label><select id="ml-item" class="nameinput"><option value="">不附禮物</option>' +
+        Object.keys(inv).filter(k => /^(c|fish|bug):[a-z0-9_]+$/.test(k) && have(k) > 0).map(k => '<option value="' + esc(k) + '"' + (k === mlItem ? ' selected' : '') + '>' + esc(itemName(k)) + '（寄 1 個，持有 ' + have(k) + '）</option>').join('') + '</select>' +
         '<label class="mllab">寫幾句話（最多 200 字）</label><textarea id="ml-msg" class="nameinput mltext" maxlength="200" rows="4" placeholder="今天農場的蘿蔔長得很好，改天一起釣魚吧！">' + esc(mlMsg) + '</textarea>' +
-        '<button type="button" class="btn wide" data-a="send"' + (mlBusy || !me || me.coins < pr ? ' disabled' : '') + '>寄出（' + pr + ' G' + (mlItem ? '，附 ' + itemName(mlItem) : '') + '）</button>';
+        '<button type="button" class="btn wide" data-a="send"' + (mlBusy || !me || me.coins < pr ? ' disabled' : '') + '>寄出（' + pr + ' G' + (mlItem ? '，附 ' + itemName(mlItem) + ' ×1' : '') + '）</button>';
     }
   }
   h += '<button type="button" class="btn ghost wide" data-a="close">關閉</button>';
@@ -5092,6 +5185,60 @@ $('gmbtn').addEventListener('click', () => { if (ready && me && me.gm) openGM();
 const Music = createMusic(window);
 let musicOn = true, musicVol = 50;
 try { const m = JSON.parse(localStorage.getItem('dewfarm_music') || 'null'); if (m) { musicOn = m.on !== false; musicVol = clamp(+m.vol || 0, 0, 100); } } catch (e) { /* 用預設值 */ }
+/* ---- 場景音檔 BGM：農場、小村、廣場、塔羅屋各有自己的音檔（bgm 資料夾）；
+        其他地方（屋子、穀倉）或音檔讀不到時，改用程式合成的音樂。換場景時淡出舊的、淡入新的。 ---- */
+const BGM_FILES = { farm: 'bgm/bgm-farm.mp3', town: 'bgm/bgm-town.mp3', plaza: 'bgm/bgm-plaza.mp3', tarot: 'bgm/bgm-tarot.mp3' };
+const SCENE_BGM = { farm: 'farm', town: 'town', plaza: 'plaza', tarot: 'tarot' };   // 場景 -> 用哪一首（沒列的場景用合成音樂）
+function createSceneBgm(win, urls) {
+  const AC = win.AudioContext || win.webkitAudioContext;
+  if (!AC || !win.Audio) return null;
+  let ctx = null, vol = 0.5, cur = null;
+  const T = {}, dead = {};
+  const LEVEL = 0.85;                       // 音檔本身偏大聲，留一點餘裕
+  function make(name) {
+    if (T[name]) return T[name];
+    try {
+      if (!ctx) ctx = new AC();
+      const el = new Audio(); el.loop = true; el.preload = 'auto'; el.setAttribute('playsinline', ''); el.src = urls[name];
+      const g = ctx.createGain(); g.gain.value = 0; g.connect(ctx.destination);
+      ctx.createMediaElementSource(el).connect(g);          // 走 Web Audio 才能在 iPhone 上調音量
+      el.addEventListener('error', () => { dead[name] = true; if (cur === name) cur = null; });   // 讀不到：改由合成音樂接手
+      return (T[name] = { el, g, off: 0 });
+    } catch (e) { dead[name] = true; return null; }
+  }
+  const lv = () => vol * LEVEL;
+  const fade = (t, to) => t.g.gain.setTargetAtTime(to, ctx.currentTime, 0.6);
+  function play(t) {
+    if (ctx.state === 'suspended' && ctx.resume) ctx.resume();
+    const pr = t.el.play(); if (pr && pr.catch) pr.catch(() => { /* 還沒有手勢：下次點擊再試（nudge） */ });
+  }
+  return {
+    has(name) { return !!urls[name] && !dead[name]; },
+    set(name) {                              // name = 要放的那一首；null = 都不放
+      if (name === cur) { if (cur) this.nudge(); return; }
+      const prev = cur;
+      if (prev && T[prev]) { const o = T[prev]; fade(o, 0); clearTimeout(o.off); o.off = setTimeout(() => { if (cur !== prev) o.el.pause(); }, 3500); }   // 淡出完才真的暫停，下次回來接著放
+      cur = null;
+      if (name && this.has(name)) { const t = make(name); if (t) { clearTimeout(t.off); cur = name; play(t); fade(t, lv()); } }
+    },
+    setVolume(v) { vol = Math.min(1, Math.max(0, v)); if (cur && T[cur]) fade(T[cur], lv()); },
+    nudge() { if (cur && T[cur] && T[cur].el.paused) play(T[cur]); },
+    hidden(h) { if (!cur || !T[cur]) return; if (h) T[cur].el.pause(); else play(T[cur]); }
+  };
+}
+const Bgm = createSceneBgm(window, BGM_FILES);
+let bgmGesture = false, bgmSig = '';
+/* 決定現在該放哪一種：有音檔的場景 → 音檔；其他 → 程式合成。使用者關掉音樂就都不放。 */
+function syncBgm() {
+  if (!Music) return;
+  const name = SCENE_BGM[scene], file = !!(Bgm && name && Bgm.has(name));
+  const go = musicOn && bgmGesture;
+  const sig = (go ? 1 : 0) + '|' + (file ? name : '') + '|' + musicVol;
+  if (sig === bgmSig) return;                 // 沒變就不重複處理（這個函式每秒會被叫一次）
+  bgmSig = sig;
+  Music.setOn(go && !file);
+  if (Bgm) { Bgm.setVolume(musicVol / 100); Bgm.set(go && file ? name : null); }
+}
 function syncMusicUI() {
   $('music').textContent = '音樂：' + (musicOn ? '開' : '關');
   $('music').setAttribute('aria-pressed', musicOn ? 'true' : 'false');
@@ -5101,11 +5248,13 @@ function syncMusicUI() {
 if (!Music) { $('music').hidden = true; $('vol').hidden = true; }
 else {
   Music.setVolume(musicVol / 100); Music.setOn(false); syncMusicUI();
-  const first = () => { window.removeEventListener('pointerdown', first); window.removeEventListener('keydown', first); if (musicOn) Music.setOn(true); };
+  const first = () => { window.removeEventListener('pointerdown', first); window.removeEventListener('keydown', first); bgmGesture = true; syncBgm(); };
   window.addEventListener('pointerdown', first); window.addEventListener('keydown', first);
-  $('music').addEventListener('click', () => { musicOn = !musicOn; Music.setOn(musicOn); syncMusicUI(); });
-  $('vol').addEventListener('input', () => { musicVol = +$('vol').value; Music.setVolume(musicVol / 100); if (musicVol > 0 && !musicOn) { musicOn = true; Music.setOn(true); } syncMusicUI(); });
-  document.addEventListener('visibilitychange', () => Music.hidden(document.hidden));
+  /* 音檔第一次播放要在使用者手勢裡（尤其 iPhone）：之後每次點擊／觸控／按鍵都順手確認一次 */
+  ['pointerdown', 'touchend', 'keydown'].forEach(ev => window.addEventListener(ev, () => { if (Bgm) Bgm.nudge(); }, { passive: true }));
+  $('music').addEventListener('click', () => { musicOn = !musicOn; syncBgm(); syncMusicUI(); });
+  $('vol').addEventListener('input', () => { musicVol = +$('vol').value; Music.setVolume(musicVol / 100); if (musicVol > 0 && !musicOn) { musicOn = true; } syncBgm(); syncMusicUI(); });
+  document.addEventListener('visibilitychange', () => { Music.hidden(document.hidden); if (Bgm) Bgm.hidden(document.hidden); });
 }
 
 /* ---------- 屋子：室內房間、家具、布置 ---------- */
@@ -5917,7 +6066,7 @@ function update(dt) {
   if (scene === 'plaza') sendPos(dt);
   if (scene === 'barn') barnTick(dt);
   moodAcc += dt;
-  if (moodAcc > 1000) { moodAcc = 0; if (Music) Music.setMood(darkness(world().min), scene === 'plaza'); updateBuffChip(); }
+  if (moodAcc > 1000) { moodAcc = 0; if (Music) { Music.setMood(darkness(world().min), scene === 'plaza'); syncBgm(); } updateBuffChip(); }
   fishTick();
   if (paused()) { actQueued = false; return; }
   if (anim && (pressed.length || pose || pl.prog < 1)) anim = null;   // 走動或坐下就中斷動作
@@ -6052,6 +6201,7 @@ function draw(now) {
     nameTag(rp.name, px + 8, py - (seated ? 7 : 5), '#fff3b0');
   } }));
   ents.sort((a, b) => a.y - b.y).forEach(en => en.draw());
+  if (scene === 'town') NPCS.forEach(q => drawNpcMark(q.x * T, q.y * T, q.k, now));   // 任務「！」畫在最上層，不被房子遮住
   if (ready && myEmo) emoteBubble(myEmo, Math.round(rx * T) + 13, Math.round(ry * T) - 6, now);
   if (scene === 'plaza') remotes.forEach(rp => { if (rp.emo) emoteBubble(rp.emo, Math.round(rp.x * T) + 13, Math.round(rp.y * T) - 6, now); });
   if (scene !== 'plaza' && myShow) showCard(myShow, Math.round(rx * T) + 8, Math.round(ry * T) - 11, now);
