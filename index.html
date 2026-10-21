@@ -126,6 +126,9 @@ canvas#game.editing{cursor:crosshair}
 .slot .n{position:absolute;right:5px;bottom:3px;font:600 10px/1 var(--f-display);font-variant-numeric:tabular-nums}
 .slot.sel{border-color:var(--pink);box-shadow:0 4px 0 var(--pink-deep);background:#fff0f3}
 .slot.empty canvas{opacity:.35}
+.slot.hbpage{border-style:dashed;background:var(--ground)}
+.slot.hbpage .pgn{position:absolute;left:0;right:0;top:0;bottom:0;display:flex;align-items:center;justify-content:center;font:800 22px/1 var(--f-display);color:var(--ink)}
+.slot.hbpage .pgn small{font-size:11px;font-weight:600;color:var(--muted);margin-left:1px}
 button:focus-visible{outline:3px solid var(--sky);outline-offset:2px}
 .bag{display:flex;flex-wrap:wrap;gap:6px}
 .bagchip{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;padding:7px 11px;background:var(--panel);border:2px solid var(--edge);border-radius:999px;font-variant-numeric:tabular-nums}
@@ -282,6 +285,8 @@ kbd{font:600 12px/1 var(--f-display);color:var(--ink);background:var(--panel);pa
 @media (max-width:520px){.dock{right:5px;top:5px;gap:4px}.dockbtn{width:40px;padding:5px 0;border-width:2px;border-radius:13px}.dockbtn .di{font-size:17px}.dockbtn small{display:none}}
 @media (orientation:landscape) and (max-height:560px){.dock{flex-direction:row;right:5px;top:5px}.dockbtn{width:40px}.dockbtn small{display:none}.dockbtn .di{font-size:16px}}
 /* ---- 背包 ---- */
+.hbpages{display:flex;gap:6px;margin:2px 0 8px}
+.hbpages .chipbtn{padding:7px 12px}
 .hbrow{display:flex;gap:6px;flex-wrap:wrap}
 .hbs{position:relative;width:44px;height:44px;border:3px solid var(--edge);border-radius:12px;background:#fff}
 .hbs canvas{position:absolute;left:5px;top:6px;width:28px;height:28px;image-rendering:pixelated}
@@ -316,6 +321,7 @@ kbd{font:600 12px/1 var(--f-display);color:var(--ink);background:var(--panel);pa
   .hotbar{flex-wrap:nowrap;gap:6px}
   .slot{flex:1 1 0;width:auto;min-width:0;height:56px}
   .slot canvas{left:50%;transform:translateX(-50%);top:9px}
+  .slot.hbpage{flex:0 0 46px}
 }
 @media (prefers-reduced-motion:reduce){.catch{animation:none}}
 
@@ -352,7 +358,9 @@ body{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
   .hotbar{grid-column:3;grid-row:1;align-self:start;justify-self:center;display:grid;grid-template-columns:repeat(2,50px);gap:6px}
   .slot{width:50px;height:50px;border-width:2px;border-radius:13px}
   .slot canvas{width:30px;height:30px;left:8px;top:6px}
-  .sidebtns{display:flex;grid-column:3;grid-row:1;align-self:start;justify-self:center;margin-top:172px}
+  body:not(.imm) .hotbar .slot.hbpage{grid-column:1/-1;width:auto;height:28px}
+  body:not(.imm) .hotbar .slot.hbpage .pgn{font-size:15px}
+  .sidebtns{display:flex;grid-column:3;grid-row:1;align-self:start;justify-self:center;margin-top:206px}
   .pad{display:contents;position:static;margin:0;padding:0;background:none}
   .dpad{grid-column:1;grid-row:1;align-self:end;justify-self:center;--sz:150px}
   .act{grid-column:3;grid-row:1;align-self:end;justify-self:center;width:92px;height:92px;font-size:19px;margin-bottom:6px}
@@ -369,8 +377,9 @@ body{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
   .hotbar{grid-template-columns:repeat(2,44px);gap:5px}
   .slot{width:44px;height:44px}
   .slot canvas{width:26px;height:26px;left:7px;top:5px}
+  body:not(.imm) .hotbar .slot.hbpage{height:26px}
   .slot .k{font-size:9px}
-  .sidebtns{margin-top:150px}
+  .sidebtns{margin-top:181px}
   .menubtn{padding:8px 10px}
   .dpad{--sz:130px}
   .act{width:80px;height:80px;font-size:17px;margin-bottom:2px}
@@ -404,6 +413,9 @@ body.imm .slot canvas{width:26px!important;height:26px!important;left:6px!import
 body.imm .slot .k{font-size:9px;left:4px;top:2px}
 body.imm .slot .n{font-size:9px;right:3px;bottom:1px}
 body.imm .slot.sel{box-shadow:0 0 0 2px var(--pink)}
+body.imm .slot.hbpage{width:38px!important}
+body.imm .slot.hbpage .pgn{font-size:17px}
+body.imm .slot.hbpage .pgn small{font-size:9px}
 body.imm .pad{display:block!important;position:static;margin:0;padding:0;background:none;height:0}
 body.imm .dpad{position:fixed!important;z-index:6;--sz:150px;left:max(18px,env(safe-area-inset-left,0px));bottom:max(26px,env(safe-area-inset-bottom,0px));grid-area:auto;margin:0;opacity:.82}
 body.imm .act{position:fixed!important;z-index:6;width:104px;height:104px;right:max(22px,env(safe-area-inset-right,0px));bottom:max(38px,env(safe-area-inset-bottom,0px));margin:0;grid-area:auto;opacity:.88;font-size:21px}
@@ -517,6 +529,11 @@ body.imm .immgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;flex:
 .lkport canvas{width:96px;height:96px;image-rendering:pixelated}
 .lkport img{width:100%;height:100%;object-fit:contain;display:block}
 .lkline{margin:0;font-size:16px;line-height:1.7;min-height:84px}
+.bondtag{display:inline-block;margin-left:4px;padding:0 6px;border-radius:10px;background:#fff0f3;border:2px solid #f08fa4;color:#d4688a;font-size:11px;font-weight:700;line-height:16px;vertical-align:middle}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:6px;margin:6px 0}
+.pgrid .btn[disabled]{opacity:.45}
+#pactbox{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;background:var(--panel);border:3px solid var(--edge);border-radius:16px;padding:10px 14px;box-shadow:0 6px 0 rgba(107,72,72,.18);display:flex;gap:10px;align-items:center;max-width:92vw;color:var(--ink);font-size:14px}
+#pactbox[hidden]{display:none}
 </style>
 </head><body>
 
@@ -1352,7 +1369,10 @@ let cfg = { wet_s: 10800 };
 let tool = 0, offset = 0, ready = false;
 /* 快捷列 1~6 號格各裝哪個物品（存的是 TOOLS 目錄的編號，-1 = 空格），可在背包裡自己安排 */
 const DEFHOT = [0, 1, 2, 3, 4, 5];
-let hot = DEFHOT.slice();
+/* 快捷列共 3 組，每組 6 格；hot 永遠指向「目前這一組」的陣列，所以其他程式照舊讀寫 hot 就好 */
+const HOT_SETS = 3;
+let hotSets = [DEFHOT.slice(), Array(6).fill(-1), Array(6).fill(-1)], hotPage = 0;
+let hot = hotSets[0];
 const curTool = () => TOOLS[hot[tool]] || { id: 'none', n: '空格' };
 let fishCat = [], fishLog = {}, rods = [], bugCat = [], bugLog = {};
 let recipes = [], buffs = {}, toolLv = { hoe: 1, can: 1 }, toolCost = {};   // 料理食譜、buff（種類 -> 結束毫秒）、鋤頭／水壺等級
@@ -1636,7 +1656,7 @@ const ERR = {
   nothing_to_sell: '沒有東西可以賣', bad_qty: '數量不對', bad_crop: '沒有這種作物',
   bad_name: '名字要 1 到 8 個字', bad_look: '造型資料不對', bad_username: '帳號格式不對', username_taken: '這個帳號已經有人用了',
   bad_invite: '邀請碼無效或已被使用', not_gm: '只有 GM 可以這樣做', nothing_to_revoke: '這組邀請碼已經被使用或不存在',
-  village_full: '這個村莊已經滿 8 人了', bad_village_code: '村莊邀請碼要 6 個字元', bad_mode: '操作不對', too_fast: '別急，再等一下', max_rod: '已經是最高級的釣竿了', no_user: '找不到這位玩家', friend_self: '不能加自己為好友', already_friends: '已經是好友了', already_sent: '已經送出過申請了，等對方回覆吧', too_many_requests: '送出的申請太多了，先等對方回覆吧', friend_full: '你的好友已經滿了', target_full: '對方的好友已經滿了', no_request: '這個申請已經不存在了', bad_fish: '沒有這種魚', bad_bug: '沒有這種蟲', bug_gone: '這隻已經飛走了', nothing_to_claim: '現在沒有可以領的獎勵', not_friend: '只能拜訪好友的家', bad_slot: '這個格子不能用', bad_msg: '信的內容要 1～200 字', mail_limit: '今天寄太多了，明天再寄吧（一天最多 30 張）', no_item: '找不到這個家具', bad_item: '這個家具不能這樣用', cannot_place: '這裡放不下', house_full: '家裡的家具太多了',
+  village_full: '這個村莊已經滿 8 人了', bad_village_code: '村莊邀請碼要 6 個字元', bad_mode: '操作不對', too_fast: '別急，再等一下', max_rod: '已經是最高級的釣竿了', no_user: '找不到這位玩家', bond_locked: '友情等級還不夠，這個動作還沒解鎖', no_pending: '對方的邀請已經過期了', bad_act: '沒有這個動作', friend_self: '不能加自己為好友', already_friends: '已經是好友了', already_sent: '已經送出過申請了，等對方回覆吧', too_many_requests: '送出的申請太多了，先等對方回覆吧', friend_full: '你的好友已經滿了', target_full: '對方的好友已經滿了', no_request: '這個申請已經不存在了', bad_fish: '沒有這種魚', bad_bug: '沒有這種蟲', bug_gone: '這隻已經飛走了', nothing_to_claim: '現在沒有可以領的獎勵', not_friend: '只能拜訪好友的家', bad_slot: '這個格子不能用', bad_msg: '信的內容要 1～200 字', mail_limit: '今天寄太多了，明天再寄吧（一天最多 30 張）', no_item: '找不到這個家具', bad_item: '這個家具不能這樣用', cannot_place: '這裡放不下', house_full: '家裡的家具太多了',
   no_kitchen: '家裡要先擺一台廚房灶台才能做料理', not_enough_items: '材料不夠', bad_recipe: '沒有這道料理', not_edible: '這道菜不能吃，拿去賣或交委託吧', no_dish: '背包裡沒有這道料理了',
   order_done: '這張委託已經完成了', bad_order: '沒有這張委託', max_tool: '已經是最高等級了', bad_tool: '沒有這種工具',
   no_hay: '沒有乾草了，到雜貨攤買', nothing_to_feed: '動物都吃飽了', nothing_to_collect: '現在沒有可以收的', barn_full: '穀倉住滿了（玩家升級會變大）', rock_busy: '這顆礦石還在恢復', sold_out: '今天已經買過或賣滿了', merchant_away: '旅行商人今天不在', already_fert: '已經施過肥了', story_end: '故事暫時告一段落，之後還會有新章節', yard_full: '庭院已經擺滿 60 件了', cannot_sell: '這個不能賣'
@@ -2950,23 +2970,10 @@ function bagGroups() {
 }
 /* 物品在 TOOLS 目錄裡的編號（只有工具和種子能放進快捷列） */
 const catIdx = it => it.t === 'tool' ? +it.k : it.t === 'seed' ? TOOLS.findIndex(x => x.crop === it.k) : (it.t === 'misc' && /^x:/.test(it.k)) ? TOOLS.findIndex(x => x.id === 'fert') : -1;
-/* 直接裝備：已在快捷列就切過去；不在就放進手上這格（手上是空的）、或第一個空格、都滿了才換掉手上這格 */
-function equipNow(idx) {
-  if (idx < 0) return;
-  let s = hot.indexOf(idx);
-  if (s < 0) {
-    s = hot[tool] < 0 ? tool : hot.indexOf(-1);
-    if (s < 0) s = tool;
-    hot[s] = idx; hotSave(); paintSlots();
-  }
-  tool = s; refreshHud();
-  toast('已裝備「' + TOOLS[idx].n + '」（' + (s + 1) + ' 號格）', 1400);
-}
 function equipRow(it) {
   const idx = catIdx(it);
   const on = idx >= 0 && hot[tool] === idx;
-  return '<div class="v-quick eqrow"><button type="button" class="btn small" data-b="eqnow"' + (on ? ' disabled' : '') + '>' + (on ? '✓ 手上已裝備' : '直接裝備') + '</button></div>' +
-    '<div class="v-quick eqrow"><span class="v-count">放到快捷列：</span>' + [0, 1, 2, 3, 4, 5].map(s =>
+  return '<div class="v-quick eqrow"><span class="v-count">放到第 ' + (hotPage + 1) + ' 組：</span>' + [0, 1, 2, 3, 4, 5].map(s =>
     '<button type="button" class="chipbtn" data-b="eq" data-s="' + s + '" aria-pressed="' + (hot[s] === idx ? 'true' : 'false') + '">' + (s + 1) + '</button>').join('') + '</div>' +
     '<small class="empty">再按一次已裝備的號碼就會取下；放到已有東西的格子會互換。</small>';
 }
@@ -3014,7 +3021,8 @@ function renderBag() {
   const all = groups.flatMap(x => x[1]);
   if (bagSel && !all.some(i => i.t === bagSel.t && i.k === bagSel.k)) bagSel = null;
   const sel = bagSel ? all.find(i => i.t === bagSel.t && i.k === bagSel.k) : null;
-  const hb = '<h3>快捷列（遊戲畫面下方 1～6 號格）</h3><div class="hbrow">' + hot.map((h, i) =>
+  const hb = '<h3>快捷列（遊戲畫面下方 1～6 號格）</h3><div class="hbpages">' + [0, 1, 2].map(p =>
+    '<button type="button" class="chipbtn" data-b="hpage" data-p="' + p + '" aria-pressed="' + (hotPage === p ? 'true' : 'false') + '">第 ' + (p + 1) + ' 組</button>').join('') + '</div><div class="hbrow">' + hot.map((h, i) =>
     '<span class="hbs' + (tool === i ? ' on' : '') + '" title="' + (i + 1) + ' 號格：' + esc((TOOLS[h] || { n: '空' }).n) + '"><i>' + (i + 1) + '</i><canvas width="16" height="16" data-hb="' + i + '"></canvas></span>').join('') + '</div>';
   bagCard.innerHTML = '<div class="shop-h"><h2>背包</h2><span class="chip gold">' + (me ? me.coins : 0) + ' G</span></div>' + hb +
     (groups.length ? groups.map(([title, items]) => '<h3>' + title + '</h3><div class="bagg">' + items.map(i =>
@@ -3054,7 +3062,7 @@ bagCard.addEventListener('click', e => {
   const d = b.dataset;
   if (d.b === 'close') { closeBag(); return; }
   if (d.b === 'ysel' && bagSel && bagSel.t === 'yard') { yardSel = bagSel.k; toast('擺放時會用「' + itemName('y:' + yardSel) + '」'); renderBag(); return; }
-  if (d.b === 'eqnow' && bagSel) { equipNow(catIdx(bagSel)); renderBag(); return; }
+  if (d.b === 'hpage') { setHotPage(+d.p, true); renderBag(); return; }
   if (d.b === 'eq' && bagSel) { const idx = catIdx(bagSel); if (idx >= 0) { setSlot(+d.s, idx); renderBag(); } return; }
   if (d.b === 'show' && bagSel && (bagSel.t === 'fish' || bagSel.t === 'bug')) { showItem(bagSel.t, bagSel.k); closeBag(); return; }
   if (d.t) { bagSel = { t: d.t, k: d.k }; renderBag(); }
@@ -3310,7 +3318,8 @@ const ACH = [
   { id: 'fish_half', ic: '📘', n: '魚圖鑑過半', d: '魚類圖鑑集滿一半' }, { id: 'fish_all', ic: '📗', n: '魚圖鑑全收集', d: '魚類圖鑑全部集滿' },
   { id: 'bug_half', ic: '📙', n: '蟲圖鑑過半', d: '蟲蝶圖鑑集滿一半' }, { id: 'bug_all', ic: '📕', n: '蟲圖鑑全收集', d: '蟲蝶圖鑑全部集滿' },
   { id: 'plots10', ic: '🌻', n: '田園風光', d: '擁有 10 塊田' }, { id: 'home15', ic: '🛋️', n: '溫馨小窩', d: '家裡擺 15 件家具' },
-  { id: 'friend3', ic: '🤝', n: '好人緣', d: '擁有 3 位好友' }
+  { id: 'friend3', ic: '🤝', n: '好人緣', d: '擁有 3 位好友' },
+  { id: 'photo', ic: '📸', n: '命運之交', d: '和好友完成第一次合照' }
 ];
 const itemName = k => {
   if (/^y:/.test(k)) { const yc = ycat.find(q => q.key === k.slice(2)); return yc ? yc.name : k.slice(2); }
@@ -3495,8 +3504,17 @@ for (let i = 0; i < 6; i++) {
   b.addEventListener('click', () => { selectTool(i); if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); });
   slots.push({ el: b, cv: b.querySelector('canvas'), n: b.querySelector('.n') });
 }
+/* 切換組合的按鈕（第 1／2／3 組），放在 1~6 格後面 */
+const pgBtn = document.createElement('button');
+pgBtn.type = 'button'; pgBtn.className = 'slot hbpage';
+pgBtn.innerHTML = '<span class="k">組</span><span class="pgn"></span>';
+$('hotbar').appendChild(pgBtn);
+pgBtn.addEventListener('click', () => { setHotPage(hotPage + 1); if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); });
 /* 依 hot[] 重畫快捷列圖示 */
 function paintSlots() {
+  pgBtn.querySelector('.pgn').innerHTML = (hotPage + 1) + '<small>/' + HOT_SETS + '</small>';
+  pgBtn.setAttribute('aria-label', '切換快捷列組合，目前第 ' + (hotPage + 1) + ' 組');
+  pgBtn.title = '切換快捷列組合（電腦可按 Tab）';
   slots.forEach((s, i) => {
     const c2d = s.cv.getContext('2d'), it = TOOLS[hot[i]];
     if (it) drawIcon(c2d, hot[i]); else c2d.clearRect(0, 0, 16, 16);
@@ -3504,18 +3522,32 @@ function paintSlots() {
   });
 }
 const hotKey = () => 'dewfarm_hot_' + authUser;
+/* 同一組裡物品不重複（不同組可以放一樣的，例如每組都放鋤頭） */
+function hotClean(v) {
+  const seen = new Set();
+  return v.map(x => (Number.isInteger(x) && x >= 0 && x < TOOLS.length && !seen.has(x) && seen.add(x)) ? x : -1);
+}
 function hotLoad() {
-  hot = DEFHOT.slice();
+  hotSets = [DEFHOT.slice(), Array(6).fill(-1), Array(6).fill(-1)]; hotPage = 0;
   try {
     const v = JSON.parse(localStorage.getItem(hotKey()) || 'null');
-    if (Array.isArray(v) && v.length === 6) {
-      const seen = new Set();
-      hot = v.map(x => (Number.isInteger(x) && x >= 0 && x < TOOLS.length && !seen.has(x) && seen.add(x)) ? x : -1);
+    if (Array.isArray(v) && v.length === 6) hotSets[0] = hotClean(v);          // 舊存檔：只有一組，變成第 1 組
+    else if (v && Array.isArray(v.s)) {
+      for (let i = 0; i < HOT_SETS; i++) if (Array.isArray(v.s[i]) && v.s[i].length === 6) hotSets[i] = hotClean(v.s[i]);
+      if (Number.isInteger(v.p) && v.p >= 0 && v.p < HOT_SETS) hotPage = v.p;
     }
   } catch (e) { /* 用預設 */ }
+  hot = hotSets[hotPage];
   paintSlots();
 }
-function hotSave() { try { localStorage.setItem(hotKey(), JSON.stringify(hot)); } catch (e) { /* 略過 */ } }
+function hotSave() { try { localStorage.setItem(hotKey(), JSON.stringify({ p: hotPage, s: hotSets })); } catch (e) { /* 略過 */ } }
+/* 切到第 p 組（0~2，會循環）；手上拿的格號不變 */
+function setHotPage(p, quiet) {
+  hotPage = ((p % HOT_SETS) + HOT_SETS) % HOT_SETS;
+  hot = hotSets[hotPage];
+  hotSave(); paintSlots(); refreshHud();
+  if (!quiet) toast('快捷列　第 ' + (hotPage + 1) + ' 組', 900);
+}
 /* 把物品 idx 放進第 s 格：再按一次同格就取下；已在別格的會和這格互換 */
 function setSlot(s, idx) {
   if (hot[s] === idx) hot[s] = -1;
@@ -3906,6 +3938,7 @@ window.addEventListener('keydown', e => {
     if (!e.repeat) actQueued = true;
     return;
   }
+  if (e.key === 'Tab' && ready && me && !e.ctrlKey && !e.metaKey && !e.altKey) { e.preventDefault(); if (!e.repeat) setHotPage(hotPage + (e.shiftKey ? -1 : 1)); return; }
   if (e.key >= '1' && e.key <= '6') selectTool(+e.key - 1);
 });
 window.addEventListener('keyup', e => { const d = KEYMAP[e.key]; if (d) release(d); });
@@ -4519,9 +4552,10 @@ function renderVillage() {
   remotes.forEach(rp => names.push(esc(rp.name)));
   vList.innerHTML = names.map(x => '<span class="pchip">' + x + '</span>').join('');
 }
+const sitCode = () => pose ? (pose.ground ? 2 : pose.bench ? 1 : 0) : 0;   // 0 站著、1 坐長椅、2 坐在地上（並肩坐）
 function trackSelf() {
   if (!net || !net.ok) return;
-  try { net.ch.track({ n: me.name, c: me.look, x: pl.x, y: pl.y, f: FACEIDX[pl.face], s: pose && pose.bench ? 1 : 0 }); } catch (e) { /* 略過 */ }
+  try { net.ch.track({ n: me.name, c: me.look, x: pl.x, y: pl.y, f: FACEIDX[pl.face], s: sitCode() }); } catch (e) { /* 略過 */ }
 }
 function onSync(ch) {
   if (!net || net.ch !== ch) return;
@@ -4535,13 +4569,13 @@ function onSync(ch) {
     seen.add(id);
     let rp = remotes.get(id);
     if (!rp) {
-      rp = { id, name, char: toChar(name, m.c), x, y, tx: x, ty: y, f, bubble: null, sit: m.s === 1 && pkind[y][x] === BN, heard: performance.now() };
+      rp = { id, name, char: toChar(name, m.c), x, y, tx: x, ty: y, f, bubble: null, sit: m.s === 1 && pkind[y][x] === BN, gsit: m.s === 2, heard: performance.now() };
       remotes.set(id, rp);
       if (net.synced) addSys(name + ' 來到廣場');
     } else {
       rp.heard = performance.now();
       rp.name = name; rp.char = toChar(name, m.c);
-      if (performance.now() - (rp.posAt || 0) > 800) { rp.tx = x; rp.ty = y; rp.f = f; rp.sit = m.s === 1 && pkind[y][x] === BN; }   // 剛收到更新的走動訊息就不要被舊位置蓋回去
+      if (performance.now() - (rp.posAt || 0) > 800) { rp.tx = x; rp.ty = y; rp.f = f; rp.sit = m.s === 1 && pkind[y][x] === BN; rp.gsit = m.s === 2; }   // 剛收到更新的走動訊息就不要被舊位置蓋回去
     }
   });
   /* 這次 presence 沒看到的人，不要馬上刪：網路抖一下、Realtime 丟包時 presence 常常漏掉人。
@@ -4568,7 +4602,7 @@ function onPos(p) {
   rp.heard = performance.now();
   if (nx !== rp.tx || ny !== rp.ty) rp.fish = null;
   rp.tx = nx; rp.ty = ny; rp.f = intIn(p.f, 0, 3, rp.f); rp.posAt = performance.now();
-  rp.sit = p.s === 1 && pkind[ny][nx] === BN;                  // 只有真的在長椅那一格才當作坐著
+  rp.sit = p.s === 1 && pkind[ny][nx] === BN; rp.gsit = p.s === 2;                  // 只有真的在長椅那一格才當作坐著
 }
 function onBye(p) { if (p && typeof p.i === 'string') dropRemote(p.i); }
 /* 清道夫：很久沒收到位置廣播、presence 也沒有他的人才移除 */
@@ -4637,6 +4671,7 @@ function startNet(rm, priv) {
       .on('broadcast', { event: 'fish' }, m => onFish(m && m.payload))
       .on('broadcast', { event: 'show' }, m => onShow(m && m.payload))
       .on('broadcast', { event: 'emo' }, m => onEmo(m && m.payload))
+      .on('broadcast', { event: 'pact' }, m => onPact(m && m.payload))
       .subscribe(status => {
         if (!net || net.ch !== ch) return;
         if (status === 'SUBSCRIBED') { net.ok = true; net.wasOk = true; net.bad = 0; lastSendAt = 0; trackSelf(); }
@@ -4671,7 +4706,7 @@ function sayBye() { try { if (net && net.ok) net.ch.send({ type: 'broadcast', ev
 window.addEventListener('pagehide', sayBye);
 function leaveVillage(silent) {
   leaveLekcus(true);
-  sayBye(); stopNet(); clearInterval(pingTimer); if (pose && pose.bench) pose = null;
+  pAct = null; pIn = null; hidePactBox(); sayBye(); stopNet(); clearInterval(pingTimer); if (pose && pose.bench) pose = null;
   const was = scene === 'plaza';
   scene = 'farm'; K = kind; roomInfo = null; remotes.clear(); myBubble = null; myShow = null;
   vPanel.hidden = true;
@@ -4690,13 +4725,13 @@ async function joinVillage(mode, code, k) {
 function sendPos(dt) {
   posAcc += dt;
   const now = performance.now();
-  const key = pl.x + ',' + pl.y + ',' + pl.face + ',' + (pose && pose.bench ? 1 : 0);
+  const key = pl.x + ',' + pl.y + ',' + pl.face + ',' + (sitCode());
   const moved = key !== lastPosKey && posAcc >= 120;
   const beat = !!(net && net.ok) && now - lastSendAt > 3000;   // 心跳：站著不動也每 3 秒補一次位置，弄丟的訊息會自己補回來
   if ((moved || beat) && net && net.ok) {
     posAcc = 0; lastPosKey = key; lastSendAt = now;
     if (moved) lastMoveAt = now;
-    try { net.ch.send({ type: 'broadcast', event: 'pos', payload: beat ? { i: myUid, x: pl.x, y: pl.y, f: FACEIDX[pl.face], s: pose && pose.bench ? 1 : 0, n: me.name, c: me.look } : { i: myUid, x: pl.x, y: pl.y, f: FACEIDX[pl.face], s: pose && pose.bench ? 1 : 0 } }); } catch (e) { /* 略過 */ }
+    try { net.ch.send({ type: 'broadcast', event: 'pos', payload: beat ? { i: myUid, x: pl.x, y: pl.y, f: FACEIDX[pl.face], s: sitCode(), n: me.name, c: me.look } : { i: myUid, x: pl.x, y: pl.y, f: FACEIDX[pl.face], s: sitCode() } }); } catch (e) { /* 略過 */ }
     if (moved && now - lastTrackAt > 1500) { lastTrackAt = now; trackSelf(); }   // presence 只當備援，降低頻率以免超過 Realtime 的訊息上限
   }
   if (lastMoveAt && now - lastMoveAt > 500) { lastMoveAt = 0; trackSelf(); }
@@ -4781,6 +4816,37 @@ let fr = { friends: [], incoming: [], outgoing: [], max: 50 }, frTarget = null, 
 let seenMap = {}, onlineMap = new Map(), pres = null, lastWhere = '', whereTimer = 0, frBusy = false;
 const WHERE = { farm: '在農場', plaza: '在廣場', house: '在屋子裡' };
 const isFriend = uid => fr.friends.some(f => f.uid === uid);
+/* ---------- 友情等級：只靠雙人互動動作升級，每對好友每天只算第一次（伺服器 friend_act_*） ---------- */
+const BOND_NEED = [0, 0, 3, 10, 25, 50];
+const todayStr = () => new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10);   // 和伺服器一樣以 UTC+8 換日
+let bonds = new Map(), bondPhoto = false;
+const bondOf = uid => bonds.get(uid) || { cnt: 0, lv: 1, day: '' };
+function applyBonds(d) {
+  const m = new Map();
+  (d && Array.isArray(d.bonds) ? d.bonds : []).slice(0, 300).forEach(b => {
+    if (b && typeof b.uid === 'string') m.set(b.uid, { cnt: intIn(b.cnt, 0, 100000, 0), lv: intIn(b.lv, 1, 5, 1), day: typeof b.day === 'string' ? b.day.slice(0, 10) : '' });
+  });
+  bonds = m; bondPhoto = !!(d && d.photo);
+  if (frOpen) renderFriends();
+}
+async function loadBonds() { try { applyBonds(await rpc('bond_get')); } catch (e) { /* 伺服器還沒裝友情功能就略過 */ } }
+function bondLine(b) {
+  const nx = b.lv < 5 ? BOND_NEED[b.lv + 1] - b.cnt : 0;
+  return '互動 ' + b.cnt + ' 次' + (nx > 0 ? '（再 ' + nx + ' 次升級）' : '（已滿級）') + (b.day === todayStr() ? ' · 今天 ✓' : '');
+}
+function bondToast(uid, lv) {
+  const f = fr.friends.find(x => x.uid === uid), un = Object.keys(PACTS).filter(k => PACTS[k].need === lv).map(k => PACTS[k].n)[0];
+  toast('❤️ 你和 ' + (f ? f.name : '好友') + ' 的友情升到 Lv.' + lv + '！' + (un ? '解鎖「' + un + '」' : ''), 4200); chime([76, 81, 88], 0.12);
+}
+function pactPanel(uid) {
+  const b = bondOf(uid);
+  let h = '<h3>一起玩　<span class="bondtag">❤️Lv.' + b.lv + '</span></h3><p class="empty">' + bondLine(b) + '。要雙方都同意才算，每天第一次互動才算次數。</p><div class="pgrid">';
+  Object.keys(PACTS).forEach(k => {
+    const P = PACTS[k], lock = b.lv < P.need;
+    h += '<button type="button" class="btn small' + (lock ? ' ghost' : '') + '" data-a="pact" data-p="' + k + '" data-u="' + esc(uid) + '"' + (lock ? ' disabled' : '') + '>' + P.ic + ' ' + P.n + (lock ? ' 🔒Lv.' + P.need : '') + '</button>';
+  });
+  return h + '</div>';
+}
 function applyFriends(d) {
   const arr = v => Array.isArray(v) ? v.slice(0, 200) : [];
   const row = o => ({ uid: typeof o.uid === 'string' ? o.uid.slice(0, 40) : '', username: clean(o.username, 16), name: clean(o.name, 8) || '旅人' });
@@ -4852,7 +4918,7 @@ async function loadGifts() {
     if (gs.length) { toast('🎁 收到 ' + gs.map(x => clean(x.from, 8) + ' 送的' + itemName(String(x.item))).slice(0, 3).join('、') + (gs.length > 3 ? ' 等 ' + gs.length + ' 份禮物' : '')); chime([76, 81], 0.12); refreshHud(); }
   } catch (e) { /* 伺服器還沒裝送禮功能就略過 */ }
 }
-function afterReady() { touchSeen(); loadFriends(); mailLoad(true); startPresence(); loadQuests(); loadLevel(); rpc('story_get').then(d => { stData = d; }).catch(() => {}); }
+function afterReady() { touchSeen(); loadFriends(); loadBonds(); mailLoad(true); startPresence(); loadQuests(); loadLevel(); rpc('story_get').then(d => { stData = d; }).catch(() => {}); }
 function notifyFriend(uid) {
   if (!pres || !pres.ok || !uid) return;
   try { pres.ch.send({ type: 'broadcast', event: 'fr', payload: { to: uid } }); } catch (e) { /* 略過 */ }
@@ -4863,7 +4929,7 @@ function renderFriends() {
   if (frTarget) {
     const t = frTarget;
     let act;
-    if (isFriend(t.id)) act = '<p class="empty">你們已經是好友了。</p><button type="button" class="btn wide ghost" data-a="card" data-u="' + esc(t.id) + '">看 ' + esc(t.name) + ' 的名片</button><button type="button" class="btn wide" data-a="visit" data-u="' + esc(t.id) + '">拜訪 ' + esc(t.name) + ' 的家</button>';
+    if (isFriend(t.id)) act = pactPanel(t.id) + '<p class="empty">你們已經是好友了。</p><button type="button" class="btn wide ghost" data-a="card" data-u="' + esc(t.id) + '">看 ' + esc(t.name) + ' 的名片</button><button type="button" class="btn wide" data-a="visit" data-u="' + esc(t.id) + '">拜訪 ' + esc(t.name) + ' 的家</button>';
     else if (fr.incoming.some(f => f.uid === t.id)) act = '<button type="button" class="btn wide" data-a="accept" data-u="' + esc(t.id) + '">接受 ' + esc(t.name) + ' 的好友申請</button>';
     else if (fr.outgoing.some(f => f.uid === t.id)) act = '<p class="empty">已送出申請，等對方同意。</p>';
     else act = '<button type="button" class="btn wide" data-a="reqid" data-u="' + esc(t.id) + '">加 ' + esc(t.name) + ' 為好友</button>';
@@ -4880,7 +4946,7 @@ function renderFriends() {
     const list = fr.friends.slice().sort((a, b) => (onlineMap.has(b.uid) ? 1 : 0) - (onlineMap.has(a.uid) ? 1 : 0));
     h += list.map(f => {
       const w = onlineMap.get(f.uid);
-      return '<div class="frow"><div class="meta"><b><span class="fdot' + (w ? ' on' : '') + '"></span>' + esc(f.name) + '</b><small>@' + esc(f.username) + ' · ' + (w ? WHERE[w] : agoText(+seenMap[f.uid] || 0)) + '</small></div><div class="acts">' +
+      return '<div class="frow"><div class="meta"><b><span class="fdot' + (w ? ' on' : '') + '"></span>' + esc(f.name) + ' <span class="bondtag" title="友情等級">❤️Lv.' + bondOf(f.uid).lv + '</span></b><small>@' + esc(f.username) + ' · ' + (w ? WHERE[w] : agoText(+seenMap[f.uid] || 0)) + '<br>' + bondLine(bondOf(f.uid)) + '</small></div><div class="acts">' +
         '<button type="button" class="btn small ghost" data-a="card" data-u="' + esc(f.uid) + '">名片</button>' +
         '<button type="button" class="btn small ghost" data-a="mail" data-u="' + esc(f.uid) + '">寄信</button>' +
         '<button type="button" class="btn small" data-a="visit" data-u="' + esc(f.uid) + '">拜訪</button>' +
@@ -4959,6 +5025,15 @@ function cardArt(cv, key) {
     disc(g, 8, 8, 4, '#fff'); disc(g, 13, 9, 4, '#fff'); disc(g, 54, 12, 4, '#fff'); disc(g, 50, 13, 3, '#fff');
     R('#7ad66a', 0, 32, W2, 8); R('#5fbf55', 0, 34, W2, 1);
     for (let i = 0; i < 14; i++) { const x = 2 + i * 4.5 | 0, c = ['#ff8fa8', '#ffd34d', '#ffffff', '#c9a0ff', '#ff6a6a'][i % 5]; R('#3f8f3a', x, 35, 1, 4); R(c, x - 1, 34, 3, 1); R(c, x, 33, 1, 3); R('#ffd34d', x, 34, 1, 1); }
+  } else if (key === 'photo') {
+    bands(['#ffd6e4', '#ffe3ec', '#fff0f5'], 0, 40);
+    R('#fffaf0', 12, 4, 40, 32); R('#e8c8b0', 12, 4, 40, 1); R('#e8c8b0', 12, 35, 40, 1); R('#e8c8b0', 12, 4, 1, 32); R('#e8c8b0', 51, 4, 1, 32);
+    R('#bfe6ff', 15, 7, 34, 20); R('#9fd8f5', 15, 7, 34, 7); R('#8fe09a', 15, 22, 34, 5);
+    [[24, '#ffcfa8', '#6b4848', '#ff8fa8'], [36, '#ffcfa8', '#a0522d', '#5fb8e6']].forEach(([x, skin, hair, cloth]) => {
+      R(hair, x, 12, 7, 3); R(skin, x, 14, 7, 6); R('#4a2c2c', x + 1, 16, 1, 1); R('#4a2c2c', x + 5, 16, 1, 1); R(cloth, x - 1, 20, 9, 6);
+    });
+    disc(g, 32, 9, 2, '#ff6a8a'); R('#ffd34d', 44, 9, 3, 1); R('#ffd34d', 45, 8, 1, 3);
+    R('#e8c8b0', 20, 29, 24, 1); R('#f0d8c8', 22, 31, 20, 1);
   } else {
     bands(['#050a24', '#0a1a3a', '#0e2e4a', '#0f3f4a'], 0, 30); stars(18, 3);
     for (let x = 0; x < W2; x++) {
@@ -5096,6 +5171,7 @@ frCard.addEventListener('click', async e => {
   if (a === 'rmask') { frConfirm = u; renderFriends(); return; }
   if (a === 'card') { closeFriends(); openCard(u); return; }
   if (a === 'mail') { closeFriends(); openMail(u); return; }
+  if (a === 'pact') { closeFriends(); pactInvite(u, b.dataset.p); return; }
   if (a === 'visit') {
     const f = fr.friends.find(x => x.uid === u) || (frTarget && frTarget.id === u ? frTarget : null);
     closeFriends(); visitHouse(u, f && f.name); return;
@@ -5604,7 +5680,9 @@ const EMOTES = [
 ];
 const ANIMS = {
   wave: { ic: '👋', n: '揮手', dur: 1800 }, jump: { ic: '🦘', n: '跳躍', dur: 1000 }, dance: { ic: '💃', n: '跳舞', dur: 3000 },
-  spin: { ic: '🌀', n: '轉圈', dur: 1200 }, bow: { ic: '🙇', n: '鞠躬', dur: 1300 }
+  spin: { ic: '🌀', n: '轉圈', dur: 1200 }, bow: { ic: '🙇', n: '鞠躬', dur: 1300 },
+  p_clap: { ic: '🙌', n: '擊掌', dur: 1500, pair: true }, p_dance: { ic: '💃', n: '一起跳舞', dur: 4000, pair: true },
+  p_hug: { ic: '🤗', n: '擁抱', dur: 2400, pair: true }, p_photo: { ic: '📸', n: '合照', dur: 2200, pair: true }
 };
 let myEmo = null, anim = null, lastEmo = 0;
 /* 動作在這一刻的樣子：位移、朝向、壓扁（鞠躬）、舉手（揮手） */
@@ -5614,12 +5692,17 @@ function animFx(a, now) {
   if (!A || t < 0 || t > A.dur) return null;
   const fx = { dx: 0, dy: 0, face: null, sy: 1, hand: 0, mv: false, ph: null };
   if (a.id === 'jump') fx.dy = -Math.abs(Math.sin(t / A.dur * Math.PI * 2)) * 6;
-  else if (a.id === 'dance') {
+  else if (a.id === 'dance' || a.id === 'p_dance') {
     fx.dx = Math.round(Math.sin(t / 160) * 2); fx.dy = -Math.abs(Math.sin(t / 160)) * 2;
     fx.mv = true; fx.ph = Math.floor(t / 160) % 2; fx.face = ['down', 'right', 'down', 'left'][Math.floor(t / 320) % 4];
   } else if (a.id === 'spin') fx.face = ['down', 'right', 'up', 'left'][Math.floor(t / 100) % 4];
   else if (a.id === 'bow') fx.sy = 1 - Math.sin(t / A.dur * Math.PI) * 0.22;
   else if (a.id === 'wave') fx.hand = 1 + (Math.floor(t / 180) % 2);
+  else if (a.id === 'p_clap' || a.id === 'p_hug') {   // 面向對方、往對方靠一點
+    const k = Math.sin(t / A.dur * Math.PI), lunge = a.id === 'p_hug' ? 4 : 2;
+    fx.face = a.face; fx.dx = Math.round((a.sx || 0) * lunge * k); fx.dy = Math.round((a.sy || 0) * lunge * k);
+    if (a.id === 'p_clap') fx.hand = 1 + (Math.floor(t / 150) % 2); else fx.sy = 1 - k * 0.06;
+  } else if (a.id === 'p_photo') { fx.face = 'down'; fx.hand = 1 + (Math.floor(t / 280) % 2); }
   return fx;
 }
 function drawPlayerFx(px, py, face, moving, phase, ch, fx) {
@@ -5651,7 +5734,7 @@ function doEmote(kind, id) {
   const now = performance.now();
   if (now - lastEmo < 700) return;
   if (kind === 'a') {
-    if (!ANIMS[id]) return;
+    if (!ANIMS[id] || ANIMS[id].pair) return;
     if (pose) { toast('起身後才能做動作', 1500); return; }
     if (fishing) { toast('釣魚的時候不能做動作', 1500); return; }
     anim = { id, t0: now };
@@ -5668,7 +5751,7 @@ function onEmo(p) {
   const rp = typeof p.i === 'string' ? remotes.get(p.i) : null;
   if (!rp || typeof p.e !== 'string') return;
   const now = performance.now();
-  if (p.k === 'a' && ANIMS[p.e] && !rp.sit) rp.anim = { id: p.e, t0: now };
+  if (p.k === 'a' && ANIMS[p.e] && !ANIMS[p.e].pair && !rp.sit && !rp.gsit) rp.anim = { id: p.e, t0: now };
   else if (p.k === 'e' && EMOTES.some(x => x.id === p.e)) rp.emo = { id: p.e, at: now };
 }
 const emEl = $('emm'), emCard = $('emcard');
@@ -5676,7 +5759,7 @@ function openEmote() {
   if (!ready || !me || authOpen || paused()) return;
   const btn = (k, id, ic, n) => '<button type="button" data-k="' + k + '" data-e="' + id + '" title="' + n + '" aria-label="' + n + '">' + ic + '</button>';
   emCard.innerHTML = '<div class="eg">' + EMOTES.map(e => btn('e', e.id, e.ic, e.n)).join('') + '</div>' +
-    '<div class="eg">' + Object.keys(ANIMS).map(id => btn('a', id, ANIMS[id].ic, ANIMS[id].n)).join('') + '</div>';
+    '<div class="eg">' + Object.keys(ANIMS).filter(id => !ANIMS[id].pair).map(id => btn('a', id, ANIMS[id].ic, ANIMS[id].n)).join('') + '</div>';
   emOpen = true; emEl.hidden = false;
 }
 function closeEmote() { emOpen = false; emEl.hidden = true; }
@@ -5688,6 +5771,120 @@ emCard.addEventListener('click', e => {
 document.addEventListener('pointerdown', e => { if (emOpen && !emEl.contains(e.target) && e.target !== $('emobtn')) closeEmote(); });
 $('emobtn').addEventListener('click', () => { if (emOpen) closeEmote(); else openEmote(); });
 $('emobtn').addEventListener('pointerdown', e => e.stopPropagation());
+
+/* ---------- 友情互動：雙人動作（要對方按同意；伺服器每對好友每天只算第一次，見 friendship.sql） ---------- */
+const PACTS = {
+  clap:  { ic: '🙌', n: '擊掌',     need: 1, anim: 'p_clap' },
+  dance: { ic: '💃', n: '一起跳舞', need: 2, anim: 'p_dance' },
+  sit:   { ic: '🧘', n: '並肩坐',   need: 3 },
+  hug:   { ic: '🤗', n: '擁抱',     need: 4, anim: 'p_hug' },
+  photo: { ic: '📸', n: '合照',     need: 5, anim: 'p_photo' }
+};
+let pAct = null, pIn = null, pTimer = 0;      // pAct：我發出的邀請；pIn：收到的邀請
+const pbox = document.createElement('div'); pbox.id = 'pactbox'; pbox.hidden = true; document.body.appendChild(pbox);
+function sendPact(to, t, a, s) {
+  if (!net || !net.ok) return;
+  try { net.ch.send({ type: 'broadcast', event: 'pact', payload: { i: myUid, to, t, a, s: s ? 1 : 0 } }); } catch (e) { /* 略過 */ }
+}
+const dirTo = (dx, dy) => Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up');
+const nearRemote = rp => !!rp && Math.abs(rp.tx - pl.x) + Math.abs(rp.ty - pl.y) === 1;   // 上下左右相鄰一格
+async function pactInvite(uid, act) {
+  const P = PACTS[act], rp = remotes.get(uid);
+  if (!P || !ready || !me) return;
+  if (scene !== 'plaza' || !net || !net.ok) { toast('雙人動作只能在廣場做', 2200); return; }
+  if (!rp || !nearRemote(rp)) { toast('要站在對方旁邊（面對面）才能邀請', 2200); return; }
+  if (fishing) { toast('釣魚的時候不能互動', 1800); return; }
+  if (pose) { toast('起身後才能邀請', 1800); return; }
+  const b = bondOf(uid);
+  if (b.lv < P.need) { toast('友情等級還不夠：' + P.n + ' 要 Lv.' + P.need, 2400); return; }
+  if (pAct && performance.now() - pAct.at < 15000) { toast('邀請還在等對方回覆', 1800); return; }
+  let done = b.day === todayStr() && act !== 'photo';        // 今天已經算過：只播動畫，不用打伺服器
+  if (!done) {
+    try { const r = await rpc('friend_act_request', { p_uid: uid, p_act: act }); done = !!(r && r.today); }
+    catch (e) { toast(errText(e)); return; }
+  }
+  const tok = pAct = { to: uid, act, at: performance.now(), done };
+  sendPact(uid, 'req', act, done);
+  toast('已邀請 ' + rp.name + '，等對方按同意…', 2400);
+  setTimeout(() => { if (pAct === tok) { pAct = null; toast(rp.name + ' 沒有回應', 2000); } }, 15000);
+}
+function onPact(p) {
+  if (!p || typeof p !== 'object' || typeof p.i !== 'string' || typeof p.a !== 'string') return;
+  const rp = remotes.get(p.i);
+  if (!rp || !PACTS[p.a]) return;
+  if (p.t === 'up') { if (pose && pose.pair === p.i) standUp(); return; }      // 並肩坐：對方起身，我也跟著起身
+  if (p.to !== myUid) return;
+  if (p.t === 'req') {
+    const P = PACTS[p.a];
+    if (!isFriend(p.i) || bondOf(p.i).lv < P.need || fishing || pose || scene !== 'plaza' || !nearRemote(rp) || pIn) { sendPact(p.i, 'no', p.a); return; }
+    pIn = { from: p.i, act: p.a, s: p.s === 1, at: performance.now() };
+    showPactBox(rp.name, P); chime([81, 88], 0.1);
+    clearTimeout(pTimer); pTimer = setTimeout(() => { if (pIn && pIn.from === p.i) { pIn = null; hidePactBox(); } }, 15000);
+  } else if (p.t === 'ok') {
+    if (!pAct || pAct.to !== p.i || pAct.act !== p.a || pose || fishing) return;
+    const q = pAct; pAct = null;
+    startPact(p.a, rp);
+    if (!q.done || q.act === 'photo') afterPact(p.i);
+  } else if (p.t === 'no') {
+    if (pAct && pAct.to === p.i) { pAct = null; toast(rp.name + ' 這次不方便', 2000); }
+  }
+}
+async function afterPact(uid) {                // 發起方：同意後重抓友情資料，看有沒有升級、拿到合照獎勵
+  const was = bondOf(uid).lv, hadPhoto = bondPhoto;
+  await loadBonds();
+  if (bondOf(uid).lv > was) bondToast(uid, bondOf(uid).lv);
+  if (!hadPhoto && bondPhoto) photoReward();
+}
+function photoReward() { toast('📸 獲得稱號「命運之交」和專屬明信片卡片「合照紀念」！', 5000); chime([76, 81, 88, 93], 0.12); mailLoad(true); }
+function showPactBox(name, P) {
+  pbox.innerHTML = '<span>' + P.ic + ' <b>' + esc(name) + '</b> 想和你一起「' + P.n + '」</span><button type="button" class="btn small" data-a="yes">接受</button><button type="button" class="btn small ghost" data-a="no">不要</button>';
+  pbox.hidden = false;
+}
+function hidePactBox() { pbox.hidden = true; }
+pbox.addEventListener('pointerdown', e => e.stopPropagation());
+pbox.addEventListener('click', e => { const b = e.target.closest('button[data-a]'); if (!b) return; if (b.dataset.a === 'yes') pactAccept(); else pactDecline(); });
+function pactDecline() { const q = pIn; pIn = null; hidePactBox(); if (q) sendPact(q.from, 'no', q.act); }
+async function pactAccept() {
+  const q = pIn; if (!q) return;
+  pIn = null; hidePactBox();
+  const rp = remotes.get(q.from), P = PACTS[q.act];
+  if (!rp || !P) return;
+  if (!nearRemote(rp) || fishing || pose || scene !== 'plaza') { toast('位置不對，沒辦法開始', 2000); sendPact(q.from, 'no', q.act); return; }
+  const b = bondOf(q.from);
+  let r = null;
+  if (!(q.act !== 'photo' && (b.day === todayStr() || q.s))) {   // 今天已經算過就不用打伺服器
+    try { r = await rpc('friend_act_accept', { p_uid: q.from }); }
+    catch (e) { if (!/no_pending/.test(String((e && e.message) || e))) { toast(errText(e)); sendPact(q.from, 'no', q.act); return; } }
+  }
+  sendPact(q.from, 'ok', q.act);
+  startPact(q.act, rp);
+  if (r) {
+    bonds.set(q.from, { cnt: r.cnt | 0, lv: intIn(r.lv, 1, 5, b.lv), day: todayStr() });
+    if (r.up) bondToast(q.from, intIn(r.lv, 1, 5, b.lv));
+    if (r.first_photo) { bondPhoto = true; photoReward(); }
+    if (frOpen) renderFriends();
+  }
+}
+/* 兩邊同時開始動作：各自在自己的畫面上播自己和對方的動畫 */
+function startPact(act, rp) {
+  const P = PACTS[act], now = performance.now();
+  if (!P || !rp) return;
+  const dx = rp.tx - pl.x, dy = rp.ty - pl.y, sx = Math.sign(dx), sy = Math.sign(dy);
+  const mx = (pl.x + rp.tx) / 2, my = (pl.y + rp.ty) / 2 - 0.6;
+  pressed.length = 0; pl.sx = pl.x; pl.sy = pl.y; pl.prog = 1;
+  if (act === 'sit') {                         // 並肩坐：就地坐下，任一方移動就一起起身
+    pose = { type: 'sit', bench: true, ground: true, pair: rp.id, ox: pl.x, oy: pl.y, face0: pl.face, tile: 0, t: 0 };
+    pl.face = 'down'; lastPosKey = ''; posAcc = 999; trackSelf();
+    pop(mx, my, '🧘', '#ffffff'); return;
+  }
+  pl.face = dirTo(dx, dy);
+  anim = { id: P.anim, t0: now, face: dirTo(dx, dy), sx, sy };
+  rp.anim = { id: P.anim, t0: now, face: dirTo(-dx, -dy), sx: -sx, sy: -sy };
+  if (act === 'clap') pop(mx, my, '✋', '#ffffff');
+  else if (act === 'dance') { pop(mx, my, '♪', '#ffd34d'); setTimeout(() => pop(mx, my, '♫', '#ff8fa8'), 1400); }
+  else if (act === 'hug') { pop(mx, my, '❤️', '#ff8fa8'); setTimeout(() => pop(mx, my, '❤️', '#ff8fa8'), 900); }
+  else if (act === 'photo') setTimeout(() => { pop(mx, my, '📸', '#ffffff'); chime([88], 0.1); }, 1000);
+}
 
 /* ---------- 坐椅子、躺床（在自己家或朋友家都可以） ---------- */
 let pose = null;                                // { type: 'sit' | 'lie', id, ix, iy, ox, oy, face0, tile, sort, t }
@@ -5713,9 +5910,11 @@ function drawBenchSeated(px, py, ch) {
   ob('#d9a066', '#9b6a44', px + 1, py + 10, 14, 3);
   r('#9b6a44', px + 2, py + 13, 2, 2); r('#9b6a44', px + 12, py + 13, 2, 2);
 }
+function drawGroundSeated(px, py, ch) { drawPlayerFx(px, py, 'down', false, 0, ch, { dx: 0, dy: 2, face: 'down', sy: 0.8, hand: 0, mv: false, ph: null }); }
 function standUp() {
   if (!pose) return;
-  const wasBench = !!pose.bench;
+  const wasBench = !!pose.bench, pairUid = pose.pair;
+  if (pairUid) sendPact(pairUid, 'up', 'sit');
   pl.x = pl.sx = pose.ox; pl.y = pl.sy = pose.oy; pl.prog = 1; pl.face = pose.face0; pose = null;
   if (wasBench) { lastPosKey = ''; posAcc = 999; trackSelf(); }
 }
@@ -6180,7 +6379,7 @@ function draw(now) {
       } });
     } else if (pose && pose.bench && scene === 'plaza') {
       ents.push({ y: ry, draw: () => {
-        drawBenchSeated(Math.round(pl.x * T), Math.round(pl.y * T), ch);
+        (pose.ground ? drawGroundSeated : drawBenchSeated)(Math.round(pl.x * T), Math.round(pl.y * T), ch);
         nameTag(ch.name, Math.round(pl.x * T) + 8, Math.round(pl.y * T) - 7, '#ffffff');
       } });
     } else ents.push({ y: ry, draw: () => {
@@ -6206,8 +6405,9 @@ function draw(now) {
   if (scene === 'plaza') remotes.forEach(rp => ents.push({ y: rp.y, draw: () => {
     const mv = Math.abs(rp.tx - rp.x) + Math.abs(rp.ty - rp.y) > 0.05;
     const px = Math.round(rp.x * T), py = Math.round(rp.y * T);
-    const seated = rp.sit && !mv;
+    const seated = rp.sit && !mv, gs = rp.gsit && !mv;
     if (seated) drawBenchSeated(px, py, rp.char);
+    else if (gs) drawGroundSeated(px, py, rp.char);
     else {
       if (mv) rp.anim = null;
       drawPlayerFx(px, py, FACES[rp.f], mv, Math.floor(now / 140) % 2, rp.char, mv ? null : animFx(rp.anim, now));
@@ -6351,6 +6551,7 @@ const hbEl = $('hotbar'), portraitNow = () => window.innerHeight >= window.inner
 function setHot(on) { hbEl.classList.toggle('open', !!on); }
 hbEl.addEventListener('click', e => {
   if (!imm || !portraitNow()) return;
+  if (e.target.closest && e.target.closest('.hbpage')) return;
   if (!hbEl.classList.contains('open')) { e.stopPropagation(); e.preventDefault(); setHot(true); }
   else setHot(false);
 }, true);
