@@ -3,9 +3,9 @@
 <title>雷克斯農場</title>
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="manifest" href="app/manifest.webmanifest">
+<link rel="apple-touch-icon" href="app/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="app/icon-192.png">
 <meta name="theme-color" content="#d3efe3">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2525,7 +2525,7 @@ function leaveLekcus(silent) {
 }
 function lekcusRoomAct(x, y) {
   if (catchShown) { hideCatch(); return; }
-  if (y <= 1 && x >= 4 && x <= 7) { window.open('https://www.instagram.com/lekcusong/', '_blank', 'noopener'); return; }   // 牆上的招牌 → Lekcus 的 IG
+  if (y <= 1 && x >= 4 && x <= 7) { openLekcusLinks(); return; }   // 牆上的招牌 → 選擇前往 Lekcus 的 IG 或直播
   const k = K[y][x];
   if (k === BX) leaveLekcus();
   else if (k === LK || k === TBL) openLekcus();
@@ -2617,12 +2617,27 @@ function drawTarotRoom(now) {
   ob('#c08a62', '#8c5b3c', 5 * T + 1, (H - 1) * T - 1, 2 * T - 2, T + 1); r('#8c5b3c', 6 * T, (H - 1) * T, 1, T);
   r('#ffd34d', 6 * T - 3, (H - 1) * T + 7, 2, 2); r('#ffd34d', 6 * T + 2, (H - 1) * T + 7, 2, 2);
 }
+const LK_LINKS = { live: 'https://www.bigo.tv/user/lekcus', ig: 'https://www.instagram.com/lekcusong/' };
+let lkMode = 'chat';
+function renderLekcusLinks() {
+  const a = (cls, href, txt) => '<a class="btn ' + cls + ' wide" style="display:block;text-align:center;text-decoration:none" href="' + href + '" target="_blank" rel="noopener noreferrer">' + txt + '</a>';
+  lkCard.innerHTML = '<div class="shop-h"><h2>Lekcus</h2><span class="chip">連結</span></div>' +
+    '<p class="lkline">想去哪裡找 Lekcus？</p>' +
+    a('', LK_LINKS.live, '前往 Lekcus 的直播') +
+    a('ghost', LK_LINKS.ig, '前往 Lekcus 的 Instagram') +
+    '<button type="button" class="btn ghost wide" data-a="close">關閉</button>';
+}
+function openLekcusLinks() {
+  if (!ready || !me || authOpen || paused() || lkOpen) return;
+  lkMode = 'links'; lkOpen = true; pressed.length = 0;
+  renderLekcusLinks(); lkEl.hidden = false; lkCard.focus();
+}
 function renderLekcus() {
+  if (lkMode === 'links') { renderLekcusLinks(); return; }
   lkCard.innerHTML = '<div class="shop-h"><h2>Lekcus</h2><span class="chip">塔羅占卜師</span></div>' +
     '<div class="lkrow"><div class="lkport" id="lkport"><canvas width="16" height="16"></canvas></div><p class="lkline">' + esc(lkMsg) + '</p></div>' +
     '<button type="button" class="btn wide" data-a="draw">請 Lekcus 幫我抽今天的牌</button>' +
     '<button type="button" class="btn ghost wide" data-a="chat">聊聊天</button>' +
-    '<a class="btn ghost wide" style="display:block;text-align:center;text-decoration:none" href="https://www.instagram.com/lekcusong/" target="_blank" rel="noopener noreferrer">前往 Lekcus 的 Instagram</a>' +
     '<button type="button" class="btn ghost wide" data-a="close">先告辭</button>';
   const box = $('lkport');
   if (lkImgOk && lkImg) { box.innerHTML = ''; box.appendChild(lkImg.cloneNode()); }
@@ -2635,7 +2650,7 @@ function openLekcus() {
     lkImg.onload = () => { lkImgOk = true; if (lkOpen) renderLekcus(); };
     lkImg.src = 'img/lekcus.png';
   }
-  lkOpen = true; pressed.length = 0; lkMsg = LK_HELLO[Math.floor(Math.random() * LK_HELLO.length)];
+  lkMode = 'chat'; lkOpen = true; pressed.length = 0; lkMsg = LK_HELLO[Math.floor(Math.random() * LK_HELLO.length)];
   renderLekcus(); lkEl.hidden = false; lkCard.focus();
 }
 function closeLekcus() { lkOpen = false; lkEl.hidden = true; }
@@ -3586,7 +3601,7 @@ function updateTip() {
     if (x >= 0 && y >= 0 && x < W && y < H) {
       const k = K[y][x];
       if (k === BX) s = '門口：按動作鍵回廣場。';
-      else if (y <= 1 && x >= 4 && x <= 7) s = '招牌：按動作鍵，前往 Lekcus 的 Instagram。';
+      else if (y <= 1 && x >= 4 && x <= 7) s = '招牌：按動作鍵，選擇前往 Lekcus 的直播或 Instagram。';
       else if (k === LK || k === TBL) s = 'Lekcus：按動作鍵打招呼、抽牌。';
     }
   } else if (scene === 'town') {
