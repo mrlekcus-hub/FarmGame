@@ -2032,7 +2032,9 @@ function renderShop() {
   const sell = has.length ? has.map(k => {
     const c = CROPS[k], n = have('c:' + k), pr = cropPrice(k); total += n * pr;
     return '<div class="row"><i class="dot" style="--c:' + c.c + '"></i><div class="meta"><b>' + c.n + ' ×' + n + '</b><small>每個 ' + pr +
-      ' G' + seasonTag(k) + '</small></div><button type="button" class="btn" data-a="sell" data-c="' + k + '"' + dis + '>賣出 ' + n * pr + ' G</button></div>';
+      ' G' + seasonTag(k) + '</small></div>' +
+      (n > 1 ? '<button type="button" class="btn small" data-a="sell" data-c="' + k + '" data-n="1"' + dis + '>賣 1 個 ' + pr + ' G</button>' : '') +
+      '<button type="button" class="btn' + (n > 1 ? ' small' : '') + '" data-a="sell" data-c="' + k + '"' + dis + '>' + (n > 1 ? '全賣 ' : '賣出 ') + n * pr + ' G</button></div>';
   }).join('') : '<p class="empty">背包裡還沒有作物，收成之後再來。</p>';
   const fhas = fishCat.filter(f => have('fish:' + f.key) > 0);
   let ftotal = 0;
@@ -2095,7 +2097,7 @@ shopCard.addEventListener('click', async e => {
   try {
     const r = await enqueue(async () => {
       if (a === 'buy') return rpc('buy_seed', { p_crop: k, p_qty: buyN });
-      if (a === 'sell') return rpc('sell_crop', { p_crop: k });
+      if (a === 'sell') return rpc('sell_crop', b.dataset.n ? { p_crop: k, p_qty: +b.dataset.n } : { p_crop: k });
       if (a === 'sellfish') return rpc('sell_fish', { p_fish: k });
       if (a === 'sellbug') return rpc('sell_bug', { p_bug: k });
       if (a === 'rod') return rpc('rod_upgrade');
@@ -5112,10 +5114,26 @@ function renderVillage() {
   remotes.forEach(rp => names.push(esc(rp.name)));
   vList.innerHTML = names.map(x => '<span class="pchip">' + x + '</span>').join('');
 }
-const sitCode = () => pose ? (pose.ground ? 2 : pose.bench ? 1 : 0) : 0;   // 0 站著、1 坐長椅、2 坐在地上
+const sitCode = () => pose ? (pose.ground ? 2 : pose.bench ? 1 : pose.id != null ? (pose.type === 'lie' ? 4 : 3) : 0) : 0;   // 0 站著、1 坐長椅、2 坐在地上、3 坐家具（椅子／沙發）、4 躺床
+/* Supabase Realtime 限制：每個用戶端 30 秒內最多 5 次 presence 呼叫（track／untrack），超過整條頻道會被伺服器關掉
+   （就是「連線中斷，重新連線中…」）。不確定這個額度是每條頻道還是整條連線共用，所以廣場和好友在線兩條頻道的 track
+   一律經過這裡，全部合起來兩次之間至少隔 7.5 秒（30 秒內最多 4 次）；太密的呼叫合併成一次稍後補送，
+   補送時才讀當下的位置／場景，不會送到舊資料。位置本身另外靠 pos 廣播即時更新，不受影響。 */
+const TRACK_GAP = 7500;
+let trackLastAt = 0;
+const trackPending = {};
+function trackLimited(key, fn) {
+  const wait = trackLastAt + TRACK_GAP - performance.now();
+  if (wait <= 0) { trackLastAt = performance.now(); fn(); return; }
+  if (trackPending[key]) return;
+  trackPending[key] = setTimeout(() => { trackPending[key] = null; trackLimited(key, fn); }, wait);
+}
 function trackSelf() {
   if (!net || !net.ok) return;
-  try { net.ch.track({ n: me.name, c: me.look, w: worldKey(), x: pl.x, y: pl.y, f: FACEIDX[pl.face], s: sitCode() }); } catch (e) { /* 略過 */ }
+  trackLimited('self', () => {
+    if (!net || !net.ok) return;
+    try { net.ch.track({ n: me.name, c: me.look, w: worldKey(), x: pl.x, y: pl.y, f: FACEIDX[pl.face], s: sitCode() }); } catch (e) { /* 略過 */ }
+  });
 }
 function onSync(ch) {
   if (!net || net.ch !== ch) return;
@@ -5130,15 +5148,16 @@ function onSync(ch) {
     seen.add(id);
     let rp = remotes.get(id);
     if (!rp) {
-      rp = { id, name, w: wk, char: toChar(name, m.c), x, y, tx: x, ty: y, f, bubble: null, sit: wk === 'p' && m.s === 1 && pkind[y][x] === BN, gsit: m.s === 2, heard: performance.now() };
+      rp = { id, name, w: wk, char: toChar(name, m.c), x, y, tx: x, ty: y, f, bubble: null, sit: wk === 'p' && m.s === 1 && pkind[y][x] === BN, gsit: m.s === 2, fs: wk === 'h' && (m.s === 3 || m.s === 4) ? m.s : 0, heard: performance.now() };
       remotes.set(id, rp);
       if (net.synced) addSys(name + ' ' + WORLD_IN[wk]);
     } else {
       rp.heard = performance.now();
       rp.name = name; rp.char = toChar(name, m.c);
-      if (performance.now() - (rp.posAt || 0) > 800) {
+      if (performance.now() - (rp.posAt || 0) > 12000) {   // presence 現在更新較慢，位置可能是舊的：只要最近收過他的 pos 廣播就以廣播為準，12 秒都沒收到才改用 presence 的位置
+
         if (rp.w !== wk) { rp.w = wk; rp.x = x; rp.y = y; }       // 換了世界（進出塔羅屋）：直接放到新位置，不要從舊位置滑過去
-        rp.tx = x; rp.ty = y; rp.f = f; rp.sit = wk === 'p' && m.s === 1 && pkind[y][x] === BN; rp.gsit = m.s === 2;
+        rp.tx = x; rp.ty = y; rp.f = f; rp.sit = wk === 'p' && m.s === 1 && pkind[y][x] === BN; rp.gsit = m.s === 2; rp.fs = wk === 'h' && (m.s === 3 || m.s === 4) ? m.s : 0;
       }   // 剛收到更新的走動訊息就不要被舊位置蓋回去
     }
   });
@@ -5159,7 +5178,7 @@ function onPos(p) {
     /* presence 漏掉的人：靠位置廣播（心跳裡帶名字和造型）補回來 */
     if (!UID_RE.test(p.i) || remotes.size >= 16) return;
     const name = clean(p.n, 8) || '旅人';
-    rp = { id: p.i, name, w: wk, char: toChar(name, p.c), x: nx, y: ny, tx: nx, ty: ny, f: intIn(p.f, 0, 3, 0), bubble: null, sit: false, heard: performance.now() };
+    rp = { id: p.i, name, w: wk, char: toChar(name, p.c), x: nx, y: ny, tx: nx, ty: ny, f: intIn(p.f, 0, 3, 0), bubble: null, sit: false, fs: 0, heard: performance.now() };
     remotes.set(p.i, rp);
     if (net && net.synced) addSys(name + ' ' + WORLD_IN[wk]);
     renderVillage();
@@ -5168,7 +5187,7 @@ function onPos(p) {
   if (nx !== rp.tx || ny !== rp.ty) rp.fish = null;
   if (rp.w !== wk) { rp.w = wk; rp.x = nx; rp.y = ny; rp.fish = null; rp.bubble = null; }   // 換了世界：直接放到新位置
   rp.tx = nx; rp.ty = ny; rp.f = intIn(p.f, 0, 3, rp.f); rp.posAt = performance.now();
-  rp.sit = wk === 'p' && p.s === 1 && pkind[ny][nx] === BN; rp.gsit = p.s === 2;                  // 只有真的在長椅那一格才當作坐著
+  rp.sit = wk === 'p' && p.s === 1 && pkind[ny][nx] === BN; rp.gsit = p.s === 2; rp.fs = wk === 'h' && (p.s === 3 || p.s === 4) ? p.s : 0;                  // 只有真的在長椅那一格才當作坐著
 }
 function onBye(p) { if (p && typeof p.i === 'string') dropRemote(p.i); }
 /* 清道夫：很久沒收到位置廣播、presence 也沒有他的人才移除 */
@@ -5292,13 +5311,17 @@ function sendPos(dt) {
   posAcc += dt;
   const now = performance.now();
   const key = worldKey() + ',' + pl.x + ',' + pl.y + ',' + pl.face + ',' + (sitCode());
-  const moved = key !== lastPosKey && posAcc >= 120;
-  const beat = !!(net && net.ok) && now - lastSendAt > 3000;   // 心跳：站著不動也每 3 秒補一次位置，弄丟的訊息會自己補回來
+  /* 節流（為了不超過 Supabase 免費版 Realtime 每秒 100 則的上限）：
+     有別人在房間：走動最多每 200ms 一則（最後停下的那格一定會補送）、心跳維持每 3 秒（對方 8 秒沒聽到才會移除，要留掉一則包的餘裕）；
+     房間裡只有自己：沒人在聽，走動不廣播、心跳拉長到 10 秒（新來的人會從 presence 拿到你的位置）。 */
+  const others = remotes.size > 0;
+  const moved = key !== lastPosKey && posAcc >= (others ? 200 : 2000);
+  const beat = !!(net && net.ok) && now - lastSendAt > (others ? 3000 : 10000);   // 心跳：站著不動也定期補一次位置，弄丟的訊息會自己補回來
   if ((moved || beat) && net && net.ok) {
     posAcc = 0; lastPosKey = key; lastSendAt = now;
     if (moved) lastMoveAt = now;
     try { net.ch.send({ type: 'broadcast', event: 'pos', payload: beat ? { i: myUid, w: worldKey(), x: pl.x, y: pl.y, f: FACEIDX[pl.face], s: sitCode(), n: me.name, c: me.look } : { i: myUid, w: worldKey(), x: pl.x, y: pl.y, f: FACEIDX[pl.face], s: sitCode() } }); } catch (e) { /* 略過 */ }
-    if (moved && now - lastTrackAt > 1500) { lastTrackAt = now; trackSelf(); }   // presence 只當備援，降低頻率以免超過 Realtime 的訊息上限
+    if (moved && now - lastTrackAt > 4000) { lastTrackAt = now; trackSelf(); }   // presence 只當備援，降低頻率以免超過 Realtime 的訊息上限
   }
   if (lastMoveAt && now - lastMoveAt > 500) { lastMoveAt = 0; trackSelf(); }
 }
@@ -5515,7 +5538,10 @@ function trackWhere(force) {
   if (!pres || !pres.ok) return;
   if (!force && scene === lastWhere) return;
   lastWhere = scene;
-  try { pres.ch.track({ w: scene }); } catch (e) { /* 略過 */ }
+  trackLimited('where', () => {
+    if (!pres || !pres.ok) return;
+    try { pres.ch.track({ w: scene }); } catch (e) { /* 略過 */ }
+  });
 }
 function stopPresence() {
   clearInterval(whereTimer);
@@ -6390,7 +6416,7 @@ function onEmo(p) {
   const rp = typeof p.i === 'string' ? remotes.get(p.i) : null;
   if (!rp || typeof p.e !== 'string') return;
   const now = performance.now();
-  if (p.k === 'a' && ANIMS[p.e] && !ANIMS[p.e].pair && !rp.sit && !rp.gsit) rp.anim = { id: p.e, t0: now };
+  if (p.k === 'a' && ANIMS[p.e] && !ANIMS[p.e].pair && !rp.sit && !rp.gsit && !rp.fs) rp.anim = { id: p.e, t0: now };
   else if (p.k === 'e' && EMOTES.some(x => x.id === p.e)) rp.emo = { id: p.e, at: now };
 }
 const emEl = $('emm'), emCard = $('emcard');
@@ -6532,9 +6558,28 @@ let pose = null;                                // { type: 'sit' | 'lie', id, ix
 function takeSeat(it, x, y) {
   const d = dimsOf(it.k, it.r | 0); if (!d || pose) return;
   if ((it.r | 0) !== 0) { toast('轉過方向的家具不能坐／躺，轉回原位就可以了', 2200); return; }
+  if (it.k !== 'sofa' && seatTaken(it)) { toast(it.k === 'bed' ? '床上已經有人了' : '這個位子已經有人坐了', 1400); return; }   // 沙發可以兩個人並排坐，其他家具一次一人
   pose = { type: SEAT[it.k], id: it.id, ix: it.x, iy: it.y, ox: pl.x, oy: pl.y, face0: pl.face, tile: x - (RX + it.x), sort: RY + it.y + d.h - 1 + 0.02, t: 0 };
   pl.x = pl.sx = x; pl.y = pl.sy = y; pl.prog = 1; pl.face = 'down'; pressed.length = 0;
   if (pose.type === 'lie') pop(x, y - 0.6, 'Zzz', '#cfe8f7');
+  lastPosKey = ''; posAcc = 999; trackSelf();   // 讓同一間屋子裡的人看到我坐著／躺著
+}
+/* 某個家具上現在有沒有別人（坐或躺）；seatItemAt 依座標找出對方坐的是哪件家具 */
+function seatItemAt(x, y, code) {
+  if (!house || scene !== 'house') return null;
+  const lx = x - RX, ly = y - RY, want = code === 4 ? 'lie' : 'sit';
+  return house.items.find(it => {
+    if (SEAT[it.k] !== want || (it.r | 0) !== 0) return false;
+    const g_ = itemRect(it);
+    return g_ && lx >= g_.x && lx < g_.x + g_.w && ly >= g_.y && ly < g_.y + g_.h;
+  }) || null;
+}
+function seatTaken(it) {
+  let hit = false;
+  remotes.forEach(rp => {
+    if (!hit && rp.fs && hereRp(rp)) { const f = seatItemAt(rp.tx, rp.ty, rp.fs); if (f && f.id === it.id) hit = true; }
+  });
+  return hit;
 }
 /* 廣場的長椅：位置與「坐著」的狀態會同步給其他玩家 */
 function takeBench(x, y) {
@@ -6557,15 +6602,15 @@ function standUp() {
   const wasBench = !!(pose.bench || pose.ground), pairUid = pose.pair;
   if (pairUid) sendPact(pairUid, 'up', 'sit');
   pl.x = pl.sx = pose.ox; pl.y = pl.sy = pose.oy; pl.prog = 1; pl.face = pose.face0; pose = null;
-  if (wasBench) { lastPosKey = ''; posAcc = 999; trackSelf(); }
+  lastPosKey = ''; posAcc = 999; trackSelf();
 }
 /* 坐著：只畫上半身（腿被椅面擋住），再把椅面前緣蓋回去 */
-function drawSeated(px, py, it, ch) {
+function drawSeated(px, py, it, ch, tile) {
   g.save(); g.beginPath(); g.rect(px - 4, py - 14, 24, 24); g.clip();
   drawPlayer(px, py - 2, 'down', false, 0, ch);
   g.restore();
   if (it.k === 'sofa') {
-    const t = pose ? pose.tile : 0, xs = t === 0 ? px + 5 : px, xw = t === 0 ? 11 : 10;
+    const t = tile != null ? tile : pose ? pose.tile : 0, xs = t === 0 ? px + 5 : px, xw = t === 0 ? 11 : 10;
     r('#ffb3c6', xs, py + 10, xw, 3); r('#d4688a', xs, py + 13, xw, 1);
   } else {
     r('#ffb3c6', px + 3, py + 10, 10, 2); r('#9b6a44', px + 3, py + 12, 10, 1);
@@ -7193,10 +7238,20 @@ function draw(now) {
       bugPix(c.key, fr, px, py - bob, false);
     } });
   });
-  if (syncScene()) remotes.forEach(rp => hereRp(rp) && ents.push({ y: rp.y, draw: () => {
+  if (syncScene()) remotes.forEach(rp => hereRp(rp) && ents.push({ y: (() => {
+    /* 別人坐椅子／躺床：排序要跟自己一樣放在家具前面，不然會被家具蓋住看不清楚 */
+    const f0 = rp.fs && Math.abs(rp.tx - rp.x) + Math.abs(rp.ty - rp.y) <= 0.05 ? seatItemAt(rp.tx, rp.ty, rp.fs) : null;
+    return f0 ? RY + f0.y + dimsOf(f0.k, 0).h - 1 + 0.02 : rp.y;
+  })(), draw: () => {
     const mv = Math.abs(rp.tx - rp.x) + Math.abs(rp.ty - rp.y) > 0.05;
     const px = Math.round(rp.x * T), py = Math.round(rp.y * T);
     const seated = rp.sit && !mv, gs = rp.gsit && !mv;
+    const fit = rp.fs && !mv ? seatItemAt(rp.tx, rp.ty, rp.fs) : null;
+    if (fit) {
+      if (rp.fs === 4) { drawLying(fit, rp.char); nameTag(rp.name, (RX + fit.x) * T + (fit.f ? 23 : 9), (RY + fit.y) * T + 1, '#fff3b0'); }
+      else { drawSeated(px, py, fit, rp.char, Math.round(rp.x) - (RX + fit.x)); nameTag(rp.name, px + 8, py - 7, '#fff3b0'); }
+      return;
+    }
     if (seated) drawBenchSeated(px, py, rp.char);
     else if (gs) drawGroundSeated(px, py, rp.char);
     else {
