@@ -4972,11 +4972,11 @@ function onAte(p) { if (p && p.i !== myUid) addSys(clean(p.n, 8) + ' 吃了一�
 
 /* ---------- 餐桌：屋主擺菜、訪客直接吃 ---------- */
 const dtEl = $('dtm'), dtCard = $('dtcard');
-let dtBusy = false;
+let dtBusy = false, dtMsg = '';   // dtMsg：餐桌視窗裡的錯誤訊息（toast 會被全螢幕視窗蓋住，所以直接寫在視窗裡）
 const dishName = k => (recipes.find(x => x.key === k) || {}).name || k;
 function openDishTable(it) {
   if (paused() || typeof it.id !== 'number' || !isFinite(it.id)) return;
-  dtId = it.id; dsOpen = true; pressed.length = 0; renderDish(); dtEl.hidden = false; dtCard.focus();
+  dtId = it.id; dtMsg = ''; dsOpen = true; pressed.length = 0; renderDish(); dtEl.hidden = false; dtCard.focus();
 }
 function renderDish() {
   const it = house && house.items.find(i => i.id === dtId); if (!it) { closeDisplay(); return; }
@@ -4991,18 +4991,21 @@ function renderDish() {
     const ds = recipes.filter(rc => have('dish:' + rc.key) > 0);
     h += '<p class="empty">放上桌（一次最多 10 份）</p>' + (ds.length ? ds.map(rc => '<button type="button" class="btn ghost small" data-a="put" data-k="' + esc(rc.key) + '">' + esc(rc.name) + '（有 ' + have('dish:' + rc.key) + '）</button>').join(' ') : '<small class="empty">背包裡沒有料理，先到廚房做菜。</small>');
   }
+  if (dtMsg) h += '<p class="empty" role="alert" style="color:#d0475f;font-weight:700">' + esc(dtMsg) + '</p>';
   dtCard.innerHTML = h + '<button type="button" class="btn wide" data-a="close">完成</button>';
 }
 dtCard.addEventListener('click', async e => {
   const b = e.target.closest('button[data-a]'); if (!b || dtBusy) return;
   const a = b.dataset.a, s = +b.dataset.s, id = dtId;
   if (a === 'close') { closeDisplay(); return; }
-  dtBusy = true;
+  dtBusy = true; dtMsg = '';
   try {
     const call = a === 'put' ? () => rpc('dish_table_put', { p_id: id, p_key: b.dataset.k, p_n: Math.min(10, have('dish:' + b.dataset.k)) })
       : a === 'take' ? () => rpc('dish_table_take', { p_id: id, p_slot: s }) : () => rpc('dish_table_eat', { p_id: id, p_slot: s });
     const r = await enqueue(call);
+    if (!r || typeof r !== 'object') throw new Error('伺服器沒有回應內容');
     if (r.inv) Object.assign(inv, r.inv);
+    if (!Array.isArray(r.display)) { reloadHouse(); }
     const disp = []; (r.display || []).forEach(x => { disp[x.s | 0] = { t: 'dish', k: String(x.k), n: x.n | 0 }; });
     if (house) house.disp[id] = disp;
     if (a === 'eat') {
@@ -5011,7 +5014,7 @@ dtCard.addEventListener('click', async e => {
       try { net.ch.send({ type: 'broadcast', event: 'ate', payload: { i: myUid, n: me.name, d: dishName(r.k) } }); } catch (er) { /* 略過 */ }
     }
     refreshHud();
-  } catch (er) { toast(errText(er)); }
+  } catch (er) { console.error('dish_table', a, er); toast(errText(er)); dtMsg = errText(er); }
   dtBusy = false; if (dsOpen && dtId != null) renderDish();
 });
 
@@ -5125,7 +5128,7 @@ function pnKeys(ws, force) {
   });
 }
 function pnRefresh() {
-  const v = pnS.view;
+  const v = pnS.view; pnFit();
   $('pnPick').hidden = v !== 'pick'; $('pnPlay').hidden = v !== 'play';
   pnCard.querySelectorAll('[data-a="tab"]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.t === pnS.tab)));
   const stars = d => '★'.repeat(d) + '☆'.repeat(3 - d), wall = $('pnWall');
@@ -5251,10 +5254,22 @@ function openPiano() {
   pnOpen = true; pressed.length = 0;
   pnS.view = 'pick'; pnS.tab = 'free'; pnS.rhythm = true;
   pnBuild(); pnScShown = ''; pnS.hl = -2; pnSelect(-1);
-  pnEl.hidden = false; pnCard.focus();
+  pnEl.hidden = false; pnCard.focus(); pnFit(); try { syncBgm(); } catch (e) { /* 略過 */ }
   pnS.last = performance.now(); pnS.raf = requestAnimationFrame(pnStep);
 }
-function closePiano() { pnOpen = false; pnEl.hidden = true; cancelAnimationFrame(pnS.raf); pnFlush(); }
+/* 手機畫面太小時，把鋼琴視窗整個縮小一點，才看得到全部（含琴鍵和離開鈕） */
+function pnFit() {
+  if (!pnOpen) return;
+  pnCard.style.zoom = '';
+  requestAnimationFrame(() => {
+    if (!pnOpen) return;
+    pnCard.style.zoom = '';
+    const avail = pnEl.clientHeight - 24, h = pnCard.offsetHeight;
+    if (h > avail && avail > 0) pnCard.style.zoom = String(Math.max(0.5, avail / h * 0.97).toFixed(3));
+  });
+}
+window.addEventListener('resize', pnFit);
+function closePiano() { const was = pnOpen; pnOpen = false; pnEl.hidden = true; cancelAnimationFrame(pnS.raf); pnFlush(); pnCard.style.zoom = ''; if (was) { try { syncBgm(); } catch (e) { /* 略過 */ } } }
 pnCard.addEventListener('click', e => {
   const b = e.target.closest('button[data-a]'); if (!b) return;
   const a = b.dataset.a;
@@ -6815,7 +6830,8 @@ let bgmGesture = false, bgmSig = '';
 function syncBgm() {
   if (!Music) return;
   const name = SCENE_BGM[scene], file = !!(Bgm && name && Bgm.has(name));
-  const go = musicOn && (bgmGesture || authOpen);   // 登入畫面也放農場那首（瀏覽器擋自動播放時，第一次點擊會接著播）
+  const go = musicOn && !pnOpen && (bgmGesture || authOpen);   // 彈鋼琴時 BGM 自動停，離開再接著放
+    // 登入畫面也放農場那首（瀏覽器擋自動播放時，第一次點擊會接著播）
   const sig = (go ? 1 : 0) + '|' + (file ? name : '') + '|' + musicVol;
   if (sig === bgmSig) return;                 // 沒變就不重複處理（這個函式每秒會被叫一次）
   bgmSig = sig;
@@ -8090,14 +8106,144 @@ function update(dt) {
   updateClock(); updateTip();
 }
 
+/* ---------- 農場天空：寬景天空、遠山、日月、雲、流星（只在農場畫，畫在地圖上方 4 格） ---------- */
+const SKY = 4;   // 天空高度（格）；農場的天空畫在 y = -SKY*T ~ 0
+const skyTop = () => scene === 'farm' ? SKY * T : 0;
+const SKY_KEYS = [   // [分鐘, 天頂色, 地平線色]
+  [0,    [14, 10, 36],   [42, 31, 90]],
+  [300,  [14, 10, 36],   [42, 31, 90]],
+  [360,  [92, 74, 138],  [240, 165, 140]],
+  [450,  [110, 195, 242],[191, 232, 255]],
+  [960,  [110, 195, 242],[191, 232, 255]],
+  [1050, [106, 90, 168], [255, 154, 122]],
+  [1140, [34, 24, 72],   [90, 60, 120]],
+  [1290, [14, 10, 36],   [42, 31, 90]],
+  [1440, [14, 10, 36],   [42, 31, 90]]
+];
+const mixC = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+const rgbS = (c, a) => a == null ? 'rgb(' + (c[0] | 0) + ',' + (c[1] | 0) + ',' + (c[2] | 0) + ')' : 'rgba(' + (c[0] | 0) + ',' + (c[1] | 0) + ',' + (c[2] | 0) + ',' + a.toFixed(3) + ')';
+function skyColors(m) {
+  for (let i = 1; i < SKY_KEYS.length; i++) {
+    if (m <= SKY_KEYS[i][0]) {
+      const a = SKY_KEYS[i - 1], b = SKY_KEYS[i], t = (m - a[0]) / (b[0] - a[0] || 1);
+      return [mixC(a[1], b[1], t), mixC(a[2], b[2], t)];
+    }
+  }
+  return [SKY_KEYS[0][1], SKY_KEYS[0][2]];
+}
+function skyDisc(cx, cy, rad, col) {
+  for (let dy = -rad; dy <= rad; dy++) { const dx = Math.floor(Math.sqrt(rad * rad - dy * dy + 0.5)); r(col, cx - dx, cy + dy, 2 * dx + 1, 1); }
+}
+function skyCloud(x, y, n, col, a) {   // 像素雲：三層疊起來
+  ctx.globalAlpha = a;
+  r(col, x + 3, y, 8 + n * 2, 3); r(col, x, y + 2, 14 + n * 3, 3); r(col, x + 2, y + 4, 10 + n * 3, 2);
+  ctx.globalAlpha = 1;
+}
+function drawSky(now, w, dark) {
+  const X0 = -300, WD = W * T + 600, top = -SKY * T, m = w.min, ms = srvNow();
+  const [cTop, cBot] = skyColors(m), nb = 8, bh = SKY * T / nb;
+  for (let i = 0; i < nb; i++) r(rgbS(mixC(cTop, cBot, i / (nb - 1))), X0, top + i * bh, WD, bh + 1);
+  const wet = w.wet;
+
+  /* 星星：晚上才出，雨雪天看不到 */
+  if (dark > 0.15 && !wet) {
+    for (let i = 0; i < 70; i++) {
+      const sx = -120 + Math.floor(hash(i, 3, 91) * (W * T + 240)), sy = top + 2 + Math.floor(hash(i, 5, 92) * (SKY * T - 14));
+      const tw = 0.55 + 0.45 * Math.sin(now / (500 + hash(i, 7, 93) * 900) + i);
+      ctx.globalAlpha = clamp(dark * tw, 0, 1);
+      r('#fff6d8', sx, sy, hash(i, 9, 94) > 0.85 ? 2 : 1, hash(i, 9, 94) > 0.85 ? 2 : 1);
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  /* 流星：夜深時每 12 秒有機會劃過一次 */
+  if (dark > 0.6 && !wet) {
+    const win = Math.floor(now / 12000), ph = (now % 12000) / 900;
+    if (ph < 1 && hash(win, 1, 95) < 0.7) {
+      const sx0 = 20 + hash(win, 2, 96) * (W * T - 120), sy0 = top + 4 + hash(win, 3, 97) * 16;
+      for (let k = 0; k < 7; k++) {
+        const q = Math.max(0, ph - k * 0.03);
+        ctx.globalAlpha = (1 - k / 7) * (1 - ph * 0.5);
+        r(k === 0 ? '#ffffff' : '#cfd8ff', Math.round(sx0 + q * 70), Math.round(sy0 + q * 34), k === 0 ? 2 : 1, 1);
+      }
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  /* 太陽：5:30 升起、18:30 落下，沿弧線走 */
+  const sp = (m - 330) / 780;
+  if (sp > -0.04 && sp < 1.04) {
+    const q = clamp(sp, 0, 1), sx = Math.round(18 + q * (W * T - 36)), sy = Math.round(-12 - Math.sin(Math.PI * q) * (SKY * T - 20));
+    const low = 1 - Math.sin(Math.PI * q), col = mixC([255, 216, 74], [255, 140, 70], clamp(low * 1.4 - 0.2, 0, 1));
+    ctx.globalAlpha = wet ? 0.35 : 1;
+    skyDisc(sx, sy, 10, rgbS(col, 0.18)); skyDisc(sx, sy, 8, rgbS(col, 0.28));
+    skyDisc(sx, sy, 6, rgbS(col)); skyDisc(sx, sy, 4, '#fff3b0');
+    const ray = 9 + Math.round(Math.sin(now / 400) * 1);
+    [[0, -1], [0, 1], [-1, 0], [1, 0], [-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(d => r(rgbS(col), sx + d[0] * ray - 1, sy + d[1] * ray - 1, 2, 2));
+    ctx.globalAlpha = 1;
+  }
+
+  /* 月亮：18:00 升起、隔天 6:30 落下，有月相（30 天一輪） */
+  const mp = (((m - 1080) % 1440) + 1440) % 1440 / 750;
+  if (mp < 1.04 || mp > 1.96) {
+    const q = clamp(mp > 1.5 ? 0 : mp, 0, 1), mx = Math.round(18 + q * (W * T - 36)), my = Math.round(-8 - Math.sin(Math.PI * q) * (SKY * T - 20)), rad = 7;
+    const phase = (Math.floor(ms / 86400000) % 30) / 30, f = Math.max(0.1, (1 - Math.cos(2 * Math.PI * phase)) / 2), off = (phase < 0.5 ? -1 : 1) * f * 2 * rad;
+    ctx.globalAlpha = wet ? 0.3 : 1;
+    skyDisc(mx, my, 11, 'rgba(240,235,190,.10)'); skyDisc(mx, my, 9, 'rgba(240,235,190,.16)');
+    for (let dy = -rad; dy <= rad; dy++) {
+      const dx = Math.floor(Math.sqrt(rad * rad - dy * dy + 0.5)), sdx = Math.floor(Math.sqrt(rad * rad - dy * dy + 0.5));
+      const a0 = mx - dx, a1 = mx + dx, b0 = mx + off - sdx, b1 = mx + off + sdx;
+      if (f < 0.03) { r('rgba(120,115,150,.35)', a0, my + dy, a1 - a0 + 1, 1); continue; }
+      const l1 = Math.min(a1, b0 - 1), l0 = a0, r0 = Math.max(a0, b1 + 1), r1 = a1;
+      if (f > 0.97) { r('#f6efc0', a0, my + dy, a1 - a0 + 1, 1); continue; }
+      if (l1 >= l0) r('#f6efc0', l0, my + dy, l1 - l0 + 1, 1);
+      if (r1 >= r0) r('#f6efc0', r0, my + dy, r1 - r0 + 1, 1);
+    }
+    if (f > 0.6) { r('#d8cf9a', mx - 3, my - 2, 2, 2); r('#d8cf9a', mx + 1, my + 1, 3, 2); r('#d8cf9a', mx - 2, my + 3, 2, 1); }
+    ctx.globalAlpha = 1;
+  }
+
+  /* 雲：慢慢飄；雨雪天變多變灰 */
+  const nc = wet ? 10 : 7, cc = wet ? mixC([170, 178, 192], [84, 86, 118], dark) : mixC([255, 255, 255], [150, 140, 200], dark);
+  for (let i = 0; i < nc; i++) {
+    const sp2 = 1.5 + hash(i, 2, 81) * 3, span = W * T + 160;
+    const cx = (((hash(i, 1, 80) * span + now / 1000 * sp2) % span) + span) % span - 120;
+    skyCloud(Math.round(cx), Math.round(top + 6 + hash(i, 3, 82) * (SKY * T - 30)), (i % 3), rgbS(cc), (wet ? 0.8 : 0.9) - dark * 0.45);
+  }
+
+  /* 遠山兩層：天色變化時跟著換色；冬天或高峰有雪頂 */
+  const warm = Math.max(0, 1 - Math.abs(m - 1110) / 90, 1 - Math.abs(m - 380) / 70) * 0.45;
+  const farC = mixC(mixC([150, 185, 220], [40, 34, 84], dark), [214, 140, 150], warm);
+  const nearC = mixC(mixC([108, 160, 172], [28, 24, 60], dark), [190, 110, 120], warm * 0.8);
+  for (let x = X0; x < X0 + WD; x += 2) {
+    const hf = 16 + Math.round(9 * Math.abs(Math.sin(x * 0.037 + 1)) + 6 * Math.sin(x * 0.11 + 2));
+    r(rgbS(farC), x, -hf, 2, hf + 1);
+    if ((hf > 25 || SEA === 'winter') && hf > 21) r('rgba(255,255,255,' + (0.85 - dark * 0.4).toFixed(2) + ')', x, -hf, 2, 2);
+  }
+  for (let x = X0; x < X0 + WD; x += 2) {
+    const hn = 6 + Math.round(5 * Math.abs(Math.sin(x * 0.06 + 4)) + 3 * Math.sin(x * 0.17));
+    r(rgbS(nearC), x, -hn, 2, hn + 1);
+  }
+}
+/* 電腦版：農場的畫布多 4 格高放天空；手機沉浸模式靠鏡頭往上看 */
+function syncCanvasRows() {
+  if (imm) { if (cv.style.aspectRatio) cv.style.aspectRatio = ''; return; }
+  const rows = BH + (scene === 'farm' ? SKY : 0);
+  if (cv.width !== BW * T * S || cv.height !== rows * T * S) { cv.width = BW * T * S; cv.height = rows * T * S; }
+  const ar = rows === BH ? '' : BW + ' / ' + rows;
+  if (cv.style.aspectRatio !== ar) cv.style.aspectRatio = ar;
+}
+
 function draw(now) {
   g = ctx;
+  syncCanvasRows();
   SEA = seasonAt(srvNow());
   {
     const s = imm ? view.s : S, vw = cv.width / s, vh = cv.height / s, e0 = pl.prog;
     const cx = (pl.sx + (pl.x - pl.sx) * e0) * T + 8, cy = (pl.sy + (pl.y - pl.sy) * e0) * T + 8;
+    const sk = skyTop();
     const tx = vw >= W * T ? (W * T - vw) / 2 : clamp(cx - vw / 2, 0, W * T - vw);
-    const ty = vh >= H * T ? (H * T - vh) / 2 : clamp(cy - vh / 2, 0, H * T - vh);
+    const ty = vh >= H * T + sk ? (H * T - sk - vh) / 2 : clamp(cy - vh / 2, -sk, H * T - vh);
     if (view.snap || view.scene !== scene) { view.x = tx; view.y = ty; view.snap = false; view.scene = scene; }
     else { view.x += (tx - view.x) * 0.2; view.y += (ty - view.y) * 0.2; }
     if (imm) { ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#6fbf73'; ctx.fillRect(0, 0, cv.width, cv.height); }
@@ -8105,6 +8251,7 @@ function draw(now) {
   }
   ctx.imageSmoothingEnabled = false;
   const w = world(), dark = darkness(w.min);
+  if (scene === 'farm') drawSky(now, w, dark);
   if (scene === 'house') drawRoom(now);
   else if (scene === 'barn') drawBarnRoom(now);
   else if (scene === 'stylist') drawStylistRoom(now);
@@ -8310,7 +8457,7 @@ function fitView() {
     if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
     view.s = Math.max(2, Math.round(Math.min(rc.width, rc.height) / 8 * dpr / T), Math.ceil(h / (H * T)), Math.ceil(w / (W * T)));
   } else {
-    if (cv.width !== BW * T * S || cv.height !== BH * T * S) { cv.width = BW * T * S; cv.height = BH * T * S; }
+    syncCanvasRows();
     view.s = S;
   }
 }
