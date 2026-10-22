@@ -209,7 +209,56 @@ kbd{font:600 12px/1 var(--f-display);color:var(--ink);background:var(--panel);pa
   width:min(580px,100%);margin:auto;background:var(--panel);border:4px solid var(--edge);border-radius:26px;
   padding:18px;display:flex;flex-direction:column;gap:16px;box-shadow:0 6px 0 var(--edge);
 }
+#auth{background:#8fbf6a}
+#cover{position:fixed;inset:0;width:100%;height:100%;z-index:-1;image-rendering:pixelated}
+#cover-nm{position:fixed;z-index:-1;transform:translate(-50%,-100%);font:800 14px/1 var(--f-display);color:#ffd3e2;text-shadow:0 0 3px #3a2040,0 0 3px #3a2040,0 0 3px #3a2040;pointer-events:none;white-space:nowrap}
+.auth-card{width:min(420px,100%)}
+@media (min-width:900px),(min-width:780px) and (orientation:landscape){#auth .auth-card{margin:auto auto auto var(--auth-ml,calc(100vw - 480px - 5vw))}}
+/* 手機直向：房子在上、登入框像底部面板貼著下緣 */
+@media (max-width:899px) and (orientation:portrait){
+  #auth{align-items:flex-end;padding-bottom:max(10px,env(safe-area-inset-bottom,0px))}
+  #auth .auth-card{margin:auto auto 0;padding:14px 16px 12px;gap:9px;border-radius:22px;width:min(440px,100%)}
+  #auth .auth-card h2{font-size:20px}
+  #auth .auth-card .tabs .cb{padding:9px}
+  #auth .auth-card .nameinput{padding:9px 12px}
+  #auth .auth-card .auth-note{font-size:11px;line-height:1.45}
+  #auth .auth-card .auth-msg{min-height:16px;font-size:12px}
+}
 .maker-card h2{margin:0;text-align:center;font:800 24px/1.2 var(--f-display);color:var(--pink-deep);letter-spacing:.08em}
+.pn-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:center}
+.pn-row .btn[aria-pressed=true]{background:var(--pink-deep);color:#fff;border-color:var(--pink-deep)}
+.pn-sc{font:700 13px/1.2 var(--f-display);color:var(--ink);min-width:7em;text-align:center}
+#pnCv{display:block;width:100%;height:auto;aspect-ratio:560/200;border-radius:12px;background:#2a1d3d}
+.pn-tip{text-align:center;margin:0}
+.pn-kb{position:relative;display:flex;height:130px;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+.pn-w{flex:1;background:#fff;border:2px solid #4a4a58;border-top:0;border-radius:0 0 8px 8px;margin:0 1px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px;font:700 12px/1 var(--f-display);color:#8a8a98;cursor:pointer;transition:background .08s}
+.pn-b{position:absolute;top:0;width:8%;height:62%;background:#2f2f3a;border:2px solid #1c1c24;border-top:0;border-radius:0 0 6px 6px;cursor:pointer;z-index:2;transition:background .08s}
+.pn-w.on{background:#ffd3de}.pn-b.on{background:#ff8fa8}
+.pn-w.nx{box-shadow:inset 0 -12px 0 #ffd34d}.pn-b.nx{box-shadow:inset 0 -12px 0 #ffd34d}
+.pn-card [hidden]{display:none!important}
+#pnPick{display:flex;flex-direction:column;gap:10px;border-radius:16px;padding:12px;color:#fff;background:radial-gradient(ellipse at 50% 0,#6a4a8a,#2a1d3d 78%)}
+.pn-tabs{display:flex;gap:6px}
+.pn-tabs button{font:600 12px/1 var(--f-display);padding:6px 13px;border-radius:999px;border:2px solid #6a5a8a;background:transparent;color:#d9cfe8;cursor:pointer}
+.pn-tabs button[aria-selected=true]{background:#ff8fa8;border-color:#ff8fa8;color:#fff}
+.pn-wall{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;min-height:190px;align-content:start}
+.pn-rec{aspect-ratio:1;border-radius:12px;background:#1c1428;border:2px solid transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:600 11px/1.2 var(--f-display);text-align:center;padding:4px;cursor:pointer;color:#fff}
+.pn-rec.sel{border-color:#ffd34d}.pn-rec.locked{color:#a99bb8;cursor:default}
+.pn-disc{width:44px;height:44px;border-radius:50%;background:conic-gradient(#ff8fa8,#ffd34d,#8fd3ff,#b79bf0,#ff8fa8);position:relative}
+.pn-disc::after{content:"";position:absolute;inset:16px;border-radius:50%;background:#1c1428}
+.pn-rec.locked .pn-disc{background:#4a4058}
+.pn-rec.sel .pn-disc{animation:pnsp 3s linear infinite}
+@keyframes pnsp{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.pn-rec.sel .pn-disc{animation:none}}
+.pn-stars{color:#ffd34d;font-size:10px;letter-spacing:1px}
+.pn-empty{grid-column:1/-1;text-align:center;color:#c9bdd9;font-size:13px;line-height:1.8;padding:30px 8px}
+.pn-bar{display:flex;align-items:center;gap:10px;background:#3a2a52;border-radius:12px;padding:8px 10px}
+.pn-nm{flex:1;font:700 13px/1.3 var(--f-display)}.pn-nm small{display:block;color:#c9bdd9;font-size:11px;font-weight:400}
+.pn-go{border:0;background:#ff8fa8;color:#fff;border-radius:10px;padding:7px 18px;font:800 14px/1 var(--f-display);cursor:pointer}
+.pn-free{border:2px dashed #6a5a8a;background:transparent;color:#d9cfe8;border-radius:10px;padding:7px;font:600 12px/1 var(--f-display);cursor:pointer}
+.pn-bar .pn-spd{background:transparent;color:#fff;border-color:#6a5a8a;box-shadow:none}
+.pn-row{flex-wrap:wrap}
+.pn-bar .pn-rhy{background:transparent;color:#fff;border-color:#6a5a8a;box-shadow:none}
+.pn-bar .pn-rhy[aria-pressed=true]{background:#8fd3ff;border-color:#8fd3ff;color:#1c1428}
 .maker-top{display:flex;flex-wrap:wrap;justify-content:center;gap:18px}
 .preview{flex:none;display:flex;flex-direction:column;align-items:center;gap:10px}
 .pvbox{width:156px;height:204px;display:grid;place-items:center;background:#bfe9a8;border:4px solid #fff;border-radius:22px;box-shadow:0 0 0 3px var(--edge)}
@@ -747,7 +796,7 @@ body.imm .cfab,body.imm #cfeed{transition:opacity .45s}
     </div>
     <div class="v-quick" id="h-quick">
       <button type="button" class="btn small" id="h-edit" aria-pressed="false">布置模式：關</button>
-      <button type="button" class="btn small ghost" id="h-shop">家具店</button>
+      <button type="button" class="btn small ghost" id="h-shop">牆面地板</button>
       <button type="button" class="btn small ghost" id="h-look">換造型</button>
     </div>
     <div id="h-edit-box" hidden>
@@ -845,6 +894,7 @@ body.imm .cfab,body.imm #cfeed{transition:opacity .45s}
   <button type="button" class="btn wide" id="st-close">完成</button>
 </div></div>
 <div class="maker" id="dtm" hidden><div class="card maker-card" id="dtcard" tabindex="-1"></div></div>
+<div class="maker" id="pnm" hidden role="dialog" aria-label="鋼琴"><div class="card maker-card pn-card" id="pncard" tabindex="-1"></div></div>
 <div class="stm" id="trm" hidden><div class="stcard trcard" id="trcard" role="dialog" aria-label="塔羅小攤" tabindex="-1"></div></div>
 <div class="maker" id="vmenu" hidden><div class="card maker-card" id="vmcard" tabindex="-1"></div></div>
 <div class="maker" id="qm" hidden><div class="card maker-card" id="qcard" tabindex="-1"></div></div>
@@ -861,8 +911,10 @@ body.imm .cfab,body.imm #cfeed{transition:opacity .45s}
 <div class="maker" id="lkm" hidden><div class="card maker-card" id="lkcard" tabindex="-1"></div></div>
 
 <div class="maker" id="auth" hidden>
+  <canvas id="cover" aria-hidden="true"></canvas><div id="cover-nm" aria-hidden="true" hidden></div>
   <form class="maker-card auth-card" id="auth-form" autocomplete="on">
     <h2>雷克斯農場</h2>
+    <p class="auth-note" id="au-greet"></p>
     <div class="tabs" role="tablist">
       <button type="button" class="cb" id="tab-in" aria-pressed="true">登入</button>
       <button type="button" class="cb" id="tab-up" aria-pressed="false">註冊新帳號</button>
@@ -1657,7 +1709,8 @@ const pressed = [];
 let frOpen = false;
 let lkOpen = false, bdOpen = false, ckOpen = false, rcOpen = false, mcOpen = false, dgOpen = false;
 let syOpen = false, lvOpen = false, cdOpen = false, dexOpen = false, qOpen = false, dsOpen = false, emOpen = false, stOpen = false, imm = false, sheetOpen = false, trOpen = false;
-const paused = () => lkOpen || bdOpen || ckOpen || rcOpen || mcOpen || dgOpen || lvOpen || cdOpen || dexOpen || qOpen || dsOpen || stOpen || trOpen || (imm && sheetOpen) || frOpen || mlOpen || bagOpen || shopOpen || makerOpen || authOpen || vmOpen || gmOpen || fOpen || syOpen || !ready;
+let pnOpen = false;
+const paused = () => lkOpen || bdOpen || ckOpen || rcOpen || mcOpen || dgOpen || lvOpen || cdOpen || dexOpen || qOpen || dsOpen || pnOpen || stOpen || trOpen || (imm && sheetOpen) || frOpen || mlOpen || bagOpen || shopOpen || makerOpen || authOpen || vmOpen || gmOpen || fOpen || syOpen || !ready;
 
 /* ---------- 小提示與特效 ---------- */
 const toastEl = $('toast');
@@ -1821,7 +1874,7 @@ function fmtDur(s) {
 /* ---------- 地圖規則（要和 schema.sql 的 _farmable 一致） ---------- */
 /* 農場右邊多一道村莊大門，通往公共廣場 */
 const GT = 7, FR = 8, BN = 9, TS = 10, BD = 11, BR = 12, RK = 13, NP = 14, HB = 15, FG = 16, WL = 17, TG = 18;   // HB 建築 FG 小村通往農場的門 WL 水井 TG 農場通往小村的門
-const CS = 29, BS = 30;   // CS 裁縫鋪的門  BS 理髮店的門（走進去是室內場景 'stylist'）
+const CS = 29, BS = 30, FS = 31;   // CS 裁縫鋪的門  BS 理髮店的門  FS 家具店的門（走進去是室內場景 'stylist'）
 const FW = 40, FE = 41, CV = 42, CW = 43, CX = 44;   // CW 山洞岩壁  CX 山洞出口   // FW 小村通往西邊森林的門  FE 森林回小村的門  CV 森林北邊的山洞入口
    // BD：委託布告欄（農場）   // TS：塔羅小攤（3×2 格，不能走進去，面向它按動作鍵占卜）
 for (let x = 15; x <= 18; x++) kind[5][x] = P;
@@ -1852,12 +1905,13 @@ const TOWN_BLD = [
   { x: 3, y: 3, w: 5, h: 3, t: 'cottage', sign: 'cloth' },    // 桂花婆婆的家，門在 (5,5)
   { x: 11, y: 2, w: 5, h: 4, t: 'chief' },     // 村長家，門在 (13,5)
   { x: 18, y: 3, w: 5, h: 3, t: 'ranch' },     // 牧場小屋，門在 (20,5)
-  { x: 19, y: 12, w: 5, h: 3, t: 'salon' }      // 理髮店，門在 (21,14)，站在 (21,15) 面向上
+  { x: 19, y: 12, w: 5, h: 3, t: 'salon' },     // 理髮店，門在 (21,14)，站在 (21,15) 面向上
+  { x: 25, y: 3, w: 5, h: 3, t: 'furn' }        // 家具店（森林木屋），門在 (27,5)，站在 (27,6) 面向上
 ];
 TOWN_BLD.forEach(b => { for (let y = b.y; y < b.y + b.h; y++) for (let x = b.x; x < b.x + b.w; x++) tkind[y][x] = HB; });
-tkind[5][5] = CS; tkind[14][21] = BS;   // 兩間店的門
+tkind[5][5] = CS; tkind[14][21] = BS; tkind[5][27] = FS;   // 三間店的門
 for (let x = 1; x <= 30; x++) tkind[11][x] = P;                               // 東西向大路
-[5, 13, 20].forEach(x => { for (let y = 6; y <= 10; y++) tkind[y][x] = P; }); // 各家門前的小路
+[5, 13, 20, 27].forEach(x => { for (let y = 6; y <= 10; y++) tkind[y][x] = P; }); // 各家門前的小路
 for (let y = 10; y <= 14; y++) for (let x = 13; x <= 17; x++) tkind[y][x] = P;   // 中央小廣場
 for (let y = 12; y <= 15; y++) tkind[y][11] = P;                              // 通往池塘的小路
 tkind[12][15] = WL;                                                           // 水井
@@ -1957,7 +2011,7 @@ const ERR = {
   village_full: '這個村莊已經滿 8 人了', bad_village_code: '村莊邀請碼要 6 個字元', bad_mode: '操作不對', look_locked: '這個造型還沒買', fit_not_today: '這件衣服今天沒有上架，明天再來看看', bad_color: '沒有這個顏色', use_buy_fit: '這件衣服要在裁縫鋪按顏色購買', too_fast: '別急，再等一下', max_rod: '已經是最高級的釣竿了', no_user: '找不到這位玩家', bond_locked: '友情等級還不夠，這個動作還沒解鎖', no_pending: '對方的邀請已經過期了', bad_act: '沒有這個動作', friend_self: '不能加自己為好友', already_friends: '已經是好友了', already_sent: '已經送出過申請了，等對方回覆吧', too_many_requests: '送出的申請太多了，先等對方回覆吧', friend_full: '你的好友已經滿了', target_full: '對方的好友已經滿了', no_request: '這個申請已經不存在了', bad_fish: '沒有這種魚', bad_bug: '沒有這種蟲', bug_gone: '這隻已經飛走了', nothing_to_claim: '現在沒有可以領的獎勵', not_friend: '只能拜訪好友的家', bad_slot: '這個格子不能用', bad_msg: '信的內容要 1～200 字', mail_limit: '今天寄太多了，明天再寄吧（一天最多 30 張）', no_item: '找不到這個家具', bad_item: '這個家具不能這樣用', cannot_place: '這裡放不下', house_full: '家裡的家具太多了',
   no_kitchen: '家裡要先擺一台廚房灶台才能做料理', not_enough_items: '材料不夠', bad_recipe: '沒有這道料理', not_edible: '這道菜不能吃，拿去賣或交委託吧', no_dish: '背包裡沒有這道料理了',
   order_done: '這張委託已經完成了', bad_order: '沒有這張委託', max_tool: '已經是最高等級了', bad_tool: '沒有這種工具',
-  no_hay: '沒有乾草了，到雜貨攤買', nothing_to_feed: '動物都吃飽了', nothing_to_collect: '現在沒有可以收的', barn_full: '穀倉住滿了（玩家升級會變大）', rock_busy: '這顆礦石還在恢復', sold_out: '今天已經買過或賣滿了', merchant_away: '旅行商人今天不在', already_fert: '已經施過肥了', story_end: '故事暫時告一段落，之後還會有新章節', yard_full: '庭院已經擺滿 60 件了', cannot_sell: '這個不能賣', visit_closed: '現在不方便拜訪', block_full: '黑名單最多 20 人', table_full: '桌上放不下了（一格最多 10 份）', eat_limit: '今天吃了太多份了，明天再來吧', buff_full: '這個效果已經滿 60 分鐘了，晚點再吃'
+  no_hay: '沒有乾草了，到雜貨攤買', nothing_to_feed: '動物都吃飽了', nothing_to_collect: '現在沒有可以收的', barn_full: '穀倉住滿了（玩家升級會變大）', rock_busy: '這顆礦石還在恢復', sold_out: '今天已經買過或賣滿了', not_on_sale: '這件家具今天沒有上架', merchant_away: '旅行商人今天不在', already_fert: '已經施過肥了', story_end: '故事暫時告一段落，之後還會有新章節', yard_full: '庭院已經擺滿 60 件了', cannot_sell: '這個不能賣', visit_closed: '現在不方便拜訪', block_full: '黑名單最多 20 人', table_full: '桌上放不下了（一格最多 10 份）', eat_limit: '今天吃了太多份了，明天再來吧', buff_full: '這個效果已經滿 60 分鐘了，晚點再吃'
 };
 const errText = e => {
   const m = String((e && (e.message || e.msg)) || e || '');
@@ -1991,6 +2045,7 @@ function applyState(d) {
   if (d.profile) {
     me = { username: d.profile.username, name: d.profile.name, look: d.profile.look || {}, coins: +d.profile.coins || 0, gm: !!d.profile.gm, rod: +d.profile.rod || 1 };
   } else me = null;
+  coverSave();
   fishCat = d.fish || []; fishLog = d.fishlog || {}; rods = d.rods || [];
   bugCat = d.bugs || []; bugLog = d.buglog || {};
   soldToday = d.soldtoday || {}; soldDay = d.sell_day | 0;
@@ -2082,6 +2137,7 @@ function act() {
     else if (hit && DISP[hit.k]) { if (visiting) visitShowList(hit); else openDisplay(hit.id); }
     else if (hit && hit.k === 'kitchen' && !edit.on && !visiting) { ckAnchor = { id: hit.id, fx: x, fy: y }; openKitchen(); }
     else if (hit && STYLER[hit.k] && !edit.on && !visiting) openMaker(false);
+    else if (hit && hit.k === 'piano' && !edit.on) openPiano();
     else if (hit && SEAT[hit.k] && !edit.on) takeSeat(hit, x, y);
     else if (hit) pop(x, y, (defOf(hit.k) || {}).name || '', '#fff3b0');
     return;
@@ -2367,6 +2423,7 @@ function townAct(x, y) {
   if (k === FW) { if (!featLocked('forest', x, y)) enterForest(); return; }
   if (k === CS) { enterStylist('fit'); return; }
   if (k === BS) { enterStylist('hair'); return; }
+  if (k === FS) { enterStylist('furn'); return; }
   if (k === NP) { openNpc(NPCS.indexOf(npcAt(x, y))); return; }
   if (k === BD) { openBoard(); return; }
   if (x === MXT && y === MYT && merchantHere()) { openMerchant(); return; }
@@ -2460,9 +2517,28 @@ const BLD_PAL = {
   mine:    { wall: '#9a9ca8', wo: '#5e616e', roof: '#8d909b', ro: '#5e616e', dot: '#b4b8c4' },
   salon:   { wall: '#f6fff2', wo: '#b8d9b0', roof: '#7fcfa8', ro: '#4f9e7c', dot: '#c5f0dc' }
 };
+/* 家具店外觀：森林木屋（綠屋頂、原木牆、窗邊擺椅子和檯燈） */
+function drawFurnBldg(ox, oy, lit) {
+  ob('#b8895a', '#8c5b3c', ox + 58, oy - 4, 9, 12);
+  ob('#d9a56c', '#a8764a', ox + 3, oy + 20, 74, 28);
+  for (let y = 24; y < 46; y += 5) r('#c08a58', ox + 4, oy + y, 72, 1);
+  ob('#7fc48a', '#4f9a62', ox + 8, oy, 64, 10); ob('#7fc48a', '#4f9a62', ox, oy + 6, 80, 16);
+  for (let x = 0; x < 80; x += 8) { rr('#4f9a62', ox + x, oy + 18, 8, 5); rr('#7fc48a', ox + x + 1, oy + 18, 6, 4); }
+  for (let y = 7; y < 16; y += 5) for (let x = (y % 2) * 4 + 4; x < 76; x += 8) r('#b8e6c0', ox + x, oy + y, 2, 2);
+  ob('#fff0d4', '#a8764a', ox + 27, oy + 9, 26, 9);                                    // 招牌：一張椅子
+  rr('#e26b88', ox + 37, oy + 10, 3, 6); rr('#e26b88', ox + 37, oy + 14, 9, 3); r('#e26b88', ox + 38, oy + 17, 1, 1); r('#e26b88', ox + 44, oy + 17, 1, 1);
+  ob('#c08a62', '#8c5b3c', ox + 32, oy + 28, 16, 20); r('#d9a378', ox + 34, oy + 30, 12, 18); r('#ffd34d', ox + 43, oy + 39, 2, 2);
+  [8, 58].forEach((wx, i) => {
+    ob('#ffffff', '#a8764a', ox + wx - 1, oy + 26, 14, 14); r(lit ? '#fff3b0' : '#ffe28a', ox + wx + 1, oy + 28, 10, 10);
+    if (i === 0) { rr('#d9667f', ox + wx + 2, oy + 29, 3, 7); rr('#d9667f', ox + wx + 2, oy + 33, 9, 3); r('#9b3f5a', ox + wx + 3, oy + 36, 1, 2); r('#9b3f5a', ox + wx + 8, oy + 36, 1, 2); }
+    else { rr('#ffd34d', ox + wx + 2, oy + 29, 8, 5); r('#8c5b3c', ox + wx + 5, oy + 34, 2, 4); }
+    rr('#c08a62', ox + wx - 1, oy + 40, 14, 3); r('#ff8fa8', ox + wx, oy + 39, 2, 2); r('#ffc857', ox + wx + 5, oy + 39, 2, 2); r('#ff8fa8', ox + wx + 10, oy + 39, 2, 2);
+  });
+}
 function drawBldg(b, now, lit) {
   const ox = b.x * T, oy = b.y * T, w = b.w * T, h = b.h * T, P_ = BLD_PAL[b.t], dx = ox + (w >> 1);
   r('rgba(107,72,72,.16)', ox + 2, oy + h - 2, w - 4, 3);
+  if (b.t === 'furn') { drawFurnBldg(ox, oy, lit); return; }
   if (b.t === 'mine') {
     ob(P_.roof, P_.ro, ox, oy + 4, w, h - 4);
     for (let i = 0; i < 9; i++) r(P_.dot, ox + 6 + (i * 9) % (w - 12), oy + 8 + (i * 7) % (h - 24), 3, 2);
@@ -2497,7 +2573,8 @@ const NPC_LOOK = {
   luo:  { hair: '#5a3a2a', hat: '#ffc83d', cloth: '#e8873a', lamp: true },
   mo:   { hair: '#a06a3a', hat: null, cloth: '#7ab0e8', ribbon: true },
   tao:  { hair: '#7a4a3a', hat: null, cloth: '#ff9bb3', ribbon: true },
-  jian: { hair: '#2f2a33', hat: null, cloth: '#8fd3c0' }
+  jian: { hair: '#2f2a33', hat: null, cloth: '#8fd3c0' },
+  mu:   { hair: '#7a5a3a', hat: '#7fc48a', cloth: '#c9955f', beard: true }
 };
 function npcArt(px, py, key, bob) {
   const L = NPC_LOOK[key] || NPC_LOOK.oak, o = 'rgba(90,60,40,.55)';
@@ -3713,7 +3790,7 @@ function bagDetail(it) {
     info = it.rc.descr + ' 每份賣 ' + it.rc.price + ' G；到家裡的廚房灶台可以吃，也能交委託。';
   } else if (it.t === 'furn') {
     const st = it.d.layer === 'wall_style' || it.d.layer === 'floor_style';
-    info = st ? '已購買的款式，在家具店可以隨時換上。' : '回家進入「布置模式」就能擺放。不要的話，在布置模式可以賣掉，得 ' + Math.floor(it.d.price / 2) + ' G。';
+    info = st ? '已購買的款式，在家裡的「牆面地板」可以隨時換上。' : '回家進入「布置模式」就能擺放。不要的話，在布置模式可以賣掉，得 ' + Math.floor(it.d.price / 2) + ' G。';
   }
   return '<p><b>' + esc(it.name) + '</b>' + (it.n == null ? '' : '　×' + it.n) + '</p><p>' + info + '</p>' + (a.length ? '<div class="v-quick">' + a.join('') + '</div>' : '');
 }
@@ -4149,7 +4226,7 @@ const TUT = [
   { t: '等它長大', d: '作物依真實時間成長（蘿蔔約 30 分鐘），關掉遊戲也會繼續長。回來看到作物成熟，面向它按「動作」就能收成。', ev: null },
   { t: '雜貨攤', d: '走到右上角的雜貨攤前面，按「動作」：可以買種子、賣作物和魚，也能升級釣竿。', ev: 'shop' },
   { t: '釣魚', d: '選「釣竿」（電腦按 6），面向池塘按「動作」拋竿；看到紅色驚嘆號時馬上再按一次拉竿，太早或太慢魚會跑掉。', ev: 'fish' },
-  { t: '回家布置', d: '走到房子的門前按「動作」進屋，買家具、換牆面和地板，布置自己的家。', ev: 'house' },
+  { t: '回家布置', d: '走到房子的門前按「動作」進屋，換牆面和地板、布置自己的家；家具要到小村右上角的家具店買，每天上架的都不一樣。', ev: 'house' },
   { t: '雷克斯小村', d: '農場左邊（西邊）的大門通往「雷克斯小村」，村裡有居民、布告欄和旅行商人。頭上有黃色「！」的居民有故事要告訴你，走近按「動作」就能對話。', ev: null },
   { t: '布告欄與每週委託', d: '小村的布告欄每週更新一次委託，交付作物或料理可得金幣，還能拿玩家經驗。「故事」分頁會記錄劇情進度，並提示下一位該去找誰。', ev: null },
   { t: '更多工具', d: '工具列的「鎬子」可敲礦石（Lv.4 解鎖山洞與採礦）；「肥料」能提升作物品質，品質分銀星、金星，特定作物還能雜交出新品種；「庭院」工具能在農場擺放裝飾（Lv.2 解鎖）。', ev: null },
@@ -4346,7 +4423,7 @@ function updateTip() {
     if (x >= 0 && y >= 0 && x < W && y < H) {
       const lx = x - RX, ly = y - RY, hit = house && lx >= 0 && lx < RW && ly >= -2 && ly < RH ? itemAtLocal(lx, ly) : null;
       if (K[y][x] === GT) s = '門口：按動作鍵回農場。';
-      else if (hit) s = ((defOf(hit.k) || {}).name || '') + (DISP[hit.k] ? '：按動作鍵' + (visiting ? '看展示品' : '換展示品') : hit.k === 'kitchen' && !visiting && !edit.on ? '：按動作鍵做料理' : STYLER[hit.k] && !visiting && !edit.on ? '：按動作鍵換造型' : SEAT[hit.k] && !edit.on ? '：按動作鍵' + (SEAT[hit.k] === 'lie' ? '躺下' : '坐下') : '');
+      else if (hit) s = ((defOf(hit.k) || {}).name || '') + (DISP[hit.k] ? '：按動作鍵' + (visiting ? '看展示品' : '換展示品') : hit.k === 'kitchen' && !visiting && !edit.on ? '：按動作鍵做料理' : STYLER[hit.k] && !visiting && !edit.on ? '：按動作鍵換造型' : hit.k === 'piano' && !edit.on ? '：按動作鍵彈琴' : SEAT[hit.k] && !edit.on ? '：按動作鍵' + (SEAT[hit.k] === 'lie' ? '躺下' : '坐下') : '');
     }
   } else if (scene === 'plaza') {
     s = '和朋友聊聊天吧，下方可以打字。';
@@ -4417,6 +4494,7 @@ function updateTip() {
       else if (k === WA) s = curTool().id === 'rod' ? '池塘：按動作鍵拋竿釣魚。' : '池塘。（換成釣竿就能釣魚）';
       else if (k === CS) s = '裁縫鋪：按動作鍵走進去。';
       else if (k === BS) s = '理髮店：按動作鍵走進去。';
+      else if (k === FS) s = '家具店：按動作鍵走進去（家具只在這裡買，每天上架不同的）。';
       else if (k === HB) s = '村民的家。';
     }
   } else if (false) {
@@ -4937,6 +5015,269 @@ dtCard.addEventListener('click', async e => {
   dtBusy = false; if (dsOpen && dtId != null) renderDish();
 });
 
+/* ---------- 鋼琴：自由彈奏／音符瀑布（可選樂譜、可關節奏）；彈的音會廣播給同一間房的人，距離越遠越小聲 ---------- */
+const PN_DEG = { 0: 0, 2: 1, 4: 2, 5: 3, 7: 4, 9: 5, 11: 6 };      // 音高 % 12 → 白鍵是 C 大調第幾級（沒有 = 黑鍵）
+const PN_C = [60, 62, 64, 65, 67, 69, 71];                      // 簡譜 1–7 對應的 MIDI 音高（中央 C 起）
+const PN_KEYS_W = "asdfghjkl;'", PN_KEYS_B = 'wertyuiop[';      // 電腦鍵盤：白鍵由左到右、黑鍵在兩顆白鍵之間（第 i 個縫）
+/* 簡譜：數字 1–7（8 = 高音 1），數字後面加 ' 是高八度、加 , 是低八度，0 = 休止；「:n」是拍數，預設 1 拍；數字前面加 # 是升半音（黑鍵，只有 1 2 4 5 6 有）*/
+/* 收藏中的樂譜（暫不開放；之後改成 NPC 販售，買了再放進 PN_SONGS） */
+const PN_VAULT = [
+];
+const PN_SONGS = [
+  { n: '晴天', x: 1, d: 3, bpm: 126, s: "3 2 4 3:2 1 5 7 1' 7 5 1:2 1 6 6 6 5 5 5 4 3 2 3 4 3:2 3 #4 #5 3 #4 #5 7 2' 7 1' 1':2 1' 1' 1 5 5 6 5 4:2 2 3 4 5 6 1' 6 7 7:3" },
+  { n: '小星星', d: 1, bpm: 100, s: '1 1 5 5 6 6 5:2 4 4 3 3 2 2 1:2 5 5 4 4 3 3 2:2 5 5 4 4 3 3 2:2 1 1 5 5 6 6 5:2 4 4 3 3 2 2 1:2' },
+  { n: '歡樂頌', d: 1, bpm: 104, s: '3 3 4 5 5 4 3 2 1 1 2 3 3:1.5 2:.5 2:2 3 3 4 5 5 4 3 2 1 1 2 3 2:1.5 1:.5 1:2' },
+  { n: '小綿羊', d: 1, bpm: 108, s: '3 2 1 2 3 3 3:2 2 2 2:2 3 5 5:2 3 2 1 2 3 3 3 3 2 2 3 2 1:4' },
+  { n: '小蜜蜂', d: 1, bpm: 112, s: '5 3 3:2 4 2 2:2 1 2 3 4 5 5 5:2 5 3 3:2 4 2 2:2 1 3 5 5 1:4' },
+  { n: '兩隻老虎', d: 2, bpm: 110, s: '1 2 3 1 1 2 3 1 3 4 5:2 3 4 5:2 5:.5 6:.5 5:.5 4:.5 3 1 5:.5 6:.5 5:.5 4:.5 3 1 1 5 1:2 1 5 1:2' },
+  { n: '鈴兒響叮噹', d: 2, bpm: 120, s: '3 3 3:2 3 3 3:2 3 5 1:1.5 2:.5 3:4 4 4 4:1.5 4:.5 4 3 3 3:.5 3:.5 3 2 2 3 2:2 5:2' },
+  { n: '蒲公英的約定', x: 1, d: 3, bpm: 84, s: "3 5 1' 3' 3' 4' 2':2 2' 5' 7 1':2 3' 4' 5' 1' 1' 2' 3' 3':2 3 5 1' 3' 3' 4' 2':2 2' 5' 7 1':2 3' 4' 5' 1' 1' 2' 1' 1':2 6' 5' 3' 2' 1' 3' 4' 2':2 6' 5' 7 1':2 3' 4' 5' 1' 1' 2' 3' 3':2 3 5 1' 3' 3' 2' 2':2 2' 5' 7 1':2 3' 4' 5' 1' 1' 2' 1':3" },
+  { n: '如果可以', x: 1, d: 3, bpm: 128, s: "3 5 7 1' 2' 1' 2' 4' 3' 2' 3' 4' 3' 2':2 3' 6 6 6 #5 3 2' 3' 3':2 6' 5' 3' 2' 3' 6 6 5 3' 4' 2':2 #5' 3' 2' 3' 1':2 1' 7 1' 1' 7 1' 6 7 1' 2' 3' 5' 5':3" },
+  { n: '永不失聯的愛', x: 1, d: 3, bpm: 96, s: "5 1' 2' 3' 2' 1' 7 6 2' 2':2 5 7 1' 2' 1' 7 5 3 1' 1':2 5 1' 2' 3' 2' 1' 7 6 2' 2':2 1' 2' 1' 2' 1' 2' 1' 2' 5' 5':2 3' 3' 4' 5' 4' 3' 1' 6 4' 4':2 2' 2' 3' 4' 3' 1' 6 5 3' 3':2 2' 1':2 5 1' 2' 3' 2' 1' 7 6 2' 2':2 5 2' 1' 2' 1' 2' 3' 2' 1':3 1' 2' 1' 3' 6' 6' 3' 3' 6' 6' 3' 3' 7' 7':2 1' 7' 7' 6' 6' 5' 5' 3' 3' 6' 2' 1':2 6 6 5' 4':2 5 5 3' 2':2 1' 2' 1' 2' 1' 2' 4' 3':2 1' 2' 1' 3' 6' 6' 3' 3' 6' 6' 3' 3' 7' 7':2 1' 7' 7' 6' 6' 5' 5' 3' 3' 6' 2' 1':2 6 6 5' 4':2 5 5 3' 2':2 3' 1' 7 1':2 5 1' 2' 3' 2' 1' 7 6 2' 2':2 5 7 1' 2' 1' 7 5 3 1' 1':2 5 1' 2' 3' 2' 1' 7 6 2' 2':2 1' 2' 1' 2' 1' 2' 1' 2' 5' 5':2 3' 3':2 3' 3' 4' 5' 4' 3' 1' 6 4' 4':2 2' 2' 3' 4' 3' 1' 6 5 3' 3':2 2' 1':2 5 1' 2' 3' 2' 1' 7 6 2' 2':2 5 2' 1' 2' 1' 2' 3' 2' 1':3" }
+];
+const PN_OWN = [];   // 之後 NPC 賣的樂譜：買了就把 PN_VAULT 裡的曲子編號放進來
+const PN_W = 560, PN_H = 200, PN_DEFW = [60, 62, 64, 65, 67, 69, 71, 72], PN_HIT = 176, PN_FT = 2000, PN_PPM = PN_HIT / PN_FT, PN_WIN = 260;
+const PN_COL = ['#ff8fa8', '#ffab4a', '#ffd34d', '#7fd08a', '#8fd3ff', '#b79bf0', '#ff9bd0', '#ff8fa8'];
+const pnEl = $('pnm'), pnCard = $('pncard');
+const pnS = { song: -1, rhythm: true, notes: [], t: 0, nxt: 0, hit: 0, combo: 0, best: 0, done: false, last: 0, raf: 0, fb: null, flash: [], hl: -2, emoAt: 0, view: 'pick', tab: 'free', pick: 0, speed: 1 };
+let pnCtx = null, pnWs = [], pnBs = {}, pnW = PN_DEFW.slice(), pnCv = null, pnCx = null, pnScShown = '', pnQ = [], pnQTm = 0;
+
+function pnTone(m, vol, delay) {
+  if (musicVol <= 0) return;
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+    pnCtx = pnCtx || new AC(); if (pnCtx.state === 'suspended') pnCtx.resume();
+    const t = pnCtx.currentTime + 0.01 + (delay || 0), f = 440 * Math.pow(2, (m - 69) / 12);
+    const v = 0.3 * (vol == null ? 1 : vol) * Math.max(0.3, musicVol / 100);
+    const o1 = pnCtx.createOscillator(), o2 = pnCtx.createOscillator(), g1 = pnCtx.createGain(), g2 = pnCtx.createGain();
+    o1.type = 'triangle'; o1.frequency.value = f; o2.type = 'sine'; o2.frequency.value = f * 2; g2.gain.value = 0.22;
+    g1.gain.setValueAtTime(0.0001, t); g1.gain.exponentialRampToValueAtTime(Math.max(0.0002, v), t + 0.012); g1.gain.exponentialRampToValueAtTime(0.0001, t + 1.1);
+    o1.connect(g1); o2.connect(g2); g2.connect(g1); g1.connect(pnCtx.destination);
+    o1.start(t); o2.start(t); o1.stop(t + 1.15); o2.stop(t + 1.15);
+  } catch (e) { /* 沒有聲音也沒關係 */ }
+}
+/* 彈的音先收集 0.22 秒再一次送出（一則最多 8 個音），不會把即時連線塞爆 */
+function pnSend(m) {
+  if (!(syncScene() && net && net.ok)) return;
+  pnQ.push({ t: performance.now(), m });
+  if (pnQ.length >= 8) pnFlush(); else if (!pnQTm) pnQTm = setTimeout(pnFlush, 220);
+}
+function pnFlush() {
+  clearTimeout(pnQTm); pnQTm = 0;
+  if (!pnQ.length) return;
+  const q = pnQ.splice(0, 8), b = q[0].t;
+  try { if (net && net.ok) net.ch.send({ type: 'broadcast', event: 'pno', payload: { i: myUid, n: q.map(x => [Math.round(x.t - b), x.m]) } }); } catch (e) { /* 略過 */ }
+}
+/* 別人彈的琴：同一個世界才聽得到，4 格內全音量、再遠越來越小聲，約 16 格外聽不到 */
+function onPno(p) {
+  if (!p || typeof p !== 'object' || typeof p.i !== 'string' || p.i === myUid || !Array.isArray(p.n) || p.n.length > 8) return;
+  const rp = remotes.get(p.i); if (!rp || rp.w !== worldKey()) return;
+  const now = performance.now();
+  if (!rp.pnT || now - rp.pnT >= 1000) { rp.pnT = now; rp.pnC = 0; }
+  rp.pnC += p.n.length; if (rp.pnC > 24) return;
+  const d = Math.hypot((rp.tx != null ? rp.tx : rp.x) - pl.x, (rp.ty != null ? rp.ty : rp.y) - pl.y);
+  const vol = d <= 4 ? 1 : clamp(1 - (d - 4) / 12, 0, 1);
+  if (vol < 0.05) return;
+  p.n.forEach(a => {
+    if (!Array.isArray(a)) return;
+    const dt = intIn(a[0], 0, 800, 0), m = intIn(a[1], 48, 84, -1);
+    if (m >= 0) pnTone(m, vol * 0.85, 0.15 + dt / 1000);
+  });
+  if (!rp.emo || now - rp.emo.at > 2000) rp.emo = { id: 'music', at: now };
+  if (!rp.pnSay || now - rp.pnSay > 30000) { rp.pnSay = now; addSys(rp.name + ' 在彈鋼琴 🎹'); }
+}
+
+function pnBuild() {
+  const rb = '<button type="button" class="btn small ghost pn-rhy" data-a="rhy"></button><button type="button" class="btn small ghost pn-spd" data-a="spd" title="點一下換速度"></button>';
+  pnCard.innerHTML = '<h2>🎹 鋼琴</h2>' +
+    '<div id="pnPick"><div class="pn-tabs" role="tablist">' +
+    '<button type="button" role="tab" data-a="tab" data-t="free">免費</button><button type="button" role="tab" data-a="tab" data-t="own">已購買</button><button type="button" role="tab" data-a="tab" data-t="shop">商店 🔒</button><button type="button" role="tab" data-a="tab" data-t="try">嘗試</button></div>' +
+    '<div class="pn-wall" id="pnWall"></div>' +
+    '<div class="pn-bar" id="pnBar"><span class="pn-nm" id="pnNm"></span>' + rb + '<button type="button" class="pn-go" data-a="go">彈</button></div>' +
+    '<button type="button" class="pn-free" data-a="free">自由彈奏（不看樂譜）</button></div>' +
+    '<div id="pnPlay" hidden><div class="pn-row"><button type="button" class="btn small ghost" data-a="back">‹ 選曲</button>' + rb + '<button type="button" class="btn small ghost" data-a="again">↻ 重來</button><span class="pn-sc" id="pnSc"></span></div>' +
+    '<canvas id="pnCv" width="' + PN_W + '" height="' + PN_H + '"></canvas>' +
+    '<p class="empty pn-tip" id="pnTip"></p>' +
+    '<div class="pn-kb" id="pnKb"></div>' +
+    '<small class="empty" style="text-align:center">電腦鍵盤：A S D F G H J K L ; \' 由左到右是白鍵、上一排 W E R T Y U I O P [ 是黑鍵 · 你彈的聲音，同一間房的人也聽得到</small></div>' +
+    '<button type="button" class="btn wide" data-a="close">離開</button>';
+  pnCv = $('pnCv'); pnCx = pnCv.getContext('2d');
+  pnKeys(pnW, true);
+}
+/* 琴鍵範圍跟著樂譜走：音域在 C4–C5 內就是 8 顆白鍵，超出就多開幾顆（最多 11 顆有電腦鍵盤對應） */
+function pnLabel(m) {
+  const o = Math.floor(m / 12) - 5;
+  return (PN_DEG[m % 12] + 1) + (o > 0 ? '\u0307'.repeat(o) : o < 0 ? '\u0323'.repeat(-o) : '');
+}
+function pnKeys(ws, force) {
+  if (!force && ws.length === pnW.length && ws.every((m, i) => m === pnW[i])) return;
+  pnW = ws.slice(); pnS.hl = -2;
+  const kb = $('pnKb'); kb.innerHTML = ''; pnWs = []; pnBs = {};
+  const n = pnW.length, bw = 100 / n * 0.62;
+  pnW.forEach((m, i) => {
+    const d = document.createElement('div'); d.className = 'pn-w'; d.textContent = pnLabel(m);
+    d.addEventListener('pointerdown', e => { e.preventDefault(); pnHit('w', i); }); kb.appendChild(d); pnWs.push(d);
+  });
+  pnW.forEach((m, i) => {
+    if (pnW[i + 1] - m !== 2) return;
+    const d = document.createElement('div'); d.className = 'pn-b'; d.style.width = bw + '%'; d.style.left = ((i + 1) / n * 100 - bw / 2) + '%';
+    d.addEventListener('pointerdown', e => { e.preventDefault(); pnHit('b', i); }); kb.appendChild(d); pnBs[i] = d;
+  });
+}
+function pnRefresh() {
+  const v = pnS.view;
+  $('pnPick').hidden = v !== 'pick'; $('pnPlay').hidden = v !== 'play';
+  pnCard.querySelectorAll('[data-a="tab"]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.t === pnS.tab)));
+  const stars = d => '★'.repeat(d) + '☆'.repeat(3 - d), wall = $('pnWall');
+  const songTab = pnS.tab === 'try' || pnS.tab === 'free';
+  if (songTab && !(PN_SONGS[pnS.pick] && !!PN_SONGS[pnS.pick].x === (pnS.tab === 'try'))) { const f = PN_SONGS.findIndex(sg => !!sg.x === (pnS.tab === 'try')); if (f >= 0) pnS.pick = f; }   // 目前選的歌不在這個分頁，就改選這頁第一首
+  if (songTab) wall.innerHTML = PN_SONGS.map((sg, i) => !!sg.x === (pnS.tab === 'try') ? '<button type="button" class="pn-rec' + (i === pnS.pick ? ' sel' : '') + '" data-a="pick" data-i="' + i + '"><span class="pn-disc"></span>' + sg.n + '<span class="pn-stars">' + stars(sg.d || 1) + '</span></button>' : '').join('');
+  else if (pnS.tab === 'own') wall.innerHTML = PN_OWN.length ? '' : '<div class="pn-empty">還沒有買過樂譜<br>到商人那邊逛逛吧</div>';
+  else wall.innerHTML = '<div class="pn-rec locked"><span class="pn-disc"></span>🔒 商人有賣</div><div class="pn-rec locked"><span class="pn-disc"></span>🔒 商人有賣</div><div class="pn-rec locked"><span class="pn-disc"></span>🔒 商人有賣</div><div class="pn-empty">商人開賣後，這裡可以看到價錢並購買</div>';
+  $('pnBar').hidden = !songTab;
+  const cur = PN_SONGS[pnS.pick]; if (cur) $('pnNm').innerHTML = cur.n + '<small>難度 ' + stars(cur.d || 1) + '</small>';
+  pnCard.querySelectorAll('.pn-spd').forEach(b => { b.textContent = '⏱ 速度 ' + pnS.speed + '×'; });
+  pnCard.querySelectorAll('.pn-rhy').forEach(b => { b.textContent = '🥁 節奏 ' + (pnS.rhythm ? '開' : '關'); b.setAttribute('aria-pressed', String(pnS.rhythm)); });
+  $('pnTip').textContent = (pnS.song < 0 ? '自由彈奏：想彈什麼都可以。按「‹ 選曲」可以挑樂譜。'
+    : pnS.rhythm ? '節奏開：音符掉到亮線時按對應的琴鍵，抓準時機分數更高。' : '節奏關：音符會停下來等你，按對了才繼續，慢慢彈也沒關係。') + (pnS.song >= 0 && pnS.notes.some(x => x.b) ? '深色音符是黑鍵，掉在兩條白鍵道中間。' : '');
+}
+function pnSelect(i) {
+  pnS.song = i; pnS.t = 0; pnS.nxt = 0; pnS.hit = 0; pnS.combo = 0; pnS.best = 0; pnS.done = false; pnS.fb = null; pnS.flash = []; pnS.notes = [];
+  if (i >= 0) {
+    const sg = PN_SONGS[i], bm = 60000 / (sg.bpm * pnS.speed); let at = PN_FT;
+    sg.s.split(/\s+/).forEach(tok => {
+      const m = /^(#?)([0-8])([',]?)(?::(\d*\.?\d+))?$/.exec(tok); if (!m) return;
+      const d = +m[2], b = m[4] ? +m[4] : 1, sh = !!m[1] && (d === 1 || d === 2 || d === 4 || d === 5 || d === 6);   // 黑鍵：p 記白鍵音高，b = true 表示它右邊那顆黑鍵
+      if (d > 0 && (!m[1] || sh)) pnS.notes.push({ p: d === 8 ? 72 : PN_C[d - 1] + (m[3] === "'" ? 12 : m[3] === ',' ? -12 : 0), b: sh, k: 0, at, h: Math.max(14, b * bm * PN_PPM * 0.82), st: 0 });
+      at += b * bm;
+    });
+    const lo = Math.min(...pnS.notes.map(x => x.p)), hi = Math.max(...pnS.notes.map(x => x.p + (x.b ? 2 : 0)));
+    let ws = PN_DEFW;
+    if (lo < 60 || hi > 72) { ws = []; for (let m = lo; m <= hi; m++) if (PN_DEG[m % 12] != null) ws.push(m); }
+    pnKeys(ws);
+  } else pnKeys(PN_DEFW);
+  pnS.notes.forEach(x => { x.k = pnW.indexOf(x.p); });
+  pnS.notes = pnS.notes.filter(x => x.k >= 0 && (!x.b || pnBs[x.k]));
+  pnRefresh();
+}
+function pnHit(kind, i) {
+  const m = kind === 'w' ? pnW[i] : (pnBs[i] ? pnW[i] + 1 : 0); if (!m) return;
+  pnTone(m, 1);
+  const el = kind === 'w' ? pnWs[i] : pnBs[i];
+  if (el) { el.classList.add('on'); setTimeout(() => el.classList.remove('on'), 160); }
+  pnSend(m);
+  const now = performance.now();
+  if (now - pnS.emoAt > 2500) { pnS.emoAt = now; myEmo = { id: 'music', at: now }; }
+  if (pnS.song < 0 || pnS.done) return;
+  const bk = kind === 'b', fi = bk ? 100 + i : i;
+  if (pnS.rhythm) {
+    let best = null, bd = 1e9;
+    pnS.notes.forEach(n => { if (n.st === 0 && n.k === i && !!n.b === bk) { const d = Math.abs(n.at - pnS.t); if (d < bd) { bd = d; best = n; } } });
+    if (best && bd <= PN_WIN) {
+      best.st = 1; pnS.hit++; pnS.combo++; pnS.best = Math.max(pnS.best, pnS.combo);
+      pnS.fb = { t: bd <= 110 ? 'Perfect!' : 'Good', at: now }; pnS.flash[fi] = now;
+    }
+  } else {
+    const n = pnS.notes[pnS.nxt];
+    if (n && n.k === i && !!n.b === bk) {
+      n.st = 1; pnS.hit++; pnS.combo++; pnS.best = Math.max(pnS.best, pnS.combo); pnS.flash[fi] = now;
+      while (pnS.notes[pnS.nxt] && pnS.notes[pnS.nxt].st !== 0) pnS.nxt++;
+    }
+  }
+}
+function pnStep(now) {
+  if (!pnOpen) return;
+  if (scene !== 'house') { closePiano(); return; }
+  const dt = Math.min(50, now - pnS.last); pnS.last = now;
+  if (pnS.song >= 0 && !pnS.done) {
+    if (pnS.rhythm) {
+      pnS.t += dt;
+      pnS.notes.forEach(n => { if (n.st === 0 && pnS.t - n.at > PN_WIN) { n.st = 2; pnS.combo = 0; } });
+    } else {
+      const nx = pnS.notes[pnS.nxt];
+      pnS.t = nx ? Math.min(pnS.t + dt, nx.at) : pnS.t + dt;
+    }
+    if (pnS.notes.length && pnS.notes.every(n => n.st !== 0)) pnS.done = true;
+  }
+  /* 節奏關：下一顆要按的鍵標黃色 */
+  const want = pnS.song >= 0 && !pnS.rhythm && !pnS.done && pnS.notes[pnS.nxt] ? pnS.notes[pnS.nxt].k + (pnS.notes[pnS.nxt].b ? 100 : 0) : -1;
+  if (want !== pnS.hl) { pnS.hl = want; pnWs.forEach((d, i) => d.classList.toggle('nx', i === want)); Object.keys(pnBs).forEach(i => pnBs[i].classList.toggle('nx', +i + 100 === want)); }
+  if (pnS.view === 'play') pnDraw(now);
+  const sc = pnS.song < 0 ? '' : '命中 ' + pnS.hit + '/' + pnS.notes.length + (pnS.combo > 1 ? ' · 連擊 ' + pnS.combo : '');
+  if (sc !== pnScShown) { pnScShown = sc; $('pnSc').textContent = sc; }
+  pnS.raf = requestAnimationFrame(pnStep);
+}
+function pnDraw(now) {
+  const c = pnCx; if (!c) return;
+  c.clearRect(0, 0, PN_W, PN_H);
+  const bg = c.createLinearGradient(0, 0, 0, PN_H); bg.addColorStop(0, '#4a3470'); bg.addColorStop(1, '#241838');
+  c.fillStyle = bg; c.fillRect(0, 0, PN_W, PN_H);
+  const LW = PN_W / pnW.length;
+  for (let i = 1; i < pnW.length; i++) { c.fillStyle = 'rgba(255,255,255,.08)'; c.fillRect(Math.round(i * LW), 0, 1, PN_H); }
+  c.fillStyle = 'rgba(255,255,255,.5)'; c.fillRect(0, PN_HIT, PN_W, 2);
+  const BW = LW * 0.62;
+  pnS.flash.forEach((at, k) => {
+    const a = 1 - (now - at) / 300; if (!(a > 0)) return;
+    c.fillStyle = 'rgba(255,255,255,' + (a * 0.55).toFixed(2) + ')';
+    if (k >= 100) c.fillRect((k - 99) * LW - BW / 2, PN_HIT - 28, BW, 30); else c.fillRect(k * LW + 2, PN_HIT - 28, LW - 4, 30);
+  });
+  pnS.notes.forEach(n => {
+    if (n.st === 1) return;
+    const yb = PN_HIT - (n.at - pnS.t) * PN_PPM, yt = yb - n.h;
+    if (yb < 0 || yt > PN_H) return;
+    c.globalAlpha = n.st === 2 ? 0.22 : 1;
+    if (n.b) {   // 黑鍵音符：掉在兩條白鍵道中間，深色＋彩色邊框
+      const bx = (n.k + 1) * LW - BW / 2;
+      c.fillStyle = '#17102a'; c.fillRect(bx, yt, BW, n.h);
+      c.strokeStyle = PN_COL[PN_DEG[n.p % 12]]; c.lineWidth = 2; c.strokeRect(bx + 1, yt + 1, BW - 2, Math.max(2, n.h - 2));
+      c.fillStyle = 'rgba(255,255,255,.4)'; c.fillRect(bx, yt, BW, 3);
+    } else {
+      c.fillStyle = PN_COL[PN_DEG[n.p % 12]]; c.fillRect(n.k * LW + 4, yt, LW - 8, n.h);
+      c.fillStyle = 'rgba(255,255,255,.4)'; c.fillRect(n.k * LW + 4, yt, LW - 8, 3);
+    }
+    c.globalAlpha = 1;
+  });
+  c.textAlign = 'center';
+  if (pnS.fb && now - pnS.fb.at < 450) { c.fillStyle = '#fff'; c.font = '700 20px sans-serif'; c.fillText(pnS.fb.t, PN_W / 2, PN_HIT - 40); }
+  if (pnS.song < 0) { c.fillStyle = 'rgba(255,255,255,.7)'; c.font = '700 16px sans-serif'; c.fillText('♪ 選一首樂譜，音符會從這裡掉下來', PN_W / 2, 90); }
+  if (pnS.done) {
+    c.fillStyle = 'rgba(20,10,40,.72)'; c.fillRect(0, 0, PN_W, PN_H);
+    c.fillStyle = '#ffe9a8'; c.font = '800 26px sans-serif'; c.fillText('彈完了！🎉', PN_W / 2, 84);
+    c.fillStyle = '#fff'; c.font = '700 16px sans-serif'; c.fillText('命中 ' + pnS.hit + '/' + pnS.notes.length + ' · 最高連擊 ' + pnS.best, PN_W / 2, 116);
+  }
+}
+function openPiano() {
+  if (paused() || pnOpen) return;
+  pnOpen = true; pressed.length = 0;
+  pnS.view = 'pick'; pnS.tab = 'free'; pnS.rhythm = true;
+  pnBuild(); pnScShown = ''; pnS.hl = -2; pnSelect(-1);
+  pnEl.hidden = false; pnCard.focus();
+  pnS.last = performance.now(); pnS.raf = requestAnimationFrame(pnStep);
+}
+function closePiano() { pnOpen = false; pnEl.hidden = true; cancelAnimationFrame(pnS.raf); pnFlush(); }
+pnCard.addEventListener('click', e => {
+  const b = e.target.closest('button[data-a]'); if (!b) return;
+  const a = b.dataset.a;
+  if (a === 'close') closePiano();
+  else if (a === 'tab') { pnS.tab = b.dataset.t; pnRefresh(); }
+  else if (a === 'pick') { pnS.pick = +b.dataset.i; pnRefresh(); }
+  else if (a === 'go') { pnS.view = 'play'; pnSelect(pnS.pick); }
+  else if (a === 'free') { pnS.view = 'play'; pnSelect(-1); }
+  else if (a === 'back') { pnS.view = 'pick'; pnSelect(-1); }
+  else if (a === 'rhy') { pnS.rhythm = !pnS.rhythm; if (pnS.view === 'play') pnSelect(pnS.song); else pnRefresh(); }
+  else if (a === 'again') pnSelect(pnS.song);
+  else if (a === 'spd') { const L = [0.5, 0.7, 0.85, 1, 1.2, 1.5], k = L.indexOf(pnS.speed); pnS.speed = L[(k + 1) % L.length]; if (pnS.view === 'play' && pnS.song >= 0) pnSelect(pnS.song); else pnRefresh(); }
+});
+/* 鋼琴開著的時候，電腦鍵盤只拿來彈琴（不會誤觸走路、背包等快捷鍵） */
+window.addEventListener('keydown', e => {
+  if (!pnOpen || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closePiano(); return; }
+  const k = e.key.length === 1 ? e.key.toLowerCase() : '', wi = k ? PN_KEYS_W.indexOf(k) : -1, bi = k ? PN_KEYS_B.indexOf(k) : -1;
+  if (pnS.view === 'play' && k && ((wi >= 0 && wi < pnW.length) || (bi >= 0 && pnBs[bi]))) { e.preventDefault(); e.stopPropagation(); if (!e.repeat) { if (wi >= 0) pnHit('w', wi); else pnHit('b', bi); } return; }
+  if (e.key === 'Tab' || e.key === 'Enter' || e.key === ' ') return;
+  e.stopPropagation();
+}, true);
+
 /* ---------- 塔羅小攤：每天抽一張牌，看今天的運勢 ---------- */
 /* 牌、正逆位、幸運數字由伺服器抽（一天一次）；牌義文字在這裡。st = 整體 / 愛情 / 事業 / 財運（正位 1–5 顆星，逆位會自動降一些） */
 const TAROT = [
@@ -5215,10 +5556,128 @@ $('auth-form').addEventListener('submit', async e => {
   } catch (err) { msg.textContent = authErr(err); }
   authBusy = false; $('au-go').disabled = false;
 });
+/* ---------- 登入封面：用遊戲自己的美術畫出小屋、樹和自己的角色；白天看到太陽，晚上看到月亮 ---------- */
+const COVER_KEY = 'dw_cover';
+function coverSave() { if (!me) return; try { localStorage.setItem(COVER_KEY, JSON.stringify({ n: me.name, l: me.look })); } catch (e) { /* 略過 */ } }
+function coverLoad() {
+  try { const v = JSON.parse(localStorage.getItem(COVER_KEY) || 'null'); if (v && typeof v.n === 'string') return { n: v.n, l: v.l && typeof v.l === 'object' ? v.l : {} }; } catch (e) { /* 略過 */ }
+  return null;
+}
+const mixHex = (a, b, t) => { const p = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)); const x = p(a), y = p(b); return 'rgb(' + x.map((v, i) => Math.round(v + (y[i] - v) * t)).join(',') + ')'; };
+const coverCv = $('cover'), coverNm = $('cover-nm');
+const CV_DAY = ['#8fd0ff', '#a9dcff', '#c4e8ff', '#dff3ff'], CV_NIGHT = ['#12153a', '#1b1f4f', '#2a2a62', '#3a2f6b'];
+const coverReduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+/* 風：一陣一陣由左吹向右（pixel 風格，只偏移 0～2 格像素） */
+const windAt = (t, x) => { const w = Math.sin(t / 900 - x / 140), gst = Math.sin(t / 3700) * 0.5 + 0.5; return w * (0.35 + gst * 0.65); };
+function coverTree(px, py, tx, ty, t) {
+  drawGrass(px, py, tx, ty);
+  const pink = hash(tx, ty, 12) > 0.55;
+  const w = windAt(t, px + tx * 9), sw = Math.round(w * 1.4), sy = (Math.sin(t / 700 + tx) > 0.6) ? 1 : 0;
+  r('rgba(107,72,72,.16)', px + 2, py + 13, 12, 3);
+  r('#b98a62', px + 6, py + 10, 4, 6); r('#9a6a4a', px + 9, py + 10, 1, 6);
+  const pal = TREEP[SEA][pink ? 0 : 1];
+  g.save(); g.translate(sw, sy * 0);
+  ob(pal[0], pal[1], px, py + 1, 16, 12);
+  r(pal[2], px + 3 + (w > 0.5 ? 1 : 0), py + 3, 5, 2); r(pal[2], px + 10 - (w < -0.4 ? 1 : 0), py + 6, 2, 2);
+  r(pal[3], px + 4, py + 9, 4, 1); r(pal[3], px + 10, py + 10, 3, 1);
+  if (SEA === 'winter') { r('#ffffff', px + 2, py + 1, 12, 2); r('#dcebf3', px + 1, py + 3, 3, 1); }
+  g.restore();
+}
+/* 草叢：隨風左右搖 */
+function coverBlades(px, py, tx, ty, t) {
+  const h = hash(tx, ty, 21); if (h < 0.5) return;
+  const gb = GRASSB[SEA], bx = px + 2 + ((h * 40 | 0) % 11), by = py + 5 + ((hash(tx, ty, 22) * 7) | 0);
+  const w = windAt(t, px * 1.3 + ty * 6), o = Math.round(w * 2);
+  r(gb[0], bx, by + 2, 1, 2); r(gb[0], bx + (o > 0 ? 1 : o < 0 ? -1 : 0), by + 1, 1, 1); r(gb[1], bx + o, by, 1, 1);
+  if (h > 0.8) { r(gb[0], bx + 3, by + 2, 1, 2); r(gb[1], bx + 3 + o, by + 1, 1, 1); }
+}
+/* 飄動的花瓣／落葉（依季節換顏色）：被風吹著斜斜飄過畫面 */
+const COVER_PETAL = { spring: ['#ffc2d4', '#ffffff', '#ffa8c4'], summer: ['#b8e88a', '#d8f5a0', '#fff6a8'], autumn: ['#ffab4a', '#e98a3a', '#ffd36b'], winter: ['#ffffff', '#e6f3fb', '#cfe6f3'] };
+function coverPetals(t, cw, chh, GT) {
+  const cols = COVER_PETAL[SEA] || COVER_PETAL.spring, n = cw < 300 ? 12 : 22, gust = Math.sin(t / 3700) * 0.5 + 0.5;
+  for (let i = 0; i < n; i++) {
+    const sp = 14 + hash(i, 1, 70) * 16 + gust * 14, fall = 5 + hash(i, 2, 70) * 7;
+    const x0 = hash(i, 3, 70) * (cw + 80), y0 = hash(i, 4, 70) * (chh - GT);
+    const x = ((x0 + t / 1000 * sp) % (cw + 40)) - 20;
+    const y = GT - 6 + ((y0 + t / 1000 * fall) % (chh - GT + 12)) + Math.sin(t / 600 + i * 1.7) * 4;
+    r(cols[i % 3], x | 0, y | 0, 2, 1); if (i % 3 === 0) r(cols[(i + 1) % 3], (x | 0) + 1, (y | 0) + 1, 1, 1);
+  }
+}
+let coverRaf = 0, coverLast = 0, coverGreet = '';
+function coverTick(now) {
+  coverRaf = 0;
+  if (authEl.hidden || document.hidden) return;
+  if (now - coverLast >= 66) { coverLast = now; drawCover(now); }      // 約 15 格：像素風的節奏，也省電
+  coverRaf = requestAnimationFrame(coverTick);
+}
+function coverStart() { if (!coverRaf && !coverReduce && !authEl.hidden && !document.hidden) coverRaf = requestAnimationFrame(coverTick); }
+document.addEventListener('visibilitychange', () => { if (!document.hidden) coverStart(); });
+function drawCover(tNow) {
+  if (!coverCv || authEl.hidden) return;
+  const t = typeof tNow === 'number' ? tNow : performance.now();
+  const vw = Math.max(320, window.innerWidth), vh = Math.max(320, window.innerHeight);
+  const sc = vw < 700 ? 2 : 3, cw = Math.ceil(vw / sc), chh = Math.ceil(vh / sc), wide = vw >= 900 || (vw >= 780 && vw > vh);
+  if (coverCv.width !== cw || coverCv.height !== chh) { coverCv.width = cw; coverCv.height = chh; }
+  const c2 = coverCv.getContext('2d'); c2.imageSmoothingEnabled = false;
+  const oldG = g, oldSea = SEA, GT = 36;
+  g = c2;
+  try {
+    const wd = world(), dk = darkness(wd.min), lit = dk > 0.35;
+    SEA = seasonAt(srvNow());
+    const greet = dk >= 0.8 ? '晚安，小屋的燈還亮著' : wd.min < 720 ? '早安，今天也一起種田吧' : wd.min < 1020 ? '午安，農場正在等你回來' : '傍晚了，回來看看你的農場';
+    if (greet !== coverGreet) { coverGreet = greet; $('au-greet').textContent = greet; }
+    for (let i = 0; i < 4; i++) r(mixHex(CV_DAY[i], CV_NIGHT[i], dk), 0, i * 10, cw, i === 3 ? GT - 30 : 10);
+    const sx = wide ? Math.round(cw * 0.46) : cw - 40, sy = 8;
+    if (dk < 0.5) {
+      g.globalAlpha = 0.45; rr('#fff3b0', sx - 4, sy - 4, 26, 26); g.globalAlpha = 1;
+      ob('#ffd34d', '#f2b632', sx, sy, 18, 18); r('#ffe98a', sx + 4, sy + 4, 5, 3);
+      const rp = Math.floor(t / 400) % 2; [[8, -6 - rp], [8, 20 + rp], [-6 - rp, 8], [20 + rp, 8]].forEach(a => r('#ffd34d', sx + a[0], sy + a[1], 2, 3));
+      g.globalAlpha = 1 - dk * 2;
+      [[0.2, 14, 26, 7, 5], [0.62, 8, 22, 6, 7], [0.85, 18, 24, 6, 4]].forEach((c, ci) => { const cx = ((c[0] * cw + t / 1000 * (c[4] + 2)) % (cw + 60)) - 30 | 0; rr('#ffffff', cx, c[1], c[2], c[3]); rr('#ffffff', cx + 6, c[1] - 3, c[2] - 12, c[3] - 1); });
+      g.globalAlpha = 1;
+    } else {
+      g.globalAlpha = Math.min(1, dk * 1.2);
+      rr('#fff3c4', sx, sy, 16, 16); r('#e8d9a6', sx + 9, sy + 4, 3, 3); r('#e8d9a6', sx + 4, sy + 10, 3, 2); r('#e8d9a6', sx + 10, sy + 10, 2, 2);
+      for (let i = 0; i < 30; i++) { if (Math.sin(t / 500 + i * 2.3) < -0.75) continue; r('#ffffff', (hash(i, 1, 90) * cw) | 0, (hash(i, 2, 90) * (GT - 8)) | 0, 1, 1); }
+      g.globalAlpha = 1;
+    }
+    for (let ty = 0; ty * T + GT < chh; ty++) for (let tx = 0; tx * T < cw; tx++) { drawGrass(tx * T, GT + ty * T, tx, ty); coverBlades(tx * T, GT + ty * T, tx, ty, t); }
+    const CARD_W = 420, HOUSE_W = 87 * sc, GAP = 56, grp = HOUSE_W + GAP + CARD_W, gl = Math.max(16, (vw - grp) / 2);
+    if (wide) authEl.style.setProperty('--auth-ml', Math.round(gl + HOUSE_W + GAP - 16) + 'px');
+    const hx = wide ? Math.round((gl + HOUSE_W / 2) / sc) - 40 : Math.round(cw / 2) - 40, hy = GT + (wide ? 36 : 22);
+    r('#ecd5b4', hx + 32, hy + 44, 16, chh); for (let y = hy + 50; y < chh; y += 9) { r('#d9b98a', hx + 34 + ((y * 7) % 9), y, 2, 1); }
+    for (let tx = 0; tx * T < cw; tx++) coverTree(tx * T, GT, tx, 0, t);
+    [2, 3, 5].forEach(ty => { coverTree(0, GT + ty * T, 0, ty, t); coverTree(Math.floor((cw - 1) / T) * T, GT + ty * T, Math.floor((cw - 1) / T), ty, t); });
+    g.save(); g.translate(hx - 2 * T, hy - T); drawHouse(lit, t); g.restore();
+    const sv = coverLoad();
+    if (sv && sv.n) drawPlayer(hx + 32, hy + 60 + (Math.floor(t / 520) % 2 ? 1 : 0), 'down', false, 0, toChar(sv.n, sv.l));
+    coverPetals(t, cw, chh, GT);
+    if (dk < 0.5) { g.globalAlpha = 1 - dk * 2; [0, 1].forEach(bi => { const bx = ((bi * 0.5 * cw + t / 1000 * (22 + bi * 6)) % (cw + 80)) - 40 | 0, by = 20 + bi * 14 + Math.round(Math.sin(t / 900 + bi * 2) * 3), fl = Math.floor(t / 180 + bi) % 2; r('#5a4a5e', bx, by + fl, 2, 1); r('#5a4a5e', bx + 2, by + 1 - fl, 1, 1); r('#5a4a5e', bx + 3, by + fl, 2, 1); }); g.globalAlpha = 1; }
+    if (dk > 0) {
+      g.fillStyle = 'rgba(18,22,86,' + (0.5 * dk).toFixed(2) + ')'; g.fillRect(0, GT, cw, chh - GT);
+      if (lit) [10, 58].forEach(wx => {
+        g.globalAlpha = 0.24 + Math.sin(t / 700 + wx) * 0.05; rr('#ffd36b', hx + wx - 4, hy + 25, 20, 19); g.globalAlpha = Math.min(1, dk * 1.3);
+        r('#ffe28a', hx + wx + 1, hy + 30, 10, 9); r('#ffffff', hx + wx + 5, hy + 30, 2, 9); r('#ffffff', hx + wx + 1, hy + 34, 10, 2); g.globalAlpha = 1;
+      });
+      g.globalAlpha = Math.min(1, dk * 1.2);
+      for (let i = 0; i < 9; i++) { const fx = ((hash(i, 3, 91) * cw) + Math.sin(t / 1300 + i * 2) * 8) | 0, fy = GT + 30 + ((hash(i, 4, 91) * (chh - GT - 34)) | 0) + Math.round(Math.cos(t / 1100 + i) * 5); if (Math.sin(t / 420 + i * 1.9) > -0.5) r('#e8ff8a', fx, fy, 2, 2); }
+      g.globalAlpha = 1;
+    }
+    const k = coverCv.clientWidth / cw;
+    if (sv && sv.n) { coverNm.textContent = sv.n; coverNm.style.left = ((hx + 40) * k) + 'px'; coverNm.style.top = ((hy + 48) * k) + 'px'; coverNm.hidden = false; }
+    else coverNm.hidden = true;
+  } catch (e) { /* 封面畫不出來也沒關係，還是看得到登入框 */ }
+  g = oldG; SEA = oldSea;
+}
+window.addEventListener('resize', drawCover);
+setInterval(drawCover, 60000);
+window.addEventListener('pagehide', coverSave);
+document.addEventListener('visibilitychange', () => { if (document.hidden) coverSave(); });
 function showAuth() {
+  coverSave();
   tutI = -1; tutEl.hidden = true;
   leaveLekcus(true); leaveVillage(true); leaveHouse(true); leaveStylist(true); leaveCave(true); leaveForest(true); leaveTown(true); leaveBarn(true); stopPresence(); closeFriends(); fr = { friends: [], incoming: [], outgoing: [], max: 50 }; house = null; ready = false; authOpen = true; closeMaker(); closeShop(); closeVMenu(); closeGM(); closeFShop(); closeDex(); closeBag();
-  bootEl.hidden = true; authEl.hidden = false; me = null; refreshHud();
+  bootEl.hidden = true; authEl.hidden = false; me = null; refreshHud(); drawCover(); coverStart();
   closeBoard(); closeKitchen(); closeRanch(); closeMerchant(); closeDlg();
   closeQuests(); qs = { day: 0, c: {}, claimed: {} }; qBadge();
 }
@@ -5596,6 +6055,7 @@ function startNet(rm, priv) {
       .on('broadcast', { event: 'pact' }, m => onPact(m && m.payload))
       .on('broadcast', { event: 'kick' }, m => onKick(m && m.payload))
       .on('broadcast', { event: 'ate' }, m => onAte(m && m.payload))
+      .on('broadcast', { event: 'pno' }, m => onPno(m && m.payload))
       .subscribe(status => {
         if (!net || net.ch !== ch) return;
         if (status === 'SUBSCRIBED') { net.ok = true; net.wasOk = true; net.bad = 0; lastSendAt = 0; trackSelf(); }
@@ -6355,7 +6815,7 @@ let bgmGesture = false, bgmSig = '';
 function syncBgm() {
   if (!Music) return;
   const name = SCENE_BGM[scene], file = !!(Bgm && name && Bgm.has(name));
-  const go = musicOn && bgmGesture;
+  const go = musicOn && (bgmGesture || authOpen);   // 登入畫面也放農場那首（瀏覽器擋自動播放時，第一次點擊會接著播）
   const sig = (go ? 1 : 0) + '|' + (file ? name : '') + '|' + musicVol;
   if (sig === bgmSig) return;                 // 沒變就不重複處理（這個函式每秒會被叫一次）
   bgmSig = sig;
@@ -6387,7 +6847,7 @@ for (let y = RY; y < RY + RH; y++) for (let x = RX; x < RX + RW; x++) hkind[y][x
 hkind[12][10] = GT;
 let house = null;                                // { style, items, cat }
 const edit = { on: false, hold: null, sel: null, hover: null };
-let tmpSeq = 0, fOpen = false, fTab = 'furn';
+let tmpSeq = 0, fOpen = false, fTab = 'wall';
 const iconRowColor = { wall: ['#fff1d6', '#ffd9e2', '#cfe8f7', '#d6f2e3', '#d9a066'], floor: ['#e0b080', '#f0d4a8', '#ffe0e8', '#cfd2d8', '#d8d08a'] };
 const WALL_NAMES = ['奶油牆', '粉紅條紋牆', '天藍圓點牆', '薄荷葉子牆', '木板牆'];
 const FLOOR_NAMES = ['木地板', '淺色木地板', '粉紅格子地板', '灰色磚地板', '草蓆地板'];
@@ -7127,7 +7587,7 @@ function renderHousePanel() {
   const have_ = house.list.filter(c => ['floor', 'flat', 'wall'].includes(c.layer) && have('f:' + c.key) > 0);
   $('h-inv').innerHTML = have_.length
     ? have_.map(c => '<button type="button" class="chipbtn" data-f="' + esc(c.key) + '" aria-pressed="' + (hold && !hold.fromId && hold.k === c.key ? 'true' : 'false') + '">' + esc(c.name) + ' ×' + have('f:' + c.key) + '</button>').join('')
-    : '<span class="empty">背包裡沒有家具，去家具店買吧。</span>';
+    : '<span class="empty">背包裡沒有家具，去小村右上角的家具店買吧。</span>';
   const sb_ = $('h-sel');
   if (selIt) {
     sb_.hidden = false;
@@ -7246,23 +7706,15 @@ $('game').addEventListener('pointerleave', () => { edit.hover = null; });
 /* ---------- 家具店 ---------- */
 const fsEl = $('fshop'), fsCard = $('fshopcard');
 function renderFShop() {
-  const coins = me ? me.coins : 0;
   const tab = (k, n) => '<button type="button" class="cb" data-a="tab" data-c="' + k + '" aria-pressed="' + (fTab === k) + '">' + n + '</button>';
-  let rows = '';
-  if (fTab === 'furn') {
-    rows = house.list.filter(c => ['floor', 'flat', 'wall'].includes(c.layer) && !c.special).map(c =>
-      '<div class="row"><div class="meta"><b>' + esc(c.name) + '</b><small>' + c.w + '×' + c.h + ' 格 · ' + (c.layer === 'wall' ? '掛牆' : c.layer === 'flat' ? '地毯' : '落地') + ' · 持有 ' + have('f:' + c.key) + '</small></div>' +
-      '<button type="button" class="btn small" data-a="buy" data-c="' + esc(c.key) + '"' + (fsBusy || coins < c.price || (c.need | 0) > plv() ? ' disabled' : '') + '>' + ((c.need | 0) > plv() ? '玩家 Lv.' + c.need + ' 解鎖' : c.price + ' G') + '</button></div>').join('');
-  } else {
-    const kd = fTab, names = kd === 'wall' ? WALL_NAMES : FLOOR_NAMES, cur = house.style[kd];
-    rows = names.map((n, i) => {
-      const key = kd + '_' + i, c = house.cat[key], owned = i === 0 || have('f:' + key) > 0, price = c ? c.price : 0;
-      return '<div class="row"><i class="swatch" style="background:' + iconRowColor[kd][i] + '"></i><div class="meta"><b>' + n + '</b><small>' + (cur === i ? '目前使用中' : owned ? '已擁有' : price + ' G') + '</small></div>' +
-        (cur === i ? '' : '<button type="button" class="btn small" data-a="style" data-c="' + i + '"' + (fsBusy || (!owned && coins < price) ? ' disabled' : '') + '>' + (owned ? '套用' : '買並套用') + '</button>') + '</div>';
-    }).join('');
-  }
-  fsCard.innerHTML = '<div class="shop-h"><h2>家具店</h2><span class="chip gold">' + coins + ' G</span></div>' +
-    '<div class="tabs2">' + tab('furn', '家具') + tab('wall', '牆面') + tab('floor', '地板') + '</div>' + rows +
+  const kd = fTab, names = kd === 'wall' ? WALL_NAMES : FLOOR_NAMES, cur = house.style[kd];
+  const rows = names.map((n, i) => {
+    const owned = i === 0 || have('f:' + kd + '_' + i) > 0;
+    return '<div class="row"><i class="swatch" style="background:' + iconRowColor[kd][i] + '"></i><div class="meta"><b>' + n + '</b><small>' + (cur === i ? '目前使用中' : owned ? '已擁有' : '到小村的家具店購買') + '</small></div>' +
+      (cur === i || !owned ? '' : '<button type="button" class="btn small" data-a="style" data-c="' + i + '"' + (fsBusy ? ' disabled' : '') + '>套用</button>') + '</div>';
+  }).join('');
+  fsCard.innerHTML = '<div class="shop-h"><h2>牆面地板</h2></div>' +
+    '<div class="tabs2">' + tab('wall', '牆面') + tab('floor', '地板') + '</div>' + rows +
     '<button type="button" class="btn ghost wide" data-a="close">關閉</button>';
 }
 let fsBusy = false;
@@ -7277,7 +7729,7 @@ fsCard.addEventListener('click', async e => {
   if (a === 'tab') { fTab = c; renderFShop(); return; }
   fsBusy = true; renderFShop();
   try {
-    const r_ = await enqueue(() => a === 'buy' ? rpc('buy_furniture', { p_item: c, p_qty: 1 }) : rpc('house_style', { p_kind: fTab, p_idx: +c }));
+    const r_ = await enqueue(() => rpc('house_style', { p_kind: fTab, p_idx: +c }));
     if (r_.inv) Object.assign(inv, r_.inv);
     if (typeof r_.coins === 'number') me.coins = r_.coins;
     if (r_.style) house.style = r_.style;
@@ -7296,7 +7748,10 @@ const SHOP_STY = {
     chat: ['頭髮就像田裡的作物，要細心照顧才會好看。', '我的剪刀每天都磨，保證不會剪壞。', '換個髮型，連心情都會跟著換喔。'] },
   fit:  { title: '裁縫鋪', clerk: '桃子姊姊', ck: 'tao', k: 'fits', names: FITS, look: '看看今天的新衣服',
     hello: ['歡迎光臨！新做的衣服都掛在牆上喔。', '來啦，想要哪一件？我幫你量一量。'],
-    chat: ['桂花婆婆教過我縫紉，她的針腳可是整個村子最細的。', '晚宴長裙我熬了三個晚上才縫好。', '衣服穿得開心，種田也會更有力氣。'] }
+    chat: ['桂花婆婆教過我縫紉，她的針腳可是整個村子最細的。', '晚宴長裙我熬了三個晚上才縫好。', '衣服穿得開心，種田也會更有力氣。'] },
+  furn: { title: '家具店', clerk: '阿杉師傅', ck: 'mu', look: '看看今天的家具',
+    hello: ['歡迎光臨！今天剛進了一批新的家具。', '來看看吧，每天上架的東西都不一樣喔。'],
+    chat: ['這些家具都是我一件一件親手做的。', '今天沒有你要的？明天再來，說不定就有了。', '家布置得舒服，種田的心情也會好。'] }
 };
 const styOwned = (k, i) => i < FREE_N[k] || (k === 'fits' ? fitAny(i) : have('hs:' + i) > 0);
 const syEl = $('sym'), syCard = $('sycard');
@@ -7317,6 +7772,7 @@ function renderSty() {
     return;
   }
   if (syKind === 'fit') { renderFitShop(head, cur, coins); return; }
+  if (syKind === 'furn') { renderFurnShop(head, coins); return; }
   const rows = Object.keys(S.price).map(Number).map(i => {
     const own = styOwned(S.k, i), now = cur[S.k] === i, pr = S.price[i];
     return '<div class="row"><canvas width="16" height="22" data-i="' + i + '" style="width:48px;height:66px;image-rendering:pixelated;flex:none"></canvas>' +
@@ -7367,6 +7823,37 @@ function renderFitShop(head, cur, coins) {
     g = ctx;
   });
 }
+/* ---------- 家具店（小村右上角）：家具只在這裡買，每天隨機上架 6 件；牆面、地板常駐 ---------- */
+let fyTab = 'furn';
+let furnToday = null;   // 後端 furn_daily：今天上架的 6 件（每個玩家各自、GMT+8 換日）
+async function loadFurnToday() {
+  try { const d = await enqueue(() => rpc('furn_daily')); furnToday = { day: d.day, keys: d.items || [] }; }
+  catch (e) { furnToday = null; toast(errText(e)); }
+}
+const furnDailyList = () => (furnToday ? furnToday.keys : []).map(k => house.cat[k]).filter(Boolean);
+function renderFurnShop(head, coins) {
+  const S = SHOP_STY.furn;
+  const tail = '<button type="button" class="btn ghost wide" data-a="talk">回去跟' + S.clerk + '說話</button><button type="button" class="btn ghost wide" data-a="close">關閉</button>';
+  if (!house) { syCard.innerHTML = head + '<div class="row"><div class="meta"><small>家具目錄載入失敗了，回去再按一次「' + S.look + '」</small></div></div>' + tail; return; }
+  const tab = (k, n) => '<button type="button" class="cb" data-a="ytab" data-c="' + k + '" aria-pressed="' + (fyTab === k) + '">' + n + '</button>';
+  let rows = '', note = '';
+  if (fyTab === 'furn') {
+    const list = furnDailyList();
+    if (!furnToday) { syCard.innerHTML = head + '<div class="row"><div class="meta"><small>今天的家具載入失敗了，回去再按一次「' + S.look + '」</small></div></div>' + tail; return; }
+    note = '<p style="margin:6px 0;font-size:12px;opacity:.7">今天上架 ' + list.length + ' 件，GMT+8 0 點換一批新的。今天沒有想要的，明天再來看看。</p>';
+    rows = list.length ? list.map(c => '<div class="row"><canvas width="32" height="32" data-fk="' + esc(c.key) + '" style="width:48px;height:48px;image-rendering:pixelated;flex:none"></canvas><div class="meta"><b>' + esc(c.name) + '</b><small>' + c.w + '×' + c.h + ' 格 · ' + (c.layer === 'wall' ? '掛牆' : c.layer === 'flat' ? '地毯' : '落地') + ' · 持有 ' + have('f:' + c.key) + '</small></div>' +
+      '<button type="button" class="btn small" data-a="ybuy" data-c="' + esc(c.key) + '"' + (syBusy || coins < c.price ? ' disabled' : '') + '>' + c.price + ' G</button></div>').join('') : '<p class="empty">今天沒有上架的家具</p>';
+  } else {
+    const kd = fyTab, names = kd === 'wall' ? WALL_NAMES : FLOOR_NAMES, cur = house.style[kd];
+    rows = names.map((n, i) => {
+      const key = kd + '_' + i, c = house.cat[key], owned = i === 0 || have('f:' + key) > 0, price = c ? c.price : 0;
+      return '<div class="row"><i class="swatch" style="background:' + iconRowColor[kd][i] + '"></i><div class="meta"><b>' + n + '</b><small>' + (cur === i ? '目前使用中' : owned ? '已擁有' : price + ' G') + '</small></div>' +
+        (cur === i ? '' : '<button type="button" class="btn small" data-a="ystyle" data-c="' + i + '"' + (syBusy || (!owned && coins < price) ? ' disabled' : '') + '>' + (owned ? '套用' : '買並套用') + '</button>') + '</div>';
+    }).join('');
+  }
+  syCard.innerHTML = head + '<div class="tabs2">' + tab('furn', '今日家具') + tab('wall', '牆面') + tab('floor', '地板') + '</div>' + note + rows + tail;
+  syCard.querySelectorAll('canvas[data-fk]').forEach(cv => { try { furnIcon(cv, cv.dataset.fk); } catch (e) { /* 略過 */ } });
+}
 function openSty(kind) { syKind = kind; syStage = 'talk'; syLine = pickOf(SHOP_STY[kind].hello); syOpen = true; pressed.length = 0; renderSty(); syEl.hidden = false; syCard.focus(); }
 function closeSty() { syOpen = false; syEl.hidden = true; }
 syCard.addEventListener('click', async e => {
@@ -7374,7 +7861,24 @@ syCard.addEventListener('click', async e => {
   if (!b || b.disabled) return;
   const a = b.dataset.a, i = +b.dataset.c, S = SHOP_STY[syKind];
   if (a === 'close') { closeSty(); return; }
-  if (a === 'list' || a === 'talk') { syStage = a; if (a === 'list' && syKind === 'fit') await loadFitToday(); renderSty(); return; }
+  if (a === 'list' || a === 'talk') {
+    syStage = a;
+    if (a === 'list' && syKind === 'fit') await loadFitToday();
+    if (a === 'list' && syKind === 'furn') { if (!house) { try { await enqueue(() => loadHouse()); } catch (err) { toast(errText(err)); } } await loadFurnToday(); }
+    renderSty(); return;
+  }
+  if (a === 'ytab') { fyTab = b.dataset.c; renderSty(); return; }
+  if (a === 'ybuy' || a === 'ystyle') {
+    syBusy = true; renderSty();
+    try {
+      const r_ = await enqueue(() => a === 'ybuy' ? rpc('buy_furniture', { p_item: b.dataset.c, p_qty: 1 }) : rpc('house_style', { p_kind: fyTab, p_idx: +b.dataset.c }));
+      if (r_.inv) Object.assign(inv, r_.inv);
+      if (typeof r_.coins === 'number') me.coins = r_.coins;
+      if (r_.style) house.style = r_.style;
+      toast(a === 'ybuy' ? '買下了，回家布置吧' : '換好了', 2000);
+    } catch (err) { toast(errText(err)); await resync(); }
+    syBusy = false; if (syOpen) renderSty(); refreshHud(); return;
+  }
   if (a === 'chat') { syLine = pickOf(S.chat); renderSty(); return; }
   if (a === 'pick') { fitSel[+b.dataset.i] = +b.dataset.c; renderSty(); return; }
   if (a === 'fbuy' || a === 'fwear') {
@@ -7429,13 +7933,13 @@ function enterStylist(kind) {
   if (scene !== 'town' || !ready || !me || paused()) return;
   styRoom = kind; pose = null; scene = 'stylist'; K = srkind; W = SRW; H = SRH;
   pl.x = pl.sx = 4; pl.y = pl.sy = SRH - 2; pl.prog = 1; pl.face = 'up'; pressed.length = 0;
-  view.snap = true; fitView(); toast(kind === 'fit' ? '歡迎光臨裁縫鋪' : '歡迎光臨理髮店');
+  view.snap = true; fitView(); toast(kind === 'fit' ? '歡迎光臨裁縫鋪' : kind === 'furn' ? '歡迎光臨家具店' : '歡迎光臨理髮店');
 }
 function leaveStylist(silent) {
   if (scene !== 'stylist') return;
   closeSty();
   scene = 'town'; K = tkind; W = TW; H = TH;
-  const d = styRoom === 'fit' ? [5, 6] : [21, 15];
+  const d = styRoom === 'fit' ? [5, 6] : styRoom === 'furn' ? [27, 6] : [21, 15];
   pl.x = pl.sx = d[0]; pl.y = pl.sy = d[1]; pl.prog = 1; pl.face = 'down'; pressed.length = 0;
   view.snap = true; fitView(); if (!silent) toast('回到小村了');
 }
@@ -7445,11 +7949,11 @@ function stylistAct(x, y) {
   const k = K[y][x];
   if (k === BX) leaveStylist();
   else if (k === SYK || k === SYC) openSty(styRoom);
-  else if (k === DEC) pop(x, y, styRoom === 'fit' ? '試衣用的模特兒' : '舒服的理髮椅', '#fff3b0');
+  else if (k === DEC) pop(x, y, styRoom === 'fit' ? '試衣用的模特兒' : styRoom === 'furn' ? '店裡展示用的家具' : '舒服的理髮椅', '#fff3b0');
 }
 function drawStylistRoom(now) {
-  const fit = styRoom === 'fit';
-  const wall = fit ? '#ffe3ec' : '#e3f6ec', wallD = fit ? '#f3b8cb' : '#a9d9c0', fa = fit ? '#f6dcc0' : '#e8e3d6', fb = fit ? '#efd2b4' : '#ddd7c8';
+  const fit = styRoom === 'fit', furn = styRoom === 'furn';
+  const wall = furn ? '#d9a56c' : fit ? '#ffe3ec' : '#e3f6ec', wallD = furn ? '#a8764a' : fit ? '#f3b8cb' : '#a9d9c0', fa = furn ? '#e8c79a' : fit ? '#f6dcc0' : '#e8e3d6', fb = furn ? '#dfb98a' : fit ? '#efd2b4' : '#ddd7c8';
   ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#3b2a1e'; ctx.fillRect(0, 0, cv.width, cv.height); ctx.restore();
   r('#3b2a1e', 0, 0, W * T, H * T);
   for (let ty = 0; ty < H; ty++) for (let tx = 0; tx < W; tx++) {
@@ -7460,7 +7964,13 @@ function drawStylistRoom(now) {
   }
   for (let tx = 1; tx < W - 1; tx++) {
     const px = tx * T;
-    if (fit) {
+    if (furn) {
+      if (tx % 3 === 1) { ob('#fff0d4', '#8c5b3c', px + 2, T + 2, 12, 10); r(['#ff9bb3', '#8fd3c0', '#ffd27a'][(tx / 3 | 0) % 3], px + 4, T + 4, 8, 6); }   // 掛畫
+      r('#a8764a', px, 2 * T + 9, T, 3);
+      if (tx % 3 === 0) { rr('#d9667f', px + 3, 2 * T + 2, 3, 7); rr('#d9667f', px + 3, 2 * T + 6, 9, 3); }                // 小椅子
+      else if (tx % 3 === 1) { r('#8c5b3c', px + 7, 2 * T + 4, 2, 5); rr('#ffd34d', px + 4, 2 * T + 1, 8, 4); }          // 小檯燈
+      else { rr('#c08a62', px + 5, 2 * T + 5, 6, 4); rr('#7fd08a', px + 4, 2 * T + 1, 8, 5); }                            // 小盆栽
+    } else if (fit) {
       r('#9b6a44', px, T + 4, T, 1);                                               // 吊衣桿
       const c = OUTFITS[(tx * 5) % OUTFITS.length]; ob(c, shade(c, 0.8), px + 3, T + 5, 10, 9);
       r('#b8895a', px, 2 * T + 9, T, 3); const c2 = OUTFITS[(tx * 7 + 3) % OUTFITS.length]; ob(c2, shade(c2, 0.8), px + 2, 2 * T + 3, 12, 6);   // 貨架上的摺好衣服
@@ -7471,10 +7981,11 @@ function drawStylistRoom(now) {
     }
   }
   ob('#c98f62', '#8c5b3c', 3 * T, 4 * T + 3, 3 * T, T - 3); r('#e8b27a', 3 * T, 4 * T + 3, 3 * T, 2);   // 櫃檯
-  if (fit) { ob('#ff9bb3', '#d4688a', 3 * T + 3, 4 * T, 8, 4); } else { r('#6a7a8a', 5 * T + 4, 4 * T + 1, 1, 4); r('#6a7a8a', 5 * T + 6, 4 * T + 1, 1, 4); }
+  if (furn) { ob('#ffd34d', '#b8932a', 3 * T + 3, 4 * T, 6, 4); rr('#7fd08a', 5 * T + 6, 4 * T - 1, 7, 5); } else if (fit) { ob('#ff9bb3', '#d4688a', 3 * T + 3, 4 * T, 8, 4); } else { r('#6a7a8a', 5 * T + 4, 4 * T + 1, 1, 4); r('#6a7a8a', 5 * T + 6, 4 * T + 1, 1, 4); }
   [[1, 5], [8, 5]].forEach(([tx, ty]) => {
     const px = tx * T, py = ty * T;
-    if (fit) { r('#9b6a44', px + 7, py + 8, 2, 7); r('#9b6a44', px + 4, py + 14, 8, 2); ob(OUTFITS[tx % OUTFITS.length], '#8a5a44', px + 4, py + 2, 8, 7); r('#f6c9a0', px + 6, py, 4, 3); }
+    if (furn) { try { (tx === 1 ? FURN.plant : FURN.chair)(px, py, now); } catch (e) { /* 略過 */ } }
+    else if (fit) { r('#9b6a44', px + 7, py + 8, 2, 7); r('#9b6a44', px + 4, py + 14, 8, 2); ob(OUTFITS[tx % OUTFITS.length], '#8a5a44', px + 4, py + 2, 8, 7); r('#f6c9a0', px + 6, py, 4, 3); }
     else { ob('#e26b88', '#9b3f5a', px + 3, py + 4, 10, 8); ob('#e26b88', '#9b3f5a', px + 3, py + 1, 10, 4); r('#6a7a8a', px + 7, py + 12, 2, 3); r('#6a7a8a', px + 4, py + 14, 8, 2); }
   });
   ob('#fff0d4', '#9b6a44', 4 * T + 1, (H - 1) * T - 1, 2 * T - 2, T + 1); r('#9b6a44', 5 * T, (H - 1) * T, 1, T);   // 門
@@ -7812,7 +8323,7 @@ const wakeUI = () => { lastInputAt = performance.now(); };
 function idleTick(now) {
   chatTick();
   /* 商店、背包、圖鑑這些全頁視窗打開時，把搖桿、動作鈕、工具列、選單把手都藏起來，才不會蓋住視窗底下的按鈕 */
-  const modal = imm && (lkOpen || bdOpen || ckOpen || rcOpen || mcOpen || dgOpen || lvOpen || cdOpen || dexOpen || qOpen || dsOpen || stOpen || trOpen || frOpen || mlOpen || bagOpen || shopOpen || makerOpen || authOpen || vmOpen || gmOpen || fOpen || syOpen);
+  const modal = imm && (lkOpen || bdOpen || ckOpen || rcOpen || mcOpen || dgOpen || lvOpen || cdOpen || dexOpen || qOpen || dsOpen || pnOpen || stOpen || trOpen || frOpen || mlOpen || bagOpen || shopOpen || makerOpen || authOpen || vmOpen || gmOpen || fOpen || syOpen);
   if (modal !== document.body.classList.contains('modal')) document.body.classList.toggle('modal', modal);
   const idle = imm && !sheetOpen && !pressed.length && now - lastInputAt > 3000;
   if (idle !== document.body.classList.contains('idle')) document.body.classList.toggle('idle', idle);
