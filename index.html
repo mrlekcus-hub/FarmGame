@@ -227,15 +227,33 @@ kbd{font:600 12px/1 var(--f-display);color:var(--ink);background:var(--panel);pa
 .maker-card h2{margin:0;text-align:center;font:800 24px/1.2 var(--f-display);color:var(--pink-deep);letter-spacing:.08em}
 .pn-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:center}
 .pn-row .btn[aria-pressed=true]{background:var(--pink-deep);color:#fff;border-color:var(--pink-deep)}
-.pn-sc{font:700 13px/1.2 var(--f-display);color:var(--ink);min-width:7em;text-align:center}
+.pn-sc{font:700 13px/1.2 var(--f-display);color:var(--ink);min-width:5em;text-align:center}
+#pnPlay .pn-row{flex-wrap:nowrap;gap:4px}
+#pnPlay .pn-row .btn{flex:0 0 auto;white-space:nowrap;padding-inline:9px}
+#pnPlay .pn-sc{flex:1 1 0;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px}
+.pn-out{margin-left:auto;background:var(--pink);color:#fff;border-radius:999px}
 #pnCv{display:block;width:100%;height:auto;aspect-ratio:560/200;border-radius:12px;background:#2a1d3d}
 .pn-tip{text-align:center;margin:0}
-.pn-kb{position:relative;display:flex;height:130px;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+.pn-kb{position:relative;display:flex;height:180px;user-select:none;-webkit-user-select:none;touch-action:manipulation}
 .pn-w{flex:1;background:#fff;border:2px solid #4a4a58;border-top:0;border-radius:0 0 8px 8px;margin:0 1px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px;font:700 12px/1 var(--f-display);color:#8a8a98;cursor:pointer;transition:background .08s}
 .pn-b{position:absolute;top:0;width:8%;height:62%;background:#2f2f3a;border:2px solid #1c1c24;border-top:0;border-radius:0 0 6px 6px;cursor:pointer;z-index:2;transition:background .08s}
 .pn-w.on{background:#ffd3de}.pn-b.on{background:#ff8fa8}
 .pn-w.nx{box-shadow:inset 0 -12px 0 #ffd34d}.pn-b.nx{box-shadow:inset 0 -12px 0 #ffd34d}
 .pn-card [hidden]{display:none!important}
+/* 手機打橫（高度很矮）：鋼琴視窗改成緊湊版，標題、說明字收起來，譜面和琴鍵用螢幕高度的比例，才看得到全部 */
+@media (orientation:landscape) and (max-height:560px){
+  #pnm{padding-block:6px}
+  .pn-card{padding:8px 12px;gap:5px;border-width:3px;border-radius:18px;width:min(100%,calc(40vh * 2.8 + 24px))}   /* 視窗寬度跟著高度走，譜面和琴鍵同寬，音軌才會對準琴鍵 */
+  .pn-card h2{display:none}
+  .pn-card .pn-tip,.pn-card small.empty{display:none}
+  .pn-card .btn.small{padding:4px 10px;font-size:12px}
+  .pn-kb{height:30vh}
+  .pn-w{padding-bottom:2px}
+  .pn-wall{min-height:0;grid-template-columns:repeat(6,1fr);gap:6px}
+  .pn-rec{aspect-ratio:auto;padding:6px 2px}
+  .pn-disc{width:26px;height:26px}.pn-disc::after{inset:9px}
+  .pn-card>.btn.wide{padding:5px}
+}
 #pnPick{display:flex;flex-direction:column;gap:10px;border-radius:16px;padding:12px;color:#fff;background:radial-gradient(ellipse at 50% 0,#6a4a8a,#2a1d3d 78%)}
 .pn-tabs{display:flex;gap:6px}
 .pn-tabs button{font:600 12px/1 var(--f-display);padding:6px 13px;border-radius:999px;border:2px solid #6a5a8a;background:transparent;color:#d9cfe8;cursor:pointer}
@@ -292,6 +310,14 @@ kbd{font:600 12px/1 var(--f-display);color:var(--ink);background:var(--panel);pa
 .shsb{width:42px;height:38px;border-radius:12px;border:2px solid var(--edge);background:#fff;color:var(--pink-deep);font-size:22px;font-weight:800;cursor:pointer;padding:0}
 #shin{width:76px;text-align:center;font:700 18px var(--f-display);color:var(--ink);border:2px solid var(--edge);border-radius:12px;padding:6px 4px;background:#fff}
 .shsh-c{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.shsh-row{display:flex;gap:8px;align-items:center}.shsh-row .btn{flex:1;min-height:44px;margin:0;white-space:nowrap}
+.shsb{width:44px;height:44px}.shch{min-height:40px}.shr{scroll-margin-bottom:190px}
+@media (max-width:640px){
+  .shsplit{flex-direction:column;gap:6px}
+  .shrail{flex-direction:row;width:auto;position:static;gap:6px}
+  .shri{flex:1;padding:10px 0;font-size:13px}.shri b{display:inline-block;font-size:16px;margin-right:3px}
+  .shsheet{padding:8px 10px;gap:6px;border-radius:18px 18px 0 0}
+}
 .shch{border:2px solid var(--edge);background:#fff;color:var(--pink-deep);border-radius:999px;font:700 12px/1 var(--f-display);padding:6px 11px;cursor:pointer}
 .shsh-t{text-align:center;font-weight:800;font-size:14px;color:var(--ink)}
 .fsw{width:26px;height:26px;border-width:2px;position:relative}.fsw:not(.own){opacity:.8}
@@ -988,7 +1014,7 @@ for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
 }
 for (let y = 1; y <= 3; y++) for (let x = 2; x <= 6; x++) kind[y][x] = HO;
 kind[3][4] = DR;
-for (let y = 1; y <= 2; y++) for (let x = 12; x <= 15; x++) kind[y][x] = SH;
+for (let y = 3; y <= 4; y++) for (let x = 9; x <= 10; x++) kind[y][x] = SH;   // 柴犬雜貨攤（2×2，面向它按動作鍵）
 kind[4][4] = P;
 for (let x = 4; x <= 14; x++) kind[5][x] = P;
 for (let y = 3; y <= 5; y++) { kind[y][13] = P; kind[y][14] = P; }
@@ -1163,30 +1189,23 @@ function drawHouse(lit, now) {
     r('#7fd08a', ox + wx + 3, oy + 41, 2, 1); r('#7fd08a', ox + wx + 8, oy + 41, 2, 1);
   });
 }
-function drawShop(lit, now) {
-  const ox = 12 * T, oy = 1 * T;
-  r('rgba(107,72,72,.16)', ox + 2, oy + 30, 62, 3);
-  r('#8a6a62', ox, oy + 8, 64, 24);
-  r('#a58278', ox + 4, oy + 14, 56, 2);
-  const items = ['#ff8fa8', '#ffab4a', '#7fd08a', '#ff6b5e', '#ffc857', '#ff8fa8', '#7fd08a'];
-  items.forEach((c, i) => { rr(c, ox + 6 + i * 8, oy + 11, 4, 3); });
-  for (let i = 0; i < 8; i++) {
-    const c = i % 2 ? '#ffffff' : '#ff8fa8';
-    r(c, ox + i * 8, oy, 8, 9);
-    rr(c, ox + i * 8, oy + 7, 8, 5);
-  }
-  r('#e26b88', ox, oy + 12, 64, 1);
-  r('#c08a62', ox, oy + 12, 3, 20); r('#c08a62', ox + 61, oy + 12, 3, 20);
-  ob('#fff0d4', '#d9b88a', ox + 26, oy + 14, 12, 7);
-  const hp = '#ff8fa8';
-  r(hp, ox + 29, oy + 15, 2, 1); r(hp, ox + 33, oy + 15, 2, 1); r(hp, ox + 29, oy + 16, 6, 1);
-  r(hp, ox + 30, oy + 17, 4, 1); r(hp, ox + 31, oy + 18, 2, 1);
-  ob('#f9d2ae', '#d9a77a', ox + 3, oy + 21, 58, 11);
-  r('#fde6c8', ox + 5, oy + 22, 54, 2);
-  rr('#ff6b5e', ox + 8, oy + 17, 5, 5); rr('#ffab4a', ox + 15, oy + 17, 5, 5);
-  rr('#7fd08a', ox + 44, oy + 17, 5, 5); rr('#ff8fa8', ox + 51, oy + 17, 5, 5);
-  r('#ffffff', ox + 9, oy + 18, 1, 1); r('#ffffff', ox + 16, oy + 18, 1, 1); r('#ffffff', ox + 45, oy + 18, 1, 1); r('#ffffff', ox + 52, oy + 18, 1, 1);
-  if (lit) { g.globalAlpha = 0.5; rr('#ffe28a', ox + 24, oy + 12, 16, 10); g.globalAlpha = 1; }
+function drawShop(lit, now) {   // 柴犬雜貨攤：藍白洋傘、綠色櫃檯、紅圍巾小柴犬（2×2 格，在 (9,3)）
+  const ox = 9 * T, oy = 3 * T, w = Math.floor(now / 350) % 2;
+  r('rgba(107,72,72,.16)', ox + 2, oy + 30, 28, 2);
+  r('#8c5b3c', ox + 15, oy + 8, 2, 12);
+  for (let i = 0; i < 8; i++) r(i % 2 ? '#ffffff' : '#6fb7e8', ox + i * 4, oy + 3, 4, 6);
+  r('#6fb7e8', ox + 5, oy + 1, 22, 2); r('#ffffff', ox + 12, oy, 8, 1);
+  r('#e8a060', ox + 10, oy + 10, 3, 3); r('#e8a060', ox + 19, oy + 10, 3, 3); r('#f5d0b0', ox + 11, oy + 11, 1, 2); r('#f5d0b0', ox + 20, oy + 11, 1, 2);
+  rr('#e8a060', ox + 10, oy + 12, 12, 9);
+  rr('#fff0e0', ox + 13, oy + 17, 6, 4);
+  r('#2e2a35', ox + 13, oy + 15, 1, 2); r('#2e2a35', ox + 18, oy + 15, 1, 2); r('#2e2a35', ox + 15, oy + 18, 2, 1);
+  r('#e8a060', ox + 22 + w, oy + 19 - w, 2, 3);
+  r('#fff0e0', ox + 12, oy + 21, 8, 4); r('#e0453a', ox + 12, oy + 21, 8, 2); r('#e0453a', ox + 14, oy + 23, 4, 1);
+  ob('#8fbf6a', '#5f8f46', ox + 2, oy + 24, 28, 7); r('#a8d98a', ox + 4, oy + 25, 24, 1);
+  rr('#ffffff', ox + 4, oy + 20, 6, 4); r('#2e2a35', ox + 5, oy + 22, 4, 1);
+  rr('#ffffff', ox + 22, oy + 20, 6, 4); r('#2e2a35', ox + 23, oy + 22, 4, 1);
+  rr('#ff8fa8', ox + 11, oy + 24, 3, 2); rr('#ffd34d', ox + 18, oy + 24, 3, 2);
+  if (lit) { g.globalAlpha = 0.5; rr('#ffe28a', ox + 8, oy + 14, 16, 10); g.globalAlpha = 1; }
 }
 
 /* ---------- 角色（外觀可自訂） ---------- */
@@ -1874,13 +1893,13 @@ function fmtDur(s) {
 /* ---------- 地圖規則（要和 schema.sql 的 _farmable 一致） ---------- */
 /* 農場右邊多一道村莊大門，通往公共廣場 */
 const GT = 7, FR = 8, BN = 9, TS = 10, BD = 11, BR = 12, RK = 13, NP = 14, HB = 15, FG = 16, WL = 17, TG = 18;   // HB 建築 FG 小村通往農場的門 WL 水井 TG 農場通往小村的門
-const CS = 29, BS = 30, FS = 31;   // CS 裁縫鋪的門  BS 理髮店的門  FS 家具店的門（走進去是室內場景 'stylist'）
+const CS = 29, BS = 30, FS = 31, RS = 32, WK = 33;   // WK 村長家（園藝工坊）的門   // RS 牧場小屋的門（室內場景 'stylist' 的 ranch 房間）   // CS 裁縫鋪的門  BS 理髮店的門  FS 家具店的門（走進去是室內場景 'stylist'）
 const FW = 40, FE = 41, CV = 42, CW = 43, CX = 44;   // CW 山洞岩壁  CX 山洞出口   // FW 小村通往西邊森林的門  FE 森林回小村的門  CV 森林北邊的山洞入口
    // BD：委託布告欄（農場）   // TS：塔羅小攤（3×2 格，不能走進去，面向它按動作鍵占卜）
 for (let x = 15; x <= 18; x++) kind[5][x] = P;
 kind[5][19] = GT;
-/* 穀倉（右上角 2×2）、礦石（順序要和 SQL mine(0~5) 對應）、旅行商人的位置（週五六日才出現） */
-for (let y = 1; y <= 2; y++) for (let x = 16; x <= 17; x++) kind[y][x] = BR;
+/* 穀倉＋筒倉（農場上方 4×2，原本雜貨攤的位置）、礦石（順序要和 SQL mine(0~5) 對應）、旅行商人的位置（週五六日才出現） */
+for (let y = 1; y <= 2; y++) for (let x = 12; x <= 15; x++) kind[y][x] = BR;
 const ROCKS = [[3, 3], [12, 3], [5, 6], [10, 6], [3, 9], [13, 9]];   // 礦石在北邊山洞裡（順序要和 SQL mine(0~5) 對應），農場上沒有礦石
 const CAW = 16, CAH = 12;
 const cakind = Array.from({ length: CAH }, () => Array(CAW).fill(G));
@@ -1909,7 +1928,7 @@ const TOWN_BLD = [
   { x: 25, y: 3, w: 5, h: 3, t: 'furn' }        // 家具店（森林木屋），門在 (27,5)，站在 (27,6) 面向上
 ];
 TOWN_BLD.forEach(b => { for (let y = b.y; y < b.y + b.h; y++) for (let x = b.x; x < b.x + b.w; x++) tkind[y][x] = HB; });
-tkind[5][5] = CS; tkind[14][21] = BS; tkind[5][27] = FS;   // 三間店的門
+tkind[5][5] = CS; tkind[14][21] = BS; tkind[5][27] = FS; tkind[5][20] = RS; tkind[5][13] = WK;   // 三間店的門
 for (let x = 1; x <= 30; x++) tkind[11][x] = P;                               // 東西向大路
 [5, 13, 20, 27].forEach(x => { for (let y = 6; y <= 10; y++) tkind[y][x] = P; }); // 各家門前的小路
 for (let y = 10; y <= 14; y++) for (let x = 13; x <= 17; x++) tkind[y][x] = P;   // 中央小廣場
@@ -1988,7 +2007,7 @@ const plotCap = () => lv ? PLOT_CAP[Math.min(lv.pl, 10) - 1] : 999;
 const nextCap = () => lv && lv.pl < 10 ? PLOT_CAP[lv.pl] : 0;
 const farmable = (x, y) => farmBase(x, y);
 const walkable = (x, y) => x >= 0 && y >= 0 && x < W && y < H &&
-  (K[y][x] === G || K[y][x] === P) && (scene !== 'house' || !houseBlocked(x, y)) && !(scene === 'town' && x === MXT && y === MYT && merchantHere()) && !(scene === 'farm' && yardBlocks(x, y));
+  (K[y][x] === G || K[y][x] === P) && (scene !== 'house' || !houseBlocked(x, y)) && !(scene === 'town' && (x === MXT || x === MXT + 1) && y === MYT && merchantHere()) && !(scene === 'farm' && yardBlocks(x, y));
 function tryMove(dir) {
   const d = DIRS[dir];
   pl.face = dir;
@@ -2011,7 +2030,7 @@ const ERR = {
   village_full: '這個村莊已經滿 8 人了', bad_village_code: '村莊邀請碼要 6 個字元', bad_mode: '操作不對', look_locked: '這個造型還沒買', fit_not_today: '這件衣服今天沒有上架，明天再來看看', bad_color: '沒有這個顏色', use_buy_fit: '這件衣服要在裁縫鋪按顏色購買', too_fast: '別急，再等一下', max_rod: '已經是最高級的釣竿了', no_user: '找不到這位玩家', bond_locked: '友情等級還不夠，這個動作還沒解鎖', no_pending: '對方的邀請已經過期了', bad_act: '沒有這個動作', friend_self: '不能加自己為好友', already_friends: '已經是好友了', already_sent: '已經送出過申請了，等對方回覆吧', too_many_requests: '送出的申請太多了，先等對方回覆吧', friend_full: '你的好友已經滿了', target_full: '對方的好友已經滿了', no_request: '這個申請已經不存在了', bad_fish: '沒有這種魚', bad_bug: '沒有這種蟲', bug_gone: '這隻已經飛走了', nothing_to_claim: '現在沒有可以領的獎勵', not_friend: '只能拜訪好友的家', bad_slot: '這個格子不能用', bad_msg: '信的內容要 1～200 字', mail_limit: '今天寄太多了，明天再寄吧（一天最多 30 張）', no_item: '找不到這個家具', bad_item: '這個家具不能這樣用', cannot_place: '這裡放不下', house_full: '家裡的家具太多了',
   no_kitchen: '家裡要先擺一台廚房灶台才能做料理', not_enough_items: '材料不夠', bad_recipe: '沒有這道料理', not_edible: '這道菜不能吃，拿去賣或交委託吧', no_dish: '背包裡沒有這道料理了',
   order_done: '這張委託已經完成了', bad_order: '沒有這張委託', max_tool: '已經是最高等級了', bad_tool: '沒有這種工具',
-  no_hay: '沒有乾草了，到雜貨攤買', nothing_to_feed: '動物都吃飽了', nothing_to_collect: '現在沒有可以收的', barn_full: '穀倉住滿了（玩家升級會變大）', rock_busy: '這顆礦石還在恢復', sold_out: '今天已經買過或賣滿了', not_on_sale: '這件家具今天沒有上架', merchant_away: '旅行商人今天不在', already_fert: '已經施過肥了', story_end: '故事暫時告一段落，之後還會有新章節', yard_full: '庭院已經擺滿 60 件了', cannot_sell: '這個不能賣', visit_closed: '現在不方便拜訪', block_full: '黑名單最多 20 人', table_full: '桌上放不下了（一格最多 10 份）', eat_limit: '今天吃了太多份了，明天再來吧', buff_full: '這個效果已經滿 60 分鐘了，晚點再吃'
+  no_hay: '沒有乾草了，到村裡的牧場小屋買', nothing_to_feed: '動物都吃飽了', nothing_to_collect: '現在沒有可以收的', barn_full: '穀倉住滿了（玩家升級會變大）', rock_busy: '這顆礦石還在恢復', sold_out: '今天已經買過或賣滿了', not_on_sale: '這件家具今天沒有上架', merchant_away: '旅行商人今天不在', already_fert: '已經施過肥了', story_end: '故事暫時告一段落，之後還會有新章節', yard_full: '庭院已經擺滿 60 件了', cannot_sell: '這個不能賣', visit_closed: '現在不方便拜訪', block_full: '黑名單最多 20 人', table_full: '桌上放不下了（一格最多 10 份）', eat_limit: '今天吃了太多份了，明天再來吧', buff_full: '這個效果已經滿 60 分鐘了，晚點再吃'
 };
 const errText = e => {
   const m = String((e && (e.message || e.msg)) || e || '');
@@ -2055,13 +2074,24 @@ function applyState(d) {
   Object.keys(MINE_FALLBACK).forEach(k => { if (!itemMeta[k]) itemMeta[k] = { key: k, price: 0, buy: 0, ...MINE_FALLBACK[k] }; });   // 伺服器的物品表沒有礦物時，用內建的中文名稱和圖示（背包才看得到）
   featNeed = { ...featNeed, ...(d.featneed || {}) };
   featNeed.mine = Math.max(featNeed.mine | 0, 4); featNeed.cave = Math.max(featNeed.cave | 0, 4);   // 山洞、採礦至少玩家 Lv.4（伺服器舊值較低也以這裡為準）
-  fishRec = d.fishrec || {}; ycat = d.ycat || []; storyDone = d.story | 0;
+  fishRec = d.fishrec || {}; if (Array.isArray(d.ycat) && d.ycat.length) ycat = d.ycat; storyDone = d.story | 0;
   yardMap = new Map(); (d.yard || []).forEach(q => yardMap.set(pk(q.x, q.y), q.k));
   forPool = d.forage || []; forTaken = new Set(d.foragetaken || []); fgSlot = -1; rocksAt = d.rocks || {};
   if (!d.rocks) loadRocks();   // get_state 沒回傳礦石冷卻時，另外向伺服器讀（rock_list）
   inv = d.inv || {};
   plots = new Map();
   (d.plots || []).forEach(j => plots.set(pk(j.x, j.y), fromServer(j)));
+  if (!Array.isArray(d.ycat)) loadYard();   // 伺服器的 get_state 沒回傳庭院目錄／已擺放的裝飾時，另外向 yard_state 讀
+}
+let yardLoading = null;
+function loadYard() {
+  if (yardLoading) return yardLoading;
+  yardLoading = rpc('yard_state').then(d => {
+    if (Array.isArray(d.ycat)) ycat = d.ycat;
+    yardMap = new Map(); (d.yard || []).forEach(q => yardMap.set(pk(q.x, q.y), q.k));
+    if (shopOpen) renderShop();
+  }).catch(e => { console.warn('yard_state', e); }).finally(() => { yardLoading = null; });
+  return yardLoading;
 }
 async function resync() {
   if (pending > 0) { resyncWanted = true; return; }
@@ -2214,7 +2244,10 @@ function act() {
 /* ---------- 雜貨攤（等伺服器確認才更新） ---------- */
 const shopEl = $('shop'), shopCard = $('shopcard');
 let shopBusy = false;
-function openShop() { shopOpen = true; pressed.length = 0; renderShop(); shopEl.hidden = false; shopCard.focus(); }
+let shopMode = 'store';
+const shopCats = () => SHOP_CATS.filter(c => shopMode === 'work' ? (c[0] === 'yard' || c[0] === 'up') : (c[0] === 'seed' || c[0] === 'sell'));
+function openShop(mode) { shopMode = mode === 'work' ? 'work' : 'store'; if (!shopCats().some(c => c[0] === shopCat)) { shopCat = shopMode === 'work' ? 'yard' : 'sell'; shopSel = ''; } shopOpen = true; pressed.length = 0; renderShop(); shopEl.hidden = false; shopCard.focus();
+  if (shopMode === 'work' && !ycat.length) loadYard(); }
 function closeShop() { shopOpen = false; shopEl.hidden = true; }
 /* 賣出提示：今天已經賣了幾隻、這次賣會不會降價 */
 function satNote(sd, n, price, val) {
@@ -2224,7 +2257,7 @@ function satNote(sd, n, price, val) {
 /* ---- 雜貨攤：左側分類＋底部數量面板 ---- */
 let shopCat = 'sell', shopSel = '', shopView = null;
 const shopQ = {};
-const SHOP_CATS = [['seed', '🌱', '種子'], ['sup', '🌾', '補給'], ['yard', '🏡', '庭院'], ['sell', '💰', '賣出'], ['up', '🔧', '升級']];
+const SHOP_CATS = [['seed', '🌱', '種子'], ['yard', '🏡', '庭院'], ['sell', '💰', '賣出'], ['up', '🔧', '升級']];
 function shopItems(cat) {
   const out = [];
   if (cat === 'seed') KEYS.forEach(k => {
@@ -2233,12 +2266,12 @@ function shopItems(cat) {
       sub: fmtDur(growSec(k)) + '成熟 · 每個賣 ' + cropPrice(k) + ' G' + seasonTag(k) + ' · 持有 ' + have('s:' + k),
       lock: cropLocked(k) ? '農耕 Lv.' + CROP_NEED[k] + ' 解鎖' : '' });
   });
-  else if (cat === 'sup') ['a:hay', 'x:fert'].filter(k => itemMeta[k] && itemMeta[k].buy > 0).forEach(k => {
+  else if (cat === 'sup') ['x:fert'].filter(k => itemMeta[k] && itemMeta[k].buy > 0).forEach(k => {
     const m = itemMeta[k];
     out.push({ id: k, a: 'buym', c: k, name: m.name, price: m.buy, misc: k, buy: 1, lock: '',
       sub: (k === 'a:hay' ? '餵動物用' : '裝備後對作物施肥，更容易出銀星金星') + ' · 持有 ' + have(k) });
   });
-  else if (cat === 'yard') ycat.forEach(c => {
+  else if (cat === 'yard') (ycat.length ? ycat : []).forEach(c => {
     const need = Math.max(c.need, featNeed.yard);
     out.push({ id: 'y:' + c.key, a: 'buyy', c: c.key, name: c.name, price: c.price, yard: c.key, buy: 1,
       sub: (c.walk ? '可以走上去' : '會擋路') + (c.light ? '，晚上會亮' : '') + ' · 持有 ' + have('y:' + c.key),
@@ -2298,7 +2331,7 @@ function renderShop() {
   if (cur) { const mx = shopMax(cur, coins); shopQ[cur.id] = Math.max(1, Math.min(mx, shopQ[cur.id] | 0 || 1)); shopView = { it: cur, max: mx, coins }; } else shopView = null;
   let sellKinds = 0, grand = 0;
   { const sl = shopCat === 'sell' ? list : shopItems('sell'); sellKinds = sl.length; sl.forEach(it => { grand += shopTotal(it, it.stock); }); }
-  const rail = SHOP_CATS.map(c => '<button type="button" class="shri" data-cat="' + c[0] + '" aria-pressed="' + (c[0] === shopCat) + '"><b>' + c[1] + '</b>' + c[2] + (c[0] === 'sell' && sellKinds ? '<span class="shn">' + sellKinds + '</span>' : '') + '</button>').join('');
+  const rail = shopCats().map(c => '<button type="button" class="shri" data-cat="' + c[0] + '" aria-pressed="' + (c[0] === shopCat) + '"><b>' + c[1] + '</b>' + c[2] + (c[0] === 'sell' && sellKinds ? '<span class="shn">' + sellKinds + '</span>' : '') + '</button>').join('');
   let main = '';
   if (shopCat === 'up') main = '<h3>釣竿</h3>' + rodRow + '<h3>鋤頭與水壺</h3>' + toolRows;
   else {
@@ -2311,15 +2344,15 @@ function renderShop() {
   if (shopCat !== 'up' && cur) {
     const q = shopQ[cur.id], mx = shopView.max, tot = shopTotal(cur, q);
     const chips = [1, 10, 50].filter(n => n < mx).concat([mx]).map((n, i, arr) => '<button type="button" class="shch" data-sq="=' + n + '">' + (i === arr.length - 1 ? (cur.buy ? '最大 ' : '全賣 ') + n : n) + '</button>').join('');
-    sheet = '<div class="shsheet"><div class="shsh-h">' + shopIcon(cur) + '<b>' + esc(cur.name) + '</b><small>' + (cur.buy ? '每個 ' + cur.price + ' G' : '有 ' + cur.stock + ' 個') + '</small></div>' +
-      '<input type="range" id="shrg" min="1" max="' + mx + '" value="' + q + '" aria-label="數量">' +
-      '<div class="shsh-q"><button type="button" class="shsb" data-sq="-1">−</button><input type="number" id="shin" min="1" max="' + mx + '" value="' + q + '" inputmode="numeric" aria-label="數量"><button type="button" class="shsb" data-sq="+1">＋</button></div>' +
-      '<div class="shsh-c">' + chips + '</div><div class="shsh-t" id="shtot">合計 ' + tot + ' G</div>' +
-      '<button type="button" class="btn wide" id="shgo" data-a="' + cur.a + '" data-c="' + esc(cur.c) + '" data-n="' + q + '"' + (shopBusy || cur.lock || (cur.buy && tot > coins) ? ' disabled' : '') + '>' + shopActLabel(shopView, q, tot) + '</button></div>';
+    sheet = '<div class="shsheet"><div class="shsh-h">' + shopIcon(cur) + '<b>' + esc(cur.name) + '</b><small>' + (cur.buy ? '每個 ' + cur.price + ' G · 最多 ' + mx : '有 ' + cur.stock + ' 個') + '</small></div>' +
+      '<div class="shsh-row"><div class="shsh-q"><button type="button" class="shsb" data-sq="-1">−</button><input type="number" id="shin" min="1" max="' + mx + '" value="' + q + '" inputmode="numeric" aria-label="數量"><button type="button" class="shsb" data-sq="+1">＋</button></div>' +
+      '<button type="button" class="btn" id="shgo" data-a="' + cur.a + '" data-c="' + esc(cur.c) + '" data-n="' + q + '"' + (shopBusy || cur.lock || (cur.buy && tot > coins) ? ' disabled' : '') + '>' + shopActLabel(shopView, q, tot) + '</button></div>' +
+      '<div class="shsh-c">' + chips + '</div></div>';
   }
-  shopCard.innerHTML = '<div class="shop-h"><h2>雜貨攤</h2><span class="chip gold">' + coins + ' G</span></div>' +
+  shopCard.innerHTML = '<div class="shop-h"><h2>' + (shopMode === 'work' ? '園藝工坊' : '雜貨攤') + '</h2><span class="chip gold">' + coins + ' G</span></div>' +
     '<div class="shsplit"><div class="shrail">' + rail + '</div><div class="shmain">' + main + '</div></div>' + sheet +
     '<button type="button" class="btn ghost wide" data-a="close">離開</button>';
+  { const sr = shopCard.querySelector('.shr.sel'); if (sr && sr.scrollIntoView) sr.scrollIntoView({ block: 'nearest' }); }   // 選中的商品留在小抽屜上方看得到
   shopCard.querySelectorAll('canvas[data-fish]').forEach(cv => drawFish(cv.getContext('2d'), cv.dataset.fish, false));
   shopCard.querySelectorAll('canvas[data-bug]').forEach(cv => drawBug(cv.getContext('2d'), cv.dataset.bug, false));
   shopCard.querySelectorAll('canvas[data-yard]').forEach(cv => yardIcon(cv.getContext('2d'), cv.dataset.yard));
@@ -2424,9 +2457,11 @@ function townAct(x, y) {
   if (k === CS) { enterStylist('fit'); return; }
   if (k === BS) { enterStylist('hair'); return; }
   if (k === FS) { enterStylist('furn'); return; }
+  if (k === RS) { enterStylist('ranch'); return; }
+  if (k === WK) { enterStylist('work'); return; }
   if (k === NP) { openNpc(NPCS.indexOf(npcAt(x, y))); return; }
   if (k === BD) { openBoard(); return; }
-  if (x === MXT && y === MYT && merchantHere()) { openMerchant(); return; }
+  if ((x === MXT || x === MXT + 1) && y === MYT && merchantHere()) { openMerchant(); return; }
   if (k === WL) { pop(x, y, '清涼的井水', '#cfe8f7'); return; }
   if (k === WA) { if (t.id === 'rod') startFish(x, y); else pop(x, y, '這是池塘（換成釣竿就能釣魚）', '#cfe8f7'); return; }
 }
@@ -2553,7 +2588,15 @@ function drawBldg(b, now, lit) {
   ob(P_.roof, P_.ro, ox, oy + 2, w, (h >> 1) + 4);
   for (let y = 6; y < (h >> 1); y += 5) for (let x = (y % 2) * 4 + 4; x < w - 4; x += 8) r(P_.dot, ox + x, oy + y, 2, 2);
   ob('#c08a62', '#8c5b3c', dx - 6, oy + h - 16, 12, 16); r('#d9a378', dx - 4, oy + h - 14, 8, 14);
-  if (b.t === 'ranch') { r('#ffffff', dx - 4, oy + h - 9, 8, 1); r('#ffffff', dx - 1, oy + h - 14, 1, 14); }
+  if (b.t === 'ranch') {   // 外觀 B：穀倉風（拉高的屋頂、閣樓乾草窗、風向雞、白色 X 大木門）
+    const vb = Math.floor(now / 600) % 2;
+    ob(P_.roof, P_.ro, ox + 12, oy - 6, 56, 12);
+    for (let x = 16; x < 64; x += 8) r(P_.dot, ox + x, oy - 3 + (x / 8 % 2) * 4, 2, 2);
+    ob('#c9584a', '#8a2e26', dx - 6, oy - 2, 12, 10); ob('#e8c070', '#a8802a', dx - 4, oy, 8, 6); r('#c9984a', dx - 2, oy + 3, 4, 1);
+    r('#5e3a24', dx, oy - 14, 1, 9); r('#e8453c', dx - 2, oy - 17 + vb, 4, 3); r('#ffb62e', dx - 3, oy - 16 + vb, 1, 1);
+    ob('#e8d4a8', '#8c5b3c', dx - 10, oy + h - 18, 20, 18); r('#8c5b3c', dx, oy + h - 18, 1, 18); r('#ffffff', dx - 8, oy + h - 16, 16, 1);
+    for (let i = 0; i < 8; i++) { r('#ffffff', dx - 9 + i * 2, oy + h - 17 + i * 2, 2, 1); r('#ffffff', dx + 8 - i * 2, oy + h - 17 + i * 2, 2, 1); }
+  }
   const win = lit ? '#fff3b0' : '#cfe8f7';
   ob(win, '#7aa8c8', ox + 8, oy + (h >> 1) + 4, 9, 8); ob(win, '#7aa8c8', ox + w - 17, oy + (h >> 1) + 4, 9, 8);
   if (b.sign || b.t === 'salon') {                  // 店的招牌
@@ -2561,6 +2604,11 @@ function drawBldg(b, now, lit) {
     ob('#fffaf0', '#c9a37a', dx - 6, oy + 7, 12, 9);
     if (b.t === 'salon') { [[-3, 9], [2, 9], [-2, 10], [1, 10], [-1, 11], [0, 11], [-2, 12], [1, 12], [-3, 13], [2, 13]].forEach(([a, c]) => r(sc, dx + a, oy + c, 1, 1)); }
     else { r(sc, dx - 4, oy + 9, 3, 1); r(sc, dx + 1, oy + 9, 3, 1); r(sc, dx - 4, oy + 10, 8, 1); r(sc, dx - 3, oy + 11, 6, 3); }
+  }
+  if (b.t === 'chief') {   // 園藝工坊外觀 A：鋤頭招牌、窗邊花箱、門邊水壺
+    ob('#fffaf0', '#c9a37a', dx - 6, oy + 7, 12, 9); r('#8c5b3c', dx, oy + 9, 1, 6); r('#7a8590', dx - 3, oy + 9, 6, 2);
+    [ox + 7, ox + w - 18].forEach((bx, i) => { r('#9b6a44', bx, oy + (h >> 1) + 13, 11, 3); r(i ? '#ffd34d' : '#ff8fa8', bx + 1, oy + (h >> 1) + 11, 2, 2); r(i ? '#ff8fa8' : '#ffd34d', bx + 5, oy + (h >> 1) + 11, 2, 2); r(i ? '#ffd34d' : '#ff8fa8', bx + 8, oy + (h >> 1) + 11, 2, 2); });
+    ob('#6fb7e8', '#3f7fae', dx + 8, oy + h - 8, 5, 4);
   }
   if (b.t === 'chief') { ob('#e9a98b', '#c97f6a', ox + w - 14, oy - 4, 7, 9); for (let i = 0; i < 2; i++) { const ph = ((now / 1100) + i / 2) % 1; g.globalAlpha = .8 * (1 - ph); rr('#ffffff', ox + w - 13 + Math.round(Math.sin(ph * 6 + i) * 2), oy - 7 - Math.round(ph * 10), 4, 3); } g.globalAlpha = 1; }
 }
@@ -2576,7 +2624,20 @@ const NPC_LOOK = {
   jian: { hair: '#2f2a33', hat: null, cloth: '#8fd3c0' },
   mu:   { hair: '#7a5a3a', hat: '#7fc48a', cloth: '#c9955f', beard: true }
 };
+/* 旅行商人 米羅（選項 I：捲毯背包客）：背包頂上綁著花紋地毯捲，紅帽插白羽毛 */
+function miloArt(px, py, bob) {
+  const o = 'rgba(90,60,40,.55)', b = bob;
+  r('rgba(90,60,40,.18)', px + 3, py + 14, 10, 2);
+  ob('#b05a4a', '#7a3428', px, py + 6 + b, 5, 9);
+  ob('#e8c070', '#a8802a', px, py + 3 + b, 5, 4); r('#c9584a', px + 1, py + 4 + b, 3, 1); r('#6a9ac4', px + 1, py + 5 + b, 3, 1);
+  ob('#6a9ac4', o, px + 4, py + 9 + b, 8, 6);
+  ob('#ffe0c4', o, px + 4, py + 3 + b, 8, 7);
+  r('#3a2a2a', px + 4, py + 3 + b, 8, 2); r('#3a2a2a', px + 4, py + 3 + b, 1, 5); r('#3a2a2a', px + 11, py + 3 + b, 1, 5);
+  r('#4a3a3a', px + 6, py + 7 + b, 1, 1); r('#4a3a3a', px + 9, py + 7 + b, 1, 1); r('#ff9ab0', px + 7, py + 9 + b, 2, 1);
+  ob('#c9584a', '#8a2e26', px + 3, py + b, 10, 4); r('#ffffff', px + 12, py + b, 1, 3); r('#ffffff', px + 13, py + 1 + b, 1, 2);
+}
 function npcArt(px, py, key, bob) {
+  if (key === 'milo') { miloArt(px, py, bob); return; }
   const L = NPC_LOOK[key] || NPC_LOOK.oak, o = 'rgba(90,60,40,.55)';
   r('rgba(90,60,40,.18)', px + 3, py + 14, 10, 2);
   ob(L.cloth, o, px + 4, py + 9 + bob, 8, 6);
@@ -2717,7 +2778,7 @@ function yardAct(x, y) {
   }
   const mine = Object.keys(inv).filter(k => /^y:/.test(k) && inv[k] > 0);
   let key = yardSel && have('y:' + yardSel) > 0 ? yardSel : (mine[0] || '').slice(2);
-  if (!key) { pop(x, y, '沒有庭院裝飾，去雜貨攤買', '#ffb3a8'); return; }
+  if (!key) { pop(x, y, '沒有庭院裝飾，去村長家的園藝工坊買', '#ffb3a8'); return; }
   if (!yardOkLocal(x, y)) { pop(x, y, '這裡不能擺（要空草地，不含田地區）', '#ffb3a8'); return; }
   yardMap.set(pk(x, y), key); inv['y:' + key] = have('y:' + key) - 1;
   pop(x, y, '擺上' + itemName('y:' + key), '#c9f0a8'); dust(x, y);
@@ -2757,15 +2818,20 @@ function miscPrice(key) {
 }
 
 /* ---------- 建物與地標：穀倉、礦石、旅行商人的攤位 ---------- */
-function drawBarn(now) {
-  const ox = 16 * T, oy = 1 * T;
-  r('rgba(107,72,72,.16)', ox + 2, oy + 30, 28, 2);
-  ob('#e0786a', '#9b3f3a', ox + 1, oy + 8, 30, 23);
-  r('#f4a090', ox + 3, oy + 10, 26, 2);
-  ob('#9b6a44', '#6e4a2e', ox, oy + 1, 32, 9); r('#b88458', ox + 3, oy + 3, 26, 2);
-  ob('#fff0d4', '#9b6a44', ox + 10, oy + 16, 12, 15);
-  r('#9b6a44', ox + 15, oy + 17, 2, 14); r('#9b6a44', ox + 11, oy + 22, 10, 2);
-  ob('#ffe9a8', '#9b6a44', ox + 13, oy + 4, 6, 4);
+function drawBarn(now) {   // 穀倉＋筒倉（4×2 格，在 (12,1)）：左邊三格是穀倉，右邊一格是筒倉
+  const ox = 12 * T, oy = 1 * T;
+  r('rgba(107,72,72,.16)', ox + 2, oy + 30, 60, 2);
+  ob('#e0786a', '#9b3f3a', ox + 1, oy + 8, 46, 23);
+  r('#f4a090', ox + 3, oy + 10, 42, 2);
+  ob('#9b6a44', '#6e4a2e', ox, oy + 1, 48, 9); r('#b88458', ox + 3, oy + 3, 42, 2);
+  ob('#fff0d4', '#9b6a44', ox + 17, oy + 16, 14, 15);
+  r('#9b6a44', ox + 23, oy + 17, 2, 14); r('#9b6a44', ox + 18, oy + 22, 12, 2);
+  ob('#ffe9a8', '#9b6a44', ox + 21, oy + 4, 6, 4);
+  ob('#e8c070', '#b8923e', ox + 34, oy + 25, 6, 6); ob('#f5e6c8', '#b8923e', ox + 40, oy + 26, 5, 5);
+  ob('#c9c3b8', '#8d877c', ox + 49, oy + 8, 14, 23);
+  rr('#8d877c', ox + 48, oy + 3, 16, 7); r('#a8a39a', ox + 51, oy + 4, 4, 1);
+  r('#8d877c', ox + 49, oy + 15, 14, 1); r('#8d877c', ox + 49, oy + 22, 14, 1);
+  r('#7a8590', ox + 53, oy + 25, 6, 6);
   const bob = Math.floor(now / 400) % 2;
   r('#ffffff', ox + 3, oy + 26 - bob, 3, 3); r('#ffd34d', ox + 6, oy + 28, 1, 1);
 }
@@ -2840,7 +2906,7 @@ function fertAct(x, y, p) {
   if (!p || !p.crop) { pop(x, y, '先種下作物再施肥', '#ffffff'); return; }
   if (p.fert) { pop(x, y, '已經施過肥了', '#ffffff'); return; }
   const kd = have('x:fert') > 0 ? 1 : have('x:fert2') > 0 ? 2 : 0;
-  if (!kd) { pop(x, y, '沒有肥料，去雜貨攤或找旅行商人', '#ffb3a8'); return; }
+  if (!kd) { pop(x, y, '沒有肥料，找旅行商人買', '#ffb3a8'); return; }
   const ik = kd === 2 ? 'x:fert2' : 'x:fert';
   inv[ik] = have(ik) - 1; p.fert = kd;
   sparkle(x, y, '#c9a15a'); pop(x, y, '施肥！', '#c9f0a8');
@@ -2913,10 +2979,10 @@ async function barnDo(kd) {
   if (rcBusy || !rcData) return;
   const hungry = rcData.animals.filter(a => !a.ready).length, done = rcData.animals.filter(a => a.ready && a.ready <= srvNow()).length;
   if (kd === 'feed') {
-    if (!rcData.animals.length) { toast('還沒有動物，去告示牌買'); return; }
+    if (!rcData.animals.length) { toast('還沒有動物，去村裡的牧場小屋買'); return; }
     if (!hungry) { toast('大家都吃飽了'); return; }
-    if (have('a:hay') < 1) { toast('沒有乾草，去雜貨攤買'); return; }
-  } else if (!done) { toast(rcData.animals.length ? '還沒有東西可以收' : '還沒有動物，去告示牌買'); return; }
+    if (have('a:hay') < 1) { toast('沒有乾草，去村裡的牧場小屋買'); return; }
+  } else if (!done) { toast(rcData.animals.length ? '還沒有東西可以收' : '還沒有動物，去村裡的牧場小屋買'); return; }
   rcBusy = true;
   try {
     const r = await enqueue(() => kd === 'feed' ? rpc('ranch_feed') : rpc('ranch_collect'));
@@ -2935,7 +3001,7 @@ function barnAct(x, y) {
   if (k === BX) { leaveBarn(); return; }
   if (k === TRG) { barnDo('feed'); return; }
   if (k === BSK) { barnDo('collect'); return; }
-  if (k === SGN) { openRanch(); return; }
+  if (k === SGN) { pop(x, y, '買雞、牛和乾草，請到小村的牧場小屋找小茉', '#fff3b0'); return; }
 }
 function drawAnimal(sp, px, py, dir, fr) {
   const X = (x, w) => px + (dir > 0 ? x : 16 - x - w), R = (c, x, y, w, h) => r(c, X(x, w), py + y, w, h);
@@ -3332,25 +3398,18 @@ async function openRanch() {
 }
 function closeRanch() { rcOpen = false; rcEl.hidden = true; }
 function renderRanch() {
-  if (!rcData) { rcCard.innerHTML = '<div class="shop-h"><h2>穀倉</h2></div><p class="empty">讀取中…</p>'; return; }
-  const d = rcData, now = srvNow(), dis = rcBusy ? ' disabled' : '', coins = me ? me.coins : 0;
+  if (!rcData) { rcCard.innerHTML = '<div class="shop-h"><h2>牧場小屋 小茉</h2></div><p class="empty">讀取中…</p>'; return; }
+  const d = rcData, now = srvNow(), dis = rcBusy ? ' disabled' : '', coins = me ? me.coins : 0, hayP = (itemMeta['a:hay'] || {}).buy || 6;
+  const pk = k => itemMeta['a:' + k] ? 'a:' + k : k;
   const nm = k => ((d.species || []).find(s => s.key === k) || { name: k }).name;
-  const hungry = d.animals.filter(a => !a.ready).length, done = d.animals.filter(a => a.ready && a.ready <= now).length;
-  const list = d.animals.length ? d.animals.map(a => {
-    const sp = (d.species || []).find(s => s.key === a.species) || {};
-    const st = !a.ready ? '肚子餓了，餵乾草才會生產' : a.ready <= now ? '可以收' + itemName(sp.product) + '了！' : '生產中，還要 ' + fmtLeft(a.ready - now);
-    return '<div class="row"><div class="meta"><b>' + esc(nm(a.species)) + '</b><small>' + st + '</small></div></div>';
-  }).join('') : '<p class="empty">還沒有動物。下面可以買。</p>';
   const buy = (d.species || []).map(s => {
     const lock = plv() < s.need, full = d.animals.length >= d.cap;
-    return '<div class="row"><div class="meta"><b>' + esc(s.name) + '</b><small>每餵一次乾草，約 ' + (+s.hours) + ' 小時後產 ' + esc(itemName(s.product)) + '（' + miscPrice(s.product) + ' G）</small></div>' +
+    return '<div class="row"><div class="meta"><b>' + esc(s.name) + '</b><small>每餵一次乾草，約 ' + (+s.hours) + ' 小時後產 ' + esc(itemName(pk(s.product))) + '（' + miscPrice(pk(s.product)) + ' G）</small></div>' +
       '<button type="button" class="btn small" data-a="buy" data-c="' + esc(s.key) + '"' + (rcBusy || lock || full || coins < s.buy ? ' disabled' : '') + '>' + (lock ? '玩家 Lv.' + s.need + ' 解鎖' : s.buy + ' G') + '</button></div>';
   }).join('');
-  rcCard.innerHTML = '<div class="shop-h"><h2>穀倉</h2><span class="chip gold">' + coins + ' G</span></div>' +
-    '<p class="empty">動物 ' + d.animals.length + '/' + d.cap + '（玩家升級會變大）· 乾草 ' + have('a:hay') + ' 把（雜貨攤買，每把 ' + ((itemMeta['a:hay'] || {}).buy || 6) + ' G）</p>' + list +
-    '<div class="v-quick"><button type="button" class="btn" data-a="feed"' + (rcBusy || !hungry || have('a:hay') < 1 ? ' disabled' : '') + '>餵食（' + hungry + ' 隻餓著）</button>' +
-    '<button type="button" class="btn" data-a="collect"' + (rcBusy || !done ? ' disabled' : '') + '>收成（' + done + ' 隻）</button></div>' +
-    '<h3>買動物</h3>' + buy + '<button type="button" class="btn ghost wide" data-a="close">離開</button>';
+  rcCard.innerHTML = '<div class="shop-h"><h2>牧場小屋 小茉</h2><span class="chip gold">' + coins + ' G</span></div>' +
+    '<h3>買乾草</h3><div class="row"><div class="meta"><b>乾草</b><small>每把 ' + hayP + ' G，拿去穀倉餵動物 · 持有 ' + have('a:hay') + ' 把</small></div><button type="button" class="btn small" data-a="hay" data-n="1"' + (rcBusy || coins < hayP ? ' disabled' : '') + '>買 1 把</button><button type="button" class="btn small" data-a="hay" data-n="5"' + (rcBusy || coins < hayP * 5 ? ' disabled' : '') + '>買 5 把</button></div>' +
+    '<h3>買動物（' + d.animals.length + '/' + d.cap + '，玩家升級會變大）</h3>' + buy + '<button type="button" class="btn ghost wide" data-a="close">離開</button>';
 }
 rcCard.addEventListener('click', async e => {
   const b = e.target.closest('button[data-a]'); if (!b || b.disabled) return;
@@ -3358,10 +3417,11 @@ rcCard.addEventListener('click', async e => {
   if (a === 'close') { closeRanch(); return; }
   rcBusy = true; renderRanch();
   try {
-    const r = await enqueue(() => a === 'feed' ? rpc('ranch_feed') : a === 'collect' ? rpc('ranch_collect') : rpc('ranch_buy', { p_species: b.dataset.c }));
+    let r = await enqueue(() => a === 'hay' ? rpc('buy_misc', { p_item: 'a:hay', p_qty: +b.dataset.n || 1 }) : a === 'feed' ? rpc('ranch_feed') : a === 'collect' ? rpc('ranch_collect') : rpc('ranch_buy', { p_species: b.dataset.c }));
     if (r.inv) Object.assign(inv, r.inv);
     if (typeof r.coins === 'number') me.coins = r.coins;
-    rcData = r; barnSync();
+    if (a === 'hay') { toast('買了乾草 ×' + (+b.dataset.n || 1)); rcData = await rpc('ranch_get'); }
+    else { rcData = r; barnSync(); }
     if (a === 'feed') toast('餵了 ' + r.fed + ' 隻');
     if (a === 'collect') toast('收成：' + Object.keys(r.got).map(k => itemName(k) + ' ×' + r.got[k]).join('、'));
     if (a === 'buy') toast('買了一隻' + (((r.species || []).find(s => s.key === b.dataset.c) || {}).name || '動物'));
@@ -3394,8 +3454,9 @@ function renderMerchant() {
   const want = '<div class="row"><canvas class="fico" width="16" height="16" data-mi="' + esc(w.item) + '"></canvas><div class="meta"><b>今天高價收：' + esc(itemName(w.item)) + '</b><small>每個 ' + w.price + ' G（原價 1.6 倍）· 今天還能賣 ' + w.left + ' 個 · 持有 ' + have(w.item) + '</small></div>' +
     '<button type="button" class="btn small" data-a="sell" data-n="1"' + (mcBusy || mx < 1 ? ' disabled' : '') + '>賣 1 個</button>' +
     '<button type="button" class="btn small" data-a="sell" data-n="' + mx + '"' + (mcBusy || mx < 2 ? ' disabled' : '') + '>全賣 ' + mx + ' 個</button></div>';
-  mcCard.innerHTML = '<div class="shop-h"><h2>旅行商人 米羅</h2><span class="chip gold">' + coins + ' G</span></div><p class="empty">米羅：「走過路過別錯過，都是遠方帶來的好東西！」</p><h3>今天的商品</h3>' + offers + '<h3>高價收購</h3>' + want +
+  mcCard.innerHTML = '<div class="shop-h"><canvas class="fico" width="16" height="16" data-milo="1"></canvas><h2>旅行商人 米羅</h2><span class="chip gold">' + coins + ' G</span></div><p class="empty">米羅：「走過路過別錯過，都是遠方帶來的好東西！」</p><h3>今天的商品</h3>' + offers + '<h3>高價收購</h3>' + want +
     '<button type="button" class="btn ghost wide" data-a="close">離開</button>';
+  mcCard.querySelectorAll('canvas[data-milo]').forEach(cv => npcIcon(cv.getContext('2d'), 'milo'));
   mcCard.querySelectorAll('canvas[data-mi]').forEach(cv => {
     const k = cv.dataset.mi, c2d = cv.getContext('2d');
     if (/^s:/.test(k)) drawIcon(c2d, TOOLS.findIndex(x => x.crop === k.slice(2)));
@@ -3763,7 +3824,7 @@ function bagDetail(it) {
     info = { hoe: '翻土、把空田翻回草地。', can: '替作物澆水（晴天用；下雨下雪時免澆）。', rod: '面向池塘按動作鍵釣魚。', yard: '裝備後面向農場的空草地按動作鍵，擺上背包裡的庭院裝飾；面向已擺的裝飾再按一次就收回。想擺哪一種，到背包點那個裝飾選擇。', pick: '面向農場的礦石按動作鍵敲開，掉石頭、銅礦，偶爾有水晶。每顆礦石每 2 小時恢復一次。', net: '面向草地上的蟲或蝴蝶，按動作鍵揮網。蟲蝶會隨時段和天氣不同。' }[TOOLS[+it.k].id] || '';
     a.push(equipRow(it));
     const tid = TOOLS[+it.k].id;
-    if (tid === 'hoe' || tid === 'can') info += ' 目前 Lv.' + toolLv[tid] + '：一次處理 ' + toolN(toolLv[tid]) + ' 格（面向的方向排成一直線）。到雜貨攤可以升級。';
+    if (tid === 'hoe' || tid === 'can') info += ' 目前 Lv.' + toolLv[tid] + '：一次處理 ' + toolN(toolLv[tid]) + ' 格（面向的方向排成一直線）。到小村的村長家（園藝工坊）可以升級。';
   } else if (it.t === 'seed') {
     info = fmtDur(growSec(it.k)) + '成熟（晴天要澆水，雨雪天免澆），收成後每個賣 ' + cropPrice(it.k) + ' G' + seasonTag(it.k) + '。';
     a.push(equipRow(it));
@@ -4224,13 +4285,13 @@ const TUT = [
   { t: '播種', d: '選「蘿蔔種子」（電腦按 3），面向剛翻好的土按「動作」。你一開始有 5 顆種子。', ev: 'plant' },
   { t: '澆水', d: '選「水壺」（電腦按 2），面向作物按「動作」。晴天要澆水作物才會長；下雨和下雪時會自動澆水，不用澆！', ev: 'water' },
   { t: '等它長大', d: '作物依真實時間成長（蘿蔔約 30 分鐘），關掉遊戲也會繼續長。回來看到作物成熟，面向它按「動作」就能收成。', ev: null },
-  { t: '雜貨攤', d: '走到右上角的雜貨攤前面，按「動作」：可以買種子、賣作物和魚，也能升級釣竿。', ev: 'shop' },
+  { t: '雜貨攤', d: '走到農場上方小路旁的柴犬雜貨攤前面，按「動作」：可以買種子、賣作物和魚。庭院裝飾和工具升級要到小村的村長家（園藝工坊）。', ev: 'shop' },
   { t: '釣魚', d: '選「釣竿」（電腦按 6），面向池塘按「動作」拋竿；看到紅色驚嘆號時馬上再按一次拉竿，太早或太慢魚會跑掉。', ev: 'fish' },
   { t: '回家布置', d: '走到房子的門前按「動作」進屋，換牆面和地板、布置自己的家；家具要到小村右上角的家具店買，每天上架的都不一樣。', ev: 'house' },
   { t: '雷克斯小村', d: '農場左邊（西邊）的大門通往「雷克斯小村」，村裡有居民、布告欄和旅行商人。頭上有黃色「！」的居民有故事要告訴你，走近按「動作」就能對話。', ev: null },
   { t: '布告欄與每週委託', d: '小村的布告欄每週更新一次委託，交付作物或料理可得金幣，還能拿玩家經驗。「故事」分頁會記錄劇情進度，並提示下一位該去找誰。', ev: null },
   { t: '更多工具', d: '工具列的「鎬子」可敲礦石（Lv.4 解鎖山洞與採礦）；「肥料」能提升作物品質，品質分銀星、金星，特定作物還能雜交出新品種；「庭院」工具能在農場擺放裝飾（Lv.2 解鎖）。', ev: null },
-  { t: '牧場、採集與商人', d: 'Lv.2 解鎖動物牧場：走進農場右上角的穀倉，能看到動物在裡面走動；飼料槽餵乾草、收成籃收蛋奶毛、告示牌買動物（養雞，牛 Lv.3、羊 Lv.5）。另外還有野外採集。旅行商人只在週五、六、日出現，會賣稀有東西。釣到的魚會記錄最大尺寸，在圖鑑裡看。', ev: null },
+  { t: '牧場、採集與商人', d: 'Lv.2 解鎖動物牧場：走進農場上方的穀倉，能看到動物在裡面走動；飼料槽餵乾草、收成籃收蛋奶毛；買動物和乾草要到雷克斯小村的牧場小屋找小茉（養雞，牛 Lv.3、羊 Lv.5）。另外還有野外採集。旅行商人只在週五、六、日出現，會賣稀有東西。釣到的魚會記錄最大尺寸，在圖鑑裡看。', ev: null },
   { t: '快捷列與廣場', d: '右上角的快捷列可以隨時開背包、好友、信箱（寄明信片給好友，1～10 金幣）、圖鑑、等級。農場右邊的大門通往廣場，能聊天、釣魚、交朋友。玩家等級靠每日任務和每週委託升級，詳情看「等級與解鎖」。想重看教學，點「❓教學」。', ev: null }
 ];
 const tutEl = $('tut');
@@ -4439,14 +4500,14 @@ function updateTip() {
       else if (K[y][x] === TS) s = '塔羅小攤：按動作鍵走進去，找 Lekcus 抽今天的運勢牌。';
     }
   } else if (scene === 'barn') {
-    s = '穀倉：和動物面對面按動作鍵看狀態；飼料槽餵乾草、收成籃收蛋奶毛、告示牌買動物。';
+    s = '穀倉：和動物面對面按動作鍵看狀態；飼料槽餵乾草、收成籃收蛋奶毛；買動物和乾草到小村的牧場小屋。';
     if (x >= 0 && y >= 0 && x < W && y < H) {
       const an = barnAn.find(a => Math.abs(a.x - x) < 0.8 && Math.abs(a.y - y) < 0.8), k = K[y][x];
       if (an && rcData) s = barnStatus(an);
       else if (k === BX) s = '門口：按動作鍵回農場。';
       else if (k === TRG) s = '飼料槽：按動作鍵，用乾草餵所有肚子餓的動物（乾草 ' + have('a:hay') + ' 把）。';
       else if (k === BSK) s = '收成籃：按動作鍵，收所有做好的蛋、牛奶和羊毛。';
-      else if (k === SGN) s = '告示牌：按動作鍵，買動物、看牧場總覽。';
+      else if (k === SGN) s = '告示牌：買動物和乾草請到小村的牧場小屋找小茉。';
     }
   } else if (scene === 'tarot') {
     s = '塔羅小屋：和 Lekcus 面對面按動作鍵，打招呼或抽今天的牌。';
@@ -4461,7 +4522,7 @@ function updateTip() {
     if (x >= 0 && y >= 0 && x < W && y < H) {
       const k = K[y][x];
       if (k === BX) s = '門口：按動作鍵回小村。';
-      else if (k === SYK || k === SYC) s = SHOP_STY[styRoom].clerk + '：按動作鍵說話。';
+      else if (k === SYK || k === SYC) s = (styRoom === 'ranch' ? '小茉' : styRoom === 'work' ? '橡果村長' : SHOP_STY[styRoom].clerk) + '：按動作鍵說話。';
     }
   } else if (scene === 'cave') {
     s = '山洞：礦石都在這裡，換成鎬子，面向礦石按動作鍵敲開。';
@@ -4489,12 +4550,14 @@ function updateTip() {
       else if (k === FW) s = plv() < featNeed.forest ? '西邊的出口：玩家 Lv.' + featNeed.forest + ' 才能進入森林。' : '西邊的出口：按動作鍵去森林（有蟲、有魚，北邊還有山洞）。';
       else if (k === NP) s = (npcAt(x, y) || {}).n + '：按動作鍵對話。';
       else if (k === BD) s = '委託布告欄：按動作鍵，看本週的委託和村莊故事進度。';
-      else if (x === MXT && y === MYT && merchantHere()) s = '旅行商人 米羅：按動作鍵，看今天賣什麼、收什麼。';
+      else if ((x === MXT || x === MXT + 1) && y === MYT && merchantHere()) s = '旅行商人 米羅：按動作鍵，看今天賣什麼、收什麼。';
       else if (k === WL) s = '村子的水井。';
       else if (k === WA) s = curTool().id === 'rod' ? '池塘：按動作鍵拋竿釣魚。' : '池塘。（換成釣竿就能釣魚）';
       else if (k === CS) s = '裁縫鋪：按動作鍵走進去。';
       else if (k === BS) s = '理髮店：按動作鍵走進去。';
+      else if (k === RS) s = '牧場小屋：按動作鍵走進去（買雞、牛和乾草）。';
       else if (k === FS) s = '家具店：按動作鍵走進去（家具只在這裡買，每天上架不同的）。';
+      else if (k === WK) s = '園藝工坊（村長家）：按動作鍵走進去，庭院裝飾和工具升級都在這裡。';
       else if (k === HB) s = '村民的家。';
     }
   } else if (false) {
@@ -4518,7 +4581,7 @@ function updateTip() {
     } else if (p) s = '已翻好的土' + (isWet(p) ? '，濕的' : '，乾的') + '。可以播種或澆水。';
     else if (k === GT) s = '村莊大門：去公共廣場和朋友見面。';
     else if (k === DR) s = '房子的門：按動作鍵進屋，可以布置你的家。';
-    else if (k === SH) s = '雜貨攤：買種子、賣作物。';
+    else if (k === SH) s = '柴犬雜貨攤：買種子、賣作物。';
       else if (curTool().id === 'yard' && k === G) s = yardMap.has(pk(x, y)) ? '庭院佈置：按動作鍵收回這件裝飾。' : '庭院佈置：按動作鍵在這格擺裝飾（要空草地）。';
       else if (k === TG) s = plv() < featNeed.town ? '西邊的出口：玩家 Lv.' + featNeed.town + ' 才能進入雷克斯小村。' : '西邊的出口：按動作鍵前往雷克斯小村（村民、布告欄、旅行商人都在那裡）。';
       else if (k === BR) s = plv() < featNeed.ranch ? '穀倉：玩家 Lv.' + featNeed.ranch + ' 解鎖動物牧場。' : '穀倉：按動作鍵走進去，看看養的雞、牛、羊。';
@@ -4982,14 +5045,18 @@ function renderDish() {
   const it = house && house.items.find(i => i.id === dtId); if (!it) { closeDisplay(); return; }
   const arr = house.disp[dtId] || [], mine = !visiting;
   let h = '<h2>餐桌</h2><p class="empty">' + (mine ? '擺上料理，朋友來拜訪時可以直接吃' : esc(visiting.name) + ' 的餐桌，每天最多吃 5 份') + '</p>';
+  const rcOf = k => recipes.find(x => x.key === k) || {};
+  const fx = rc => rc.buff ? (BUFF_N[rc.buff] || rc.buff) : '';
+  const onTable = {};
   for (let s = 0; s < 4; s++) {
-    const d = arr[s], has = d && d.n > 0;
-    h += '<div class="strow"><span>' + (has ? esc(dishName(d.k)) + ' ×' + d.n : '（空）') + '</span>' +
-      (has ? (mine ? '<button type="button" class="btn ghost small" data-a="take" data-s="' + s + '">收回</button>' : '<button type="button" class="btn small" data-a="eat" data-s="' + s + '">吃一份</button>') : '') + '</div>';
+    const d = arr[s], has = d && d.n > 0, rc = has ? rcOf(d.k) : {};
+    if (has) onTable[d.k] = 1;
+    h += '<div class="strow" style="flex-wrap:wrap"><span style="flex:1;min-width:120px">' + (has ? esc(dishName(d.k)) + (d.n > 1 ? ' ×' + d.n : '') + (fx(rc) ? '<small class="empty" style="display:block;color:#5c8a3a">吃了：' + esc(fx(rc)) + '</small>' : '<small class="empty" style="display:block">沒有特別效果</small>') : '（空）') + '</span>' +
+      (has ? (mine ? (rc.buff ? '<button type="button" class="btn small" data-a="selfeat" data-s="' + s + '" data-k="' + esc(d.k) + '">吃一份</button> ' : '') + '<button type="button" class="btn ghost small" data-a="take" data-s="' + s + '">收回</button>' : (rc.buff ? '<button type="button" class="btn small" data-a="eat" data-s="' + s + '">吃一份</button>' : '')) : '') + '</div>';
   }
   if (mine) {
-    const ds = recipes.filter(rc => have('dish:' + rc.key) > 0);
-    h += '<p class="empty">放上桌（一次最多 10 份）</p>' + (ds.length ? ds.map(rc => '<button type="button" class="btn ghost small" data-a="put" data-k="' + esc(rc.key) + '">' + esc(rc.name) + '（有 ' + have('dish:' + rc.key) + '）</button>').join(' ') : '<small class="empty">背包裡沒有料理，先到廚房做菜。</small>');
+    const ds = recipes.filter(rc => have('dish:' + rc.key) > 0 && !onTable[rc.key]);
+    h += '<p class="empty">放上桌（每道料理放 1 份）</p>' + (ds.length ? ds.map(rc => '<button type="button" class="btn ghost small" data-a="put" data-k="' + esc(rc.key) + '">' + esc(rc.name) + '（有 ' + have('dish:' + rc.key) + '）' + (fx(rc) ? ' · ' + esc(fx(rc)) : '') + '</button>').join(' ') : '<small class="empty">背包裡沒有可以放上桌的料理（已經在桌上的不會重複放）。</small>');
   }
   if (dtMsg) h += '<p class="empty" role="alert" style="color:#d0475f;font-weight:700">' + esc(dtMsg) + '</p>';
   dtCard.innerHTML = h + '<button type="button" class="btn wide" data-a="close">完成</button>';
@@ -5000,7 +5067,18 @@ dtCard.addEventListener('click', async e => {
   if (a === 'close') { closeDisplay(); return; }
   dtBusy = true; dtMsg = '';
   try {
-    const call = a === 'put' ? () => rpc('dish_table_put', { p_id: id, p_key: b.dataset.k, p_n: Math.min(10, have('dish:' + b.dataset.k)) })
+    if (a === 'selfeat') {   // 自己吃：先收回桌上那份，再當成背包的料理吃掉（加成和廚房的「吃一份」一樣）
+      const t = await enqueue(() => rpc('dish_table_take', { p_id: id, p_slot: s }));
+      if (t && t.inv) Object.assign(inv, t.inv);
+      const disp0 = []; ((t && t.display) || []).forEach(x => { disp0[x.s | 0] = { t: 'dish', k: String(x.k), n: x.n | 0 }; });
+      if (house) house.disp[id] = disp0;
+      const r2 = await enqueue(() => rpc('eat', { p_key: b.dataset.k }));
+      if (r2 && r2.inv) Object.assign(inv, r2.inv);
+      if (r2 && r2.buff) { buffs[r2.buff] = +r2.until; updateBuffChip(); }
+      toast('好吃！' + (r2 && r2.buff ? '（' + (BUFF_N[r2.buff] || r2.buff) + '）' : '')); chime([76, 81], 0.1);
+      refreshHud(); dtBusy = false; if (dsOpen && dtId != null) renderDish(); return;
+    }
+    const call = a === 'put' ? () => rpc('dish_table_put', { p_id: id, p_key: b.dataset.k, p_n: 1 })
       : a === 'take' ? () => rpc('dish_table_take', { p_id: id, p_slot: s }) : () => rpc('dish_table_eat', { p_id: id, p_slot: s });
     const r = await enqueue(call);
     if (!r || typeof r !== 'object') throw new Error('伺服器沒有回應內容');
@@ -5072,6 +5150,7 @@ function pnFlush() {
   try { if (net && net.ok) net.ch.send({ type: 'broadcast', event: 'pno', payload: { i: myUid, n: q.map(x => [Math.round(x.t - b), x.m]) } }); } catch (e) { /* 略過 */ }
 }
 /* 別人彈的琴：同一個世界才聽得到，4 格內全音量、再遠越來越小聲，約 16 格外聽不到 */
+let pnHeard = 0;   // 最後一次聽到附近有人彈琴的時間；3 秒內 BGM 先停，免得蓋過琴聲
 function onPno(p) {
   if (!p || typeof p !== 'object' || typeof p.i !== 'string' || p.i === myUid || !Array.isArray(p.n) || p.n.length > 8) return;
   const rp = remotes.get(p.i); if (!rp || rp.w !== worldKey()) return;
@@ -5081,6 +5160,7 @@ function onPno(p) {
   const d = Math.hypot((rp.tx != null ? rp.tx : rp.x) - pl.x, (rp.ty != null ? rp.ty : rp.y) - pl.y);
   const vol = d <= 4 ? 1 : clamp(1 - (d - 4) / 12, 0, 1);
   if (vol < 0.05) return;
+  { const was = performance.now() - pnHeard < 3000; pnHeard = now; if (!was) { try { syncBgm(); } catch (e) { /* 略過 */ } } }
   p.n.forEach(a => {
     if (!Array.isArray(a)) return;
     const dt = intIn(a[0], 0, 800, 0), m = intIn(a[1], 48, 84, -1);
@@ -5098,12 +5178,12 @@ function pnBuild() {
     '<div class="pn-wall" id="pnWall"></div>' +
     '<div class="pn-bar" id="pnBar"><span class="pn-nm" id="pnNm"></span>' + rb + '<button type="button" class="pn-go" data-a="go">彈</button></div>' +
     '<button type="button" class="pn-free" data-a="free">自由彈奏（不看樂譜）</button></div>' +
-    '<div id="pnPlay" hidden><div class="pn-row"><button type="button" class="btn small ghost" data-a="back">‹ 選曲</button>' + rb + '<button type="button" class="btn small ghost" data-a="again">↻ 重來</button><span class="pn-sc" id="pnSc"></span></div>' +
+    '<div id="pnPlay" hidden><div class="pn-row"><button type="button" class="btn small ghost" data-a="back">‹ 選曲</button>' + rb + '<button type="button" class="btn small ghost" data-a="again">↻ 重來</button><span class="pn-sc" id="pnSc"></span><button type="button" class="btn small pn-out" data-a="close">離開</button></div>' +
     '<canvas id="pnCv" width="' + PN_W + '" height="' + PN_H + '"></canvas>' +
     '<p class="empty pn-tip" id="pnTip"></p>' +
     '<div class="pn-kb" id="pnKb"></div>' +
     '<small class="empty" style="text-align:center">電腦鍵盤：A S D F G H J K L ; \' 由左到右是白鍵、上一排 W E R T Y U I O P [ 是黑鍵 · 你彈的聲音，同一間房的人也聽得到</small></div>' +
-    '<button type="button" class="btn wide" data-a="close">離開</button>';
+    '<button type="button" class="btn wide" id="pnLeave" data-a="close">離開</button>';
   pnCv = $('pnCv'); pnCx = pnCv.getContext('2d');
   pnKeys(pnW, true);
 }
@@ -5129,7 +5209,7 @@ function pnKeys(ws, force) {
 }
 function pnRefresh() {
   const v = pnS.view; pnFit();
-  $('pnPick').hidden = v !== 'pick'; $('pnPlay').hidden = v !== 'play';
+  $('pnPick').hidden = v !== 'pick'; $('pnPlay').hidden = v !== 'play'; $('pnLeave').hidden = v === 'play';
   pnCard.querySelectorAll('[data-a="tab"]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.t === pnS.tab)));
   const stars = d => '★'.repeat(d) + '☆'.repeat(3 - d), wall = $('pnWall');
   const songTab = pnS.tab === 'try' || pnS.tab === 'free';
@@ -5264,7 +5344,7 @@ function pnFit() {
   requestAnimationFrame(() => {
     if (!pnOpen) return;
     pnCard.style.zoom = '';
-    const avail = pnEl.clientHeight - 24, h = pnCard.offsetHeight;
+    const cs = getComputedStyle(pnEl), avail = pnEl.clientHeight - (parseFloat(cs.paddingTop) || 0) - (parseFloat(cs.paddingBottom) || 0) - 4, h = pnCard.offsetHeight;
     if (h > avail && avail > 0) pnCard.style.zoom = String(Math.max(0.5, avail / h * 0.97).toFixed(3));
   });
 }
@@ -6830,7 +6910,7 @@ let bgmGesture = false, bgmSig = '';
 function syncBgm() {
   if (!Music) return;
   const name = SCENE_BGM[scene], file = !!(Bgm && name && Bgm.has(name));
-  const go = musicOn && !pnOpen && (bgmGesture || authOpen);   // 彈鋼琴時 BGM 自動停，離開再接著放
+  const go = musicOn && !pnOpen && performance.now() - pnHeard >= 3000 && (bgmGesture || authOpen);   // 彈鋼琴時 BGM 自動停，離開再接著放
     // 登入畫面也放農場那首（瀏覽器擋自動播放時，第一次點擊會接著播）
   const sig = (go ? 1 : 0) + '|' + (file ? name : '') + '|' + musicVol;
   if (sig === bgmSig) return;                 // 沒變就不重複處理（這個函式每秒會被叫一次）
@@ -7945,17 +8025,30 @@ srkind[SRH - 1][4] = BX; srkind[SRH - 1][5] = BX;
 [3, 4, 5].forEach(x => { srkind[4][x] = SYC; });
 srkind[3][4] = SYK;
 srkind[5][1] = DEC; srkind[5][8] = DEC;   // 試衣模特兒／理髮椅
+/* 牧場小屋室內（展示欄型）：左邊雞牛小欄、右邊櫃檯，小茉站在 (7,3) */
+const rrkind = Array.from({ length: SRH }, () => Array(SRW).fill(G));
+for (let y = 0; y < SRH; y++) for (let x = 0; x < SRW; x++) if (y < 3 || y === SRH - 1 || x === 0 || x === SRW - 1) rrkind[y][x] = BWL;
+rrkind[SRH - 1][4] = BX; rrkind[SRH - 1][5] = BX;
+[6, 7, 8].forEach(x => { rrkind[4][x] = SYC; }); rrkind[3][7] = SYK;
+for (let y = 4; y <= 6; y++) for (let x = 1; x <= 3; x++) rrkind[y][x] = DEC;   // 雞牛的小欄
+rrkind[6][8] = DEC;                                                           // 乾草堆
+/* 園藝工坊室內（村長家）：工具牆、鐵砧、庭院燈，橡果村長站在櫃檯後面 */
+const wkkind = Array.from({ length: SRH }, () => Array(SRW).fill(G));
+for (let y = 0; y < SRH; y++) for (let x = 0; x < SRW; x++) if (y < 3 || y === SRH - 1 || x === 0 || x === SRW - 1) wkkind[y][x] = BWL;
+wkkind[SRH - 1][4] = BX; wkkind[SRH - 1][5] = BX;
+[3, 4, 5].forEach(x => { wkkind[4][x] = SYC; }); wkkind[3][4] = SYK;
+wkkind[5][1] = DEC; wkkind[5][8] = DEC;   // 鐵砧／庭院燈
 function enterStylist(kind) {
   if (scene !== 'town' || !ready || !me || paused()) return;
-  styRoom = kind; pose = null; scene = 'stylist'; K = srkind; W = SRW; H = SRH;
+  styRoom = kind; pose = null; scene = 'stylist'; K = kind === 'ranch' ? rrkind : kind === 'work' ? wkkind : srkind; W = SRW; H = SRH;
   pl.x = pl.sx = 4; pl.y = pl.sy = SRH - 2; pl.prog = 1; pl.face = 'up'; pressed.length = 0;
-  view.snap = true; fitView(); toast(kind === 'fit' ? '歡迎光臨裁縫鋪' : kind === 'furn' ? '歡迎光臨家具店' : '歡迎光臨理髮店');
+  view.snap = true; fitView(); toast(kind === 'ranch' ? '歡迎光臨牧場小屋' : kind === 'fit' ? '歡迎光臨裁縫鋪' : kind === 'furn' ? '歡迎光臨家具店' : kind === 'work' ? '歡迎光臨園藝工坊' : '歡迎光臨理髮店');
 }
 function leaveStylist(silent) {
   if (scene !== 'stylist') return;
   closeSty();
   scene = 'town'; K = tkind; W = TW; H = TH;
-  const d = styRoom === 'fit' ? [5, 6] : styRoom === 'furn' ? [27, 6] : [21, 15];
+  const d = styRoom === 'ranch' ? [20, 6] : styRoom === 'fit' ? [5, 6] : styRoom === 'furn' ? [27, 6] : styRoom === 'work' ? [13, 6] : [21, 15];
   pl.x = pl.sx = d[0]; pl.y = pl.sy = d[1]; pl.prog = 1; pl.face = 'down'; pressed.length = 0;
   view.snap = true; fitView(); if (!silent) toast('回到小村了');
 }
@@ -7964,23 +8057,54 @@ function stylistAct(x, y) {
   if (catchShown) { hideCatch(); return; }
   const k = K[y][x];
   if (k === BX) leaveStylist();
-  else if (k === SYK || k === SYC) openSty(styRoom);
-  else if (k === DEC) pop(x, y, styRoom === 'fit' ? '試衣用的模特兒' : styRoom === 'furn' ? '店裡展示用的家具' : '舒服的理髮椅', '#fff3b0');
+  else if (k === SYK || k === SYC) { if (styRoom === 'ranch') openRanch(); else if (styRoom === 'work') openShop('work'); else openSty(styRoom); }
+  else if (k === DEC) pop(x, y, styRoom === 'ranch' ? (x === 8 ? '堆得高高的乾草' : '雞和牛的小欄，隔著欄杆看看牠們') : styRoom === 'fit' ? '試衣用的模特兒' : styRoom === 'furn' ? '店裡展示用的家具' : styRoom === 'work' ? (x === 1 ? '鐵砧，鋤頭和水壺都是在這裡敲出來的' : '庭院燈的樣品，晚上會亮') : '舒服的理髮椅', '#fff3b0');
+}
+function drawRanchRoom(now) {
+  const bob = Math.floor(now / 600) % 2;
+  const hay = (x, y, w, h) => { ob('#e8c070', '#a8802a', x, y, w, h); r('#c9984a', x + 2, y + (h >> 1), w - 4, 1); };
+  const chick = (x, y, b) => { ob('#ffffff', '#b8b8b8', x, y + b, 6, 5); r('#e8453c', x + 2, y - 1 + b, 2, 2); r('#ffb62e', x - 1, y + 2 + b, 1, 1); r('#333333', x + 1, y + 1 + b, 1, 1); r('#ffb62e', x + 1, y + 5, 1, 1); r('#ffb62e', x + 4, y + 5, 1, 1); };
+  const cow = (x, y, b) => { ob('#ffffff', '#9a9aa6', x, y + b, 12, 7); r('#3a3a3a', x + 4, y + 1 + b, 3, 3); r('#3a3a3a', x + 9, y + 3 + b, 2, 2); ob('#ffffff', '#9a9aa6', x - 4, y + 1 + b, 5, 6); r('#ffb3b3', x - 4, y + 5 + b, 4, 2); r('#333333', x - 2, y + 3 + b, 1, 1); r('#e8d4a8', x - 3, y + b, 1, 2); r('#9a9aa6', x + 1, y + 7, 2, 3); r('#9a9aa6', x + 9, y + 7, 2, 3); r('#9a9aa6', x + 12, y + 1 + b, 1, 4); };
+  for (let tx = 0; tx < SRW; tx++) r('#c4915a', tx * T + 7, 0, 1, 2 * T);                                  // 木板牆
+  hay(104, 16, 16, 16); hay(120, 16, 16, 16); hay(112, 2, 16, 14);                                          // 牆邊的乾草堆
+  ob('#fffaf0', '#c9a37a', 8, 8, 18, 14); r('#ffffff', 12, 12, 4, 3); r('#e8453c', 13, 11, 2, 1); r('#ffb62e', 11, 13, 1, 1);
+  r('#ffffff', 18, 11, 5, 4); r('#333333', 19, 12, 1, 1); r('#ffb3b3', 18, 14, 3, 1);                        // 招牌：雞和牛
+  r('#e8c070', T, 4 * T, 3 * T, 3 * T);                                                                     // 小欄的稻草地
+  for (let i = 0; i < 12; i++) r('#c9984a', T + 2 + (i * 13) % 44, 4 * T + 2 + (i * 17) % 44, 3, 1);
+  chick(20, 76, bob); chick(31, 84, 1 - bob); chick(22, 94, bob); cow(46, 90, 0);
+  for (let x = 0; x <= 48; x += 8) { r('#9b6a44', T + x, 4 * T - 2, 2, 16); r('#9b6a44', T + x, 7 * T - 18, 2, 16); }
+  r('#9b6a44', T, 4 * T + 2, 3 * T, 2); r('#9b6a44', T, 7 * T - 6, 3 * T, 2); r('#9b6a44', 4 * T - 2, 4 * T, 2, 3 * T);
+  ob('#c98f62', '#8c5b3c', 6 * T, 4 * T + 3, 3 * T, T - 3); r('#e8b27a', 6 * T, 4 * T + 3, 3 * T, 2);       // 櫃檯
+  ob('#c08a62', '#8c5b3c', 6 * T + 3, 4 * T - 2, 9, 5); r('#fff6e6', 6 * T + 4, 4 * T - 4, 3, 3); r('#fff6e6', 6 * T + 8, 4 * T - 4, 3, 3);
+  ob('#d8dde6', '#8a93a3', 8 * T + 5, 4 * T - 6, 6, 9); r('#8a93a3', 8 * T + 5, 4 * T - 4, 6, 1);
+  hay(8 * T + 1, 6 * T + 4, 14, 11); ob('#e8dcc0', '#a8987a', 8 * T + 4, 6 * T - 3, 8, 9); r('#c9584a', 8 * T + 6, 6 * T, 4, 2);
+  ob('#fff0d4', '#9b6a44', 4 * T + 1, (H - 1) * T - 1, 2 * T - 2, T + 1); r('#9b6a44', 5 * T, (H - 1) * T, 1, T);   // 門
+  drawNpc(7 * T, 3 * T, 'mo', now);
 }
 function drawStylistRoom(now) {
-  const fit = styRoom === 'fit', furn = styRoom === 'furn';
-  const wall = furn ? '#d9a56c' : fit ? '#ffe3ec' : '#e3f6ec', wallD = furn ? '#a8764a' : fit ? '#f3b8cb' : '#a9d9c0', fa = furn ? '#e8c79a' : fit ? '#f6dcc0' : '#e8e3d6', fb = furn ? '#dfb98a' : fit ? '#efd2b4' : '#ddd7c8';
+  const fit = styRoom === 'fit', furn = styRoom === 'furn', ranch = styRoom === 'ranch', work = styRoom === 'work';
+  const wall = (furn || ranch || work) ? '#d9a56c' : fit ? '#ffe3ec' : '#e3f6ec', wallD = (furn || ranch || work) ? '#a8764a' : fit ? '#f3b8cb' : '#a9d9c0', fa = (furn || ranch || work) ? '#e8c79a' : fit ? '#f6dcc0' : '#e8e3d6', fb = (furn || ranch || work) ? '#dfb98a' : fit ? '#efd2b4' : '#ddd7c8';
   ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#3b2a1e'; ctx.fillRect(0, 0, cv.width, cv.height); ctx.restore();
   r('#3b2a1e', 0, 0, W * T, H * T);
   for (let ty = 0; ty < H; ty++) for (let tx = 0; tx < W; tx++) {
     const px = tx * T, py = ty * T;
     if (ty < 3) { r(wall, px, py, T, T); if (ty === 2) { r(wallD, px, py + T - 2, T, 2); } }
-    else if (srkind[ty][tx] === BWL) { r(wallD, px, py, T, T); r(shade(wallD, 0.9), px + 7, py, 1, T); }
+    else if (K[ty][tx] === BWL) { r(wallD, px, py, T, T); r(shade(wallD, 0.9), px + 7, py, 1, T); }
     else { r((tx + ty) % 2 ? fa : fb, px, py, T, T); }
   }
+  if (ranch) { drawRanchRoom(now); return; }
   for (let tx = 1; tx < W - 1; tx++) {
     const px = tx * T;
-    if (furn) {
+    if (work) {
+      r('#c9a37a', px, T + 1, T, 12);                                                       // 釘板
+      if (tx % 4 === 1) { r('#8c5b3c', px + 7, T + 2, 2, 10); r('#7a8590', px + 3, T + 2, 10, 3); }           // 鋤頭
+      else if (tx % 4 === 2) { ob('#6fb7e8', '#3f7fae', px + 3, T + 5, 9, 6); r('#3f7fae', px + 11, T + 6, 3, 1); }   // 水壺
+      else if (tx % 4 === 3) { r('#c9984a', px + 4, T + 1, 1, 12); r('#c9984a', px + 11, T + 1, 1, 12); }   // 釣竿
+      else { r('#8c5b3c', px + 7, T + 2, 2, 10); r('#7a8590', px + 4, T + 2, 8, 2); }
+      r('#a8764a', px, 2 * T + 9, T, 3);
+      if (tx % 3 === 0) { rr('#c08a62', px + 5, 2 * T + 5, 6, 4); rr('#ff8fa8', px + 4, 2 * T + 1, 8, 5); }  // 小花盆
+      else if (tx % 3 === 1) { r('#5e3a24', px + 7, 2 * T + 3, 2, 6); rr('#ffe58a', px + 4, 2 * T + 1, 8, 3); } // 小燈
+    } else if (furn) {
       if (tx % 3 === 1) { ob('#fff0d4', '#8c5b3c', px + 2, T + 2, 12, 10); r(['#ff9bb3', '#8fd3c0', '#ffd27a'][(tx / 3 | 0) % 3], px + 4, T + 4, 8, 6); }   // 掛畫
       r('#a8764a', px, 2 * T + 9, T, 3);
       if (tx % 3 === 0) { rr('#d9667f', px + 3, 2 * T + 2, 3, 7); rr('#d9667f', px + 3, 2 * T + 6, 9, 3); }                // 小椅子
@@ -7997,15 +8121,19 @@ function drawStylistRoom(now) {
     }
   }
   ob('#c98f62', '#8c5b3c', 3 * T, 4 * T + 3, 3 * T, T - 3); r('#e8b27a', 3 * T, 4 * T + 3, 3 * T, 2);   // 櫃檯
-  if (furn) { ob('#ffd34d', '#b8932a', 3 * T + 3, 4 * T, 6, 4); rr('#7fd08a', 5 * T + 6, 4 * T - 1, 7, 5); } else if (fit) { ob('#ff9bb3', '#d4688a', 3 * T + 3, 4 * T, 8, 4); } else { r('#6a7a8a', 5 * T + 4, 4 * T + 1, 1, 4); r('#6a7a8a', 5 * T + 6, 4 * T + 1, 1, 4); }
+  if (furn) { ob('#ffd34d', '#b8932a', 3 * T + 3, 4 * T, 6, 4); rr('#7fd08a', 5 * T + 6, 4 * T - 1, 7, 5); } else if (work) { ob('#7a8590', '#4a4e58', 3 * T + 3, 4 * T, 8, 4); rr('#6fb7e8', 5 * T + 6, 4 * T - 1, 7, 5); } else if (fit) { ob('#ff9bb3', '#d4688a', 3 * T + 3, 4 * T, 8, 4); } else { r('#6a7a8a', 5 * T + 4, 4 * T + 1, 1, 4); r('#6a7a8a', 5 * T + 6, 4 * T + 1, 1, 4); }
   [[1, 5], [8, 5]].forEach(([tx, ty]) => {
     const px = tx * T, py = ty * T;
-    if (furn) { try { (tx === 1 ? FURN.plant : FURN.chair)(px, py, now); } catch (e) { /* 略過 */ } }
+    if (work) {
+      if (tx === 1) { r('#3a3d46', px + 1, py + 5, 14, 3); r('#3a3d46', px + 4, py + 8, 8, 3); r('#3a3d46', px + 3, py + 11, 10, 3); r('#c9ccd6', px + 2, py + 5, 12, 1); }
+      else { r('#5e3a24', px + 7, py + 6, 2, 9); ob('#ffe58a', '#c9971a', px + 4, py + 2, 8, 5); r('#5e3a24', px + 4, py + 14, 8, 2); }
+    }
+    else if (furn) { try { (tx === 1 ? FURN.plant : FURN.chair)(px, py, now); } catch (e) { /* 略過 */ } }
     else if (fit) { r('#9b6a44', px + 7, py + 8, 2, 7); r('#9b6a44', px + 4, py + 14, 8, 2); ob(OUTFITS[tx % OUTFITS.length], '#8a5a44', px + 4, py + 2, 8, 7); r('#f6c9a0', px + 6, py, 4, 3); }
     else { ob('#e26b88', '#9b3f5a', px + 3, py + 4, 10, 8); ob('#e26b88', '#9b3f5a', px + 3, py + 1, 10, 4); r('#6a7a8a', px + 7, py + 12, 2, 3); r('#6a7a8a', px + 4, py + 14, 8, 2); }
   });
   ob('#fff0d4', '#9b6a44', 4 * T + 1, (H - 1) * T - 1, 2 * T - 2, T + 1); r('#9b6a44', 5 * T, (H - 1) * T, 1, T);   // 門
-  drawNpc(4 * T, 3 * T, SHOP_STY[styRoom].ck, now);
+  drawNpc(4 * T, 3 * T, work ? 'oak' : SHOP_STY[styRoom].ck, now);
 }
 
 /* ---------- 房間繪製 ---------- */
@@ -8273,6 +8401,7 @@ function draw(now) {
       else if (k === RK) drawRock(px, py, ROCKS.findIndex(q => q[0] === tx && q[1] === ty));
       else if (k === WL) drawWell(px, py, now);
       else if (k === G && scene === 'town' && tx === MXT && ty === MYT && merchantHere()) drawStall(px, py, now);
+      else if (k === G && scene === 'town' && tx === MXT + 1 && ty === MYT && merchantHere()) miloArt(px, py, Math.floor(now / 600) % 2);   // 米羅站在攤位右邊
       else if (k === G && scene === 'farm' && yardMap.has(pk(tx, ty))) yardArt(px, py, yardMap.get(pk(tx, ty)), now, dark > 0.35);
       else if (k === G && scene === 'farm') {
         const p = plots.get(pk(tx, ty));
