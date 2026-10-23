@@ -79,7 +79,7 @@ canvas#game{display:block;width:100%;height:auto;aspect-ratio:10/7;image-renderi
 .tabs2 .cb{flex:1;padding:9px 4px}
 .chipbtn{font:600 13px/1 var(--f-display);color:var(--ink);background:#fff;border:2px solid var(--edge);border-radius:999px;padding:8px 12px;cursor:pointer}
 .chipbtn[aria-pressed=true]{background:var(--pink);color:#fff;border-color:var(--pink-deep)}
-canvas#game.editing{cursor:crosshair}
+canvas#game.editing{cursor:grab;touch-action:none}
 .tip{background:var(--panel);border:2px solid var(--edge);border-radius:14px;padding:8px 14px;font-size:14px;line-height:1.5;min-height:40px}
 .auth-card .tabs{display:flex;gap:8px}
 .auth-card .tabs .cb{flex:1;padding:11px}
@@ -366,6 +366,26 @@ kbd{font:600 12px/1 var(--f-display);color:var(--ink);background:var(--panel);pa
 .tutx{font:600 11px/1 var(--f-display);color:var(--muted);background:none;border:0;padding:4px 0 4px 8px;cursor:pointer;text-decoration:underline}
 @media (max-width:520px){.tut{left:5px;bottom:5px;width:calc(100% - 62px);padding:6px 10px 7px}.tut p{font-size:12px}.tut-t{font-size:14px}}
 @media (orientation:landscape) and (max-height:560px){.tut{width:min(290px,calc(100% - 90px));padding:5px 9px 6px}.tut p{font-size:11px;margin:1px 0 4px}.tut-t{font-size:13px}}
+/* ---- 新手教學視覺指引：工具格子閃爍＋提示氣泡 ---- */
+@keyframes tutpulse{0%,100%{outline-color:rgba(245,166,35,1);outline-offset:2px}50%{outline-color:rgba(245,166,35,.25);outline-offset:5px}}
+.slot.tuthint,.hotbar.tuthint{outline:3px solid #f5a623;outline-offset:2px;animation:tutpulse 1.1s ease-in-out infinite}
+.slot.tuthint{background:#fff6dd}
+.slot.tuthint::after,.hotbar.tuthint::before{content:attr(data-tip);position:absolute;bottom:calc(100% + 9px);left:50%;transform:translateX(-50%);z-index:8;white-space:nowrap;pointer-events:none;
+  font:700 11px/1 var(--f-display);color:#7a4a00;background:#fff3b0;border:2px solid #e8a23a;border-radius:8px;padding:4px 7px}
+.hotbar>.slot:first-child.tuthint::after{left:0;transform:none}
+@media (prefers-reduced-motion:reduce){.slot.tuthint,.hotbar.tuthint{animation:none;outline-offset:3px}}
+/* ---- 佈置模式：家具上方的浮動按鈕條（旋轉／翻轉／收回／賣出，附文字） ---- */
+.hbar{position:absolute;z-index:6;display:flex;align-items:stretch;gap:2px;padding:4px;line-height:1;background:rgba(255,250,240,.97);border:3px solid var(--pink);border-radius:16px;box-shadow:0 3px 0 var(--pink-deep)}
+.hbar[hidden]{display:none}
+.hbar::after{content:"";position:absolute;left:var(--ax,50%);bottom:-10px;margin-left:-7px;border:7px solid transparent;border-top-color:var(--pink);border-bottom:0}
+.hbar.below::after{bottom:auto;top:-10px;border-top:0;border-bottom:7px solid var(--pink)}
+.hbar button{font:inherit;color:var(--ink);background:transparent;border:0;border-radius:11px;min-width:46px;min-height:44px;padding:5px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.hbar button:active{background:#fde9c9}
+.hbar button i{font-style:normal;font-size:18px;line-height:1}
+.hbar button span{font:700 11px/1 var(--f-display);white-space:nowrap}
+.hbar button.danger{color:#b3402a}
+.hbar button.armed{background:#ffe3dc}
+.hbar .sep{width:2px;margin:4px 3px;background:#e8d3bf;border-radius:2px}
 /* ---- 快捷列 ---- */
 .empop{position:absolute;right:8px;bottom:56px;z-index:4;width:196px;max-width:calc(100% - 16px);padding:7px;line-height:1.2;background:rgba(255,250,240,.97);
   border:3px solid var(--edge);border-radius:14px;box-shadow:0 3px 0 var(--edge)}
@@ -724,6 +744,70 @@ body.imm .cfab,body.imm #cfeed{transition:opacity .45s}
 .lkchoices button.bad{border-color:#e0524a;background:#fde6e3}
 .lkchoices button:disabled{cursor:default}
 .lkfb{margin:6px 0 0;font-size:14px;line-height:1.65;background:#fff;border:2px solid #cdb6f0;border-radius:12px;padding:8px 12px}
+
+/* ---- 手機占卜屋：視窗可順暢捲動、按鈕好點；橫屏（高度很矮）改成左右兩欄的緊湊版 ---- */
+#lkm,#trm{overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y}
+#lkm button,#trm button{touch-action:manipulation}
+.lkbtns{display:contents}
+.mc{min-height:62px}
+.mc.open::before,.mc.done::before{line-height:1}
+@media (max-width:520px) and (orientation:portrait){
+  #lkm{padding:max(8px,env(safe-area-inset-top,0px)) 8px max(8px,env(safe-area-inset-bottom,0px))}
+  #lkcard{padding:12px;gap:10px;border-width:3px;border-radius:20px}
+  #lkcard h2{font-size:20px}
+  .lkport{width:84px;height:84px}.lkport canvas{width:72px;height:72px}
+  .lkline{font-size:15px;line-height:1.6;min-height:0}
+  .mggrid{max-width:100%;gap:6px}
+  .mc{font-size:12px}
+  .lkcust p{font-size:14px}
+  #trm{padding:max(8px,env(safe-area-inset-top,0px)) 8px max(8px,env(safe-area-inset-bottom,0px))}
+  .trcard{padding:12px;gap:9px}
+  .tcard{width:108px;height:168px}.tcard .ic{font-size:50px}
+}
+@media (orientation:landscape) and (max-height:560px){
+  #lkm,#trm{padding:max(6px,env(safe-area-inset-top,0px)) max(10px,env(safe-area-inset-right,0px)) max(6px,env(safe-area-inset-bottom,0px)) max(10px,env(safe-area-inset-left,0px))}
+  /* Lekcus 對話窗 */
+  #lkcard{width:min(100%,720px);padding:10px 14px;gap:6px 14px;border-width:3px;border-radius:18px;box-shadow:0 4px 0 var(--edge)}
+  #lkcard h2{font-size:18px}
+  #lkcard .btn{min-height:0;padding:7px 12px;font-size:14px}
+  #lkcard .btn.wide{margin-top:0}
+  .lkbtns{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  #lkcard[data-m=chat]{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start}
+  #lkcard[data-m=chat]>.shop-h{grid-column:1}
+  #lkcard[data-m=chat]>.lkrow{grid-column:1;margin:0}
+  #lkcard[data-m=chat]>.lkbtns{grid-column:2;grid-row:1/span 2;grid-template-columns:1fr}
+  .lkport{width:76px;height:76px;border-radius:14px}.lkport canvas{width:64px;height:64px}
+  .lkline{font-size:14px;line-height:1.55;min-height:0}
+  /* 翻牌配對：同一排放多張，整盤一眼看完 */
+  .mggrid{grid-template-columns:repeat(var(--mgc,6),1fr);max-width:none;gap:6px;margin:0}
+  .mc{aspect-ratio:auto;min-height:0;height:min(24vh,84px);height:min(24dvh,84px)}
+  .mc::before{font-size:18px}.mc.open::before,.mc.done::before{font-size:24px}
+  .mc{font-size:11px}
+  /* 客人的煩惱：客人在左、四張牌在右 */
+  #lkcard[data-m=worry]{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start}
+  #lkcard[data-m=worry]>.shop-h,#lkcard[data-m=worry]>.lkfb,#lkcard[data-m=worry]>.lkbtns,#lkcard[data-m=worry]>.lkline{grid-column:1/-1}
+  #lkcard[data-m=worry]>.lkcust{grid-column:1;margin:0;padding:8px 10px}
+  #lkcard[data-m=worry]>.lkchoices{grid-column:2;gap:6px}
+  .lkcust .av{font-size:30px}.lkcust p{font-size:14px;line-height:1.5}
+  .lkchoices button{flex-direction:row;justify-content:center;gap:6px;padding:8px 4px;font-size:14px}
+  .lkchoices button .ic{font-size:22px}
+  .lkfb{margin:0;font-size:13px;line-height:1.5;padding:6px 10px}
+  /* 塔羅小攤：牌在左、文字在右 */
+  .stcard.trcard{width:min(100%,680px);padding:10px 14px;gap:6px 16px;border-width:3px;border-radius:18px;
+    display:grid;grid-template-columns:116px minmax(0,1fr);align-items:start;text-align:left;box-shadow:0 4px 0 var(--edge)}
+  .trcard>*{grid-column:2}
+  .trcard>h2{grid-column:1/-1;font-size:17px;text-align:center}
+  .trcard>.tcard{grid-column:1;grid-row:2/span 12;width:104px;height:164px;margin:0}
+  .tcard .ic{font-size:46px}.tcard .nm{font-size:15px}
+  .trcard .btn{min-height:0;padding:7px 12px;font-size:14px}
+  .trcard .btn.wide{margin-top:0}
+  .trtxt{font-size:14px;line-height:1.5;text-align:left}
+  .trrows{grid-template-columns:auto 1fr auto 1fr;font-size:13px;gap:4px 10px}
+  .trlucky{justify-content:flex-start;font-size:13px;gap:12px}
+  .trtip{font-size:13px;padding:6px 10px;line-height:1.5}
+  .trnote{display:none}
+  .trpos{justify-self:start}
+}
 .bondtag{display:inline-block;margin-left:4px;padding:0 6px;border-radius:10px;background:#fff0f3;border:2px solid #f08fa4;color:#d4688a;font-size:11px;font-weight:700;line-height:16px;vertical-align:middle}
 .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:6px;margin:6px 0}
 .pgrid .btn[disabled]{opacity:.45}
@@ -766,6 +850,7 @@ body.imm .cfab,body.imm #cfeed{transition:opacity .45s}
     <canvas id="game"></canvas>
     <div class="toast" id="toast" hidden></div>
     <div class="tut" id="tut" hidden></div>
+    <div class="hbar" id="hbar" hidden></div>
     <div class="empop" id="emm" hidden role="dialog" aria-label="表情與動作"><div id="emcard" tabindex="-1"></div></div>
     <div id="cfeed" hidden aria-live="polite"></div>
     <div class="cbar" id="cbar" hidden role="dialog" aria-label="聊天">
@@ -1722,7 +1807,7 @@ const pl = { x: 4, y: 4, sx: 4, sy: 4, prog: 1, face: 'down', step: 0 };
 const srvNow = () => Date.now() + offset;
 const pk = (x, y) => x + ',' + y;
 
-let bagOpen = false, shopOpen = false, makerOpen = false, authOpen = true, actQueued = false, firstTime = false, vmOpen = false, gmOpen = false;
+let bagOpen = false, shopOpen = false, makerOpen = false, authOpen = true, actQueued = false, actHeld = false, actPtr = -1, firstTime = false, vmOpen = false, gmOpen = false;
 let pendingInvite = '';
 const pressed = [];
 let frOpen = false;
@@ -2028,7 +2113,7 @@ const ERR = {
   bad_name: '名字要 1 到 8 個字', bad_look: '造型資料不對', bad_username: '帳號格式不對', username_taken: '這個帳號已經有人用了',
   bad_invite: '邀請碼無效或已被使用', not_gm: '只有 GM 可以這樣做', nothing_to_revoke: '這組邀請碼已經被使用或不存在',
   village_full: '這個村莊已經滿 8 人了', bad_village_code: '村莊邀請碼要 6 個字元', bad_mode: '操作不對', look_locked: '這個造型還沒買', fit_not_today: '這件衣服今天沒有上架，明天再來看看', bad_color: '沒有這個顏色', use_buy_fit: '這件衣服要在裁縫鋪按顏色購買', too_fast: '別急，再等一下', max_rod: '已經是最高級的釣竿了', no_user: '找不到這位玩家', bond_locked: '友情等級還不夠，這個動作還沒解鎖', no_pending: '對方的邀請已經過期了', bad_act: '沒有這個動作', friend_self: '不能加自己為好友', already_friends: '已經是好友了', already_sent: '已經送出過申請了，等對方回覆吧', too_many_requests: '送出的申請太多了，先等對方回覆吧', friend_full: '你的好友已經滿了', target_full: '對方的好友已經滿了', no_request: '這個申請已經不存在了', bad_fish: '沒有這種魚', bad_bug: '沒有這種蟲', bug_gone: '這隻已經飛走了', nothing_to_claim: '現在沒有可以領的獎勵', not_friend: '只能拜訪好友的家', bad_slot: '這個格子不能用', bad_msg: '信的內容要 1～200 字', mail_limit: '今天寄太多了，明天再寄吧（一天最多 30 張）', no_item: '找不到這個家具', bad_item: '這個家具不能這樣用', cannot_place: '這裡放不下', house_full: '家裡的家具太多了',
-  no_kitchen: '家裡要先擺一台廚房灶台才能做料理', not_enough_items: '材料不夠', bad_recipe: '沒有這道料理', not_edible: '這道菜不能吃，拿去賣或交委託吧', no_dish: '背包裡沒有這道料理了',
+  no_kitchen: '家裡要先擺一台廚房灶台才能做料理', host_no_kitchen: '這個家沒有廚房灶台', visitor_limit: '你已經在這張桌上放了一份，先收回才能再放', not_enough_items: '材料不夠', bad_recipe: '沒有這道料理', not_edible: '這道菜不能吃，拿去賣或交委託吧', no_dish: '背包裡沒有這道料理了',
   order_done: '這張委託已經完成了', bad_order: '沒有這張委託', max_tool: '已經是最高等級了', bad_tool: '沒有這種工具',
   no_hay: '沒有乾草了，到村裡的牧場小屋買', nothing_to_feed: '動物都吃飽了', nothing_to_collect: '現在沒有可以收的', barn_full: '穀倉住滿了（玩家升級會變大）', rock_busy: '這顆礦石還在恢復', sold_out: '今天已經買過或賣滿了', not_on_sale: '這件家具今天沒有上架', merchant_away: '旅行商人今天不在', already_fert: '已經施過肥了', story_end: '故事暫時告一段落，之後還會有新章節', yard_full: '庭院已經擺滿 60 件了', cannot_sell: '這個不能賣', visit_closed: '現在不方便拜訪', block_full: '黑名單最多 20 人', table_full: '桌上放不下了（一格最多 10 份）', eat_limit: '今天吃了太多份了，明天再來吧', buff_full: '這個效果已經滿 60 分鐘了，晚點再吃'
 };
@@ -2164,8 +2249,9 @@ function act() {
     if (rpH) { openFriends(rpH); return; }
     const lx = x - RX, ly = y - RY, hit = house && lx >= 0 && lx < RW && ly >= -2 && ly < RH ? itemAtLocal(lx, ly) : null;
     if (hit && hit.k === 'dtable') openDishTable(hit);
+    else if (hit && hit.k === 'tv' && !edit.on) openTv(hit);
     else if (hit && DISP[hit.k]) { if (visiting) visitShowList(hit); else openDisplay(hit.id); }
-    else if (hit && hit.k === 'kitchen' && !edit.on && !visiting) { ckAnchor = { id: hit.id, fx: x, fy: y }; openKitchen(); }
+    else if (hit && hit.k === 'kitchen' && !edit.on) { ckAnchor = { id: hit.id, fx: x, fy: y, at: visiting ? visiting.uid : null }; openKitchen(); }
     else if (hit && STYLER[hit.k] && !edit.on && !visiting) openMaker(false);
     else if (hit && hit.k === 'piano' && !edit.on) openPiano();
     else if (hit && SEAT[hit.k] && !edit.on) takeSeat(hit, x, y);
@@ -3219,6 +3305,8 @@ function drawTarotRoom(now) {
 const LK_LINKS = { live: 'https://www.bigo.tv/user/lekcus', ig: 'https://www.instagram.com/lekcusong/' };
 let lkMode = 'chat';
 function renderLekcusLinks() {
+  lkCard.dataset.m = 'links';
+  lkCard.dataset.m = 'links';
   const a = (cls, href, txt) => '<a class="btn ' + cls + ' wide" style="display:block;text-align:center;text-decoration:none" href="' + href + '" target="_blank" rel="noopener noreferrer">' + txt + '</a>';
   lkCard.innerHTML = '<div class="shop-h"><h2>Lekcus</h2><span class="chip">連結</span></div>' +
     '<p class="lkline">想去哪裡找 Lekcus？</p>' +
@@ -3232,16 +3320,17 @@ function openLekcusLinks() {
   renderLekcusLinks(); lkEl.hidden = false; lkCard.focus();
 }
 function renderLekcus() {
+  lkCard.dataset.m = lkMode;
   if (lkMode === 'links') { renderLekcusLinks(); return; }
   if (lkMode === 'match') { renderMatch(); return; }
   if (lkMode === 'worry') { renderWorry(); return; }
   lkCard.innerHTML = '<div class="shop-h"><h2>Lekcus</h2><span class="chip">塔羅占卜師</span></div>' +
     '<div class="lkrow"><div class="lkport" id="lkport"><canvas width="16" height="16"></canvas></div><p class="lkline">' + esc(lkMsg) + '</p></div>' +
-    '<button type="button" class="btn wide" data-a="draw">請 Lekcus 幫我抽今天的牌</button>' +
+    '<div class="lkbtns"><button type="button" class="btn wide" data-a="draw">請 Lekcus 幫我抽今天的牌</button>' +
     '<button type="button" class="btn ghost wide" data-a="g-match">🃏 翻牌配對</button>' +
     '<button type="button" class="btn ghost wide" data-a="g-worry">🔮 客人的煩惱</button>' +
     '<button type="button" class="btn ghost wide" data-a="chat">聊聊天</button>' +
-    '<button type="button" class="btn ghost wide" data-a="close">先告辭</button>';
+    '<button type="button" class="btn ghost wide" data-a="close">先告辭</button></div>';
   const box = $('lkport');
   if (lkImgOk && lkImg) { box.innerHTML = ''; box.appendChild(lkImg.cloneNode()); }
   else { const c2 = box.querySelector('canvas').getContext('2d'); g = c2; try { lekcusArt(0, 0, 0); } catch (e) { /* 略過 */ } g = ctx; }
@@ -3260,6 +3349,8 @@ function closeLekcus() { lkOpen = false; lkEl.hidden = true; clearTimeout(mgTime
 /* ---------- 占卜屋小遊戲：翻牌配對、客人的煩惱（目前沒有獎勵，只在客戶端玩） ---------- */
 const lkShuffle = arr => { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 let mg = null, mgTimer = 0, wy = null;
+/* 手機視窗矮的時候，答完題把回饋和「下一題」按鈕捲進畫面，不用自己再往下滑 */
+function lkScrollTo(sel) { const el = lkCard.querySelector(sel); if (el) { try { el.scrollIntoView({ block: 'nearest' }); } catch (e) { /* 略過 */ } } }
 const mgBestKey = n => 'dw_lkmatch_best_' + n;
 function mgBest(n) { try { return parseInt(localStorage.getItem(mgBestKey(n)), 10) || 0; } catch (e) { return 0; } }
 function mgStart(pairs) {
@@ -3293,17 +3384,19 @@ function renderMatch() {
       '<button type=\"button\" class=\"btn wide\" data-a=\"mg-start\" data-n=\"6\">簡單：6 對' + (mgBest(6) ? '（最佳 ' + mgBest(6) + ' 步）' : '') + '</button>' +
       '<button type=\"button\" class=\"btn wide\" data-a=\"mg-start\" data-n=\"8\">普通：8 對' + (mgBest(8) ? '（最佳 ' + mgBest(8) + ' 步）' : '') + '</button>';
   } else {
-    h += '<div class=\"mggrid\">' + mg.cards.map((c, i) => {
+    h += '<div class=\"mggrid\" style=\"--mgc:' + (mg.cards.length / 2) + '\">' + mg.cards.map((c, i) => {
       const on = c.open || c.done;
       return '<button type=\"button\" class=\"mc' + (c.done ? ' done' : c.open ? ' open' : '') + '\" data-a=\"mg-pick\" data-i=\"' + i + '\"' + (on || mg.lock || mg.fin ? ' disabled' : '') +
         (on ? ' data-ic=\"' + TAROT[c.c].ic + '\"' : '') + '>' + (on ? TAROT[c.c].n : '') + '</button>';
     }).join('') + '</div>';
     if (mg.fin) {
       h += '<div class=\"lkfb\">全部配對完成！用了 ' + mg.moves + ' 步、' + mg.fin.secs + ' 秒。' + (mg.fin.rec ? '這是你的最佳紀錄！' : '最佳紀錄是 ' + mgBest(mg.pairs) + ' 步。') + '</div>' +
-        '<button type=\"button\" class=\"btn wide\" data-a=\"mg-start\" data-n=\"' + mg.pairs + '\">再玩一次</button>';
+        '<div class=\"lkbtns\"><button type=\"button\" class=\"btn wide\" data-a=\"mg-start\" data-n=\"' + mg.pairs + '\">再玩一次</button>' +
+        '<button type=\"button\" class=\"btn ghost wide\" data-a=\"g-back\">回櫃檯</button></div>';
+      lkCard.innerHTML = h; lkScrollTo('.lkfb'); return;
     }
   }
-  h += '<button type=\"button\" class=\"btn ghost wide\" data-a=\"g-back\">回櫃檯</button>';
+  h += '<div class=\"lkbtns\"><button type=\"button\" class=\"btn ghost wide\" data-a=\"g-back\">回櫃檯</button></div>';
   lkCard.innerHTML = h;
 }
 
@@ -3361,10 +3454,12 @@ function renderWorry() {
     if (done) {
       const t = TAROT[w[0]];
       h += '<div class=\"lkfb\">' + (wy.picked === w[0] ? '答對了！' : '這位客人最適合的是「' + t.n + '」。') + '<br>' + esc(t.n + '：' + t.up) + '</div>' +
-        '<button type=\"button\" class=\"btn wide\" data-a=\"wy-next\">' + (wy.i + 1 >= WY_N ? '看結果' : '下一位客人') + '</button>';
+        '<div class=\"lkbtns\"><button type=\"button\" class=\"btn wide\" data-a=\"wy-next\">' + (wy.i + 1 >= WY_N ? '看結果' : '下一位客人') + '</button>' +
+        '<button type=\"button\" class=\"btn ghost wide\" data-a=\"g-back\">回櫃檯</button></div>';
+      lkCard.innerHTML = h; lkScrollTo('.lkfb'); return;
     }
   }
-  h += '<button type=\"button\" class=\"btn ghost wide\" data-a=\"g-back\">回櫃檯</button>';
+  h += '<div class=\"lkbtns\"><button type=\"button\" class=\"btn ghost wide\" data-a=\"g-back\">回櫃檯</button></div>';
   lkCard.innerHTML = h;
 }
 
@@ -3522,7 +3617,7 @@ function ckAddXp(n) {
   const after = ckLv();
   if (after > before) {
     const names = recipes.filter(rc => ckTier(rc) === after).map(rc => rc.name);
-    levelUp('烹飪等級 Lv.' + after, [names.length ? '解鎖：' + names.join('、') : '熟練度又提升了', '「!」出現後可以按的時間變長了']);
+    levelUp('烹飪等級 Lv.' + after, [names.length ? '解鎖：' + names.join('、') : '熟練度又提升了', '火候的綠區變寬了，更好停']);
   }
   if (lvOpen) renderLevels();
   return n;
@@ -3547,21 +3642,17 @@ function renderKitchen() {
       '</div></div>';
   }).join('');
   ckCard.innerHTML = '<div class="shop-h"><h2>廚房</h2><span class="chip gold">' + (me ? me.coins : 0) + ' G</span></div>' + ckSkillHtml() +
-    '<p class="empty">選一道料理開始烹飪：會回到灶台前，鍋子上方有倒數，數到 0 出現「!」就按動作鍵；有些（🥄）要連按好幾下，太早按或太慢都算失誤。失誤太多會失敗（失敗或中途走開都不會浪費材料）。做出來的料理可以賣錢、交委託，有些吃下去還有 buff（最多累積 60 分鐘）。' + (act_.length ? '<br>目前效果：' + esc(act_.join('、')) : '') + '</p>' +
+    (visiting ? '<p class="empty">你在 ' + esc(visiting.name) + ' 的廚房：用的是你自己的材料，做好的料理和烹飪經驗都是你的。</p>' : '') + '<p class="empty">選一道料理開始烹飪：會回到灶台前，鍋子上方有火候條。按住動作鍵加熱，指針進到綠區就放開定火，一共三段；太生、太大或燒焦都算失誤。失誤太多會失敗（失敗或中途走開都不會浪費材料）。做出來的料理可以賣錢、交委託，有些吃下去還有 buff（最多累積 60 分鐘）。' + (act_.length ? '<br>目前效果：' + esc(act_.join('、')) : '') + '</p>' +
     (rows || '<p class="empty">還沒有食譜。</p>') + '<button type="button" class="btn ghost wide" data-a="close">離開</button>';
 }
-/* ---- 烹飪小遊戲（像釣魚）：站在灶台前，鍋子上方會倒數；數到 0 出現「!」就按動作鍵，🥄 要連按 ---- */
+/* ---- 烹飪小遊戲（火候條）：站在灶台前，鍋子上方有火候條；按住動作鍵加熱，指針停在綠區就放開定火，一共三段 ---- */
 let cooking = null, cookSeq = 0, ckAnchor = null;
 function cgStop() { cooking = null; }
 function ckPlan(rc) {
-  const T = ckTier(rc), L = ckLv(), n = 2 + T;
-  const base = (1700 - 100 * T) * (1 + 0.04 * (L - 1)), pst = 0.2 + 0.06 * T, taps = 2 + (T >= 4 ? 1 : 0);
+  const T = ckTier(rc), L = ckLv(), n = 3;
+  const w = clamp(0.31 - 0.03 * T + 0.005 * (L - 1), 0.14, 0.32), v = 0.40 + 0.04 * T;   // 綠區寬度（等級越高越寬）、加熱速度（料理越難越快）
   const plan = [];
-  for (let i = 0; i < n; i++) {
-    const stir = i > 0 && Math.random() < pst;
-    plan.push({ wait: 1300 + Math.random() * 1400, need: stir ? taps : 1, win: base + (stir ? 350 * (taps - 1) : 0) });
-  }
-  if (T >= 2 && !plan.some(b_ => b_.need > 1)) { const b_ = plan[Math.floor(n / 2)]; b_.need = taps; b_.win += 350 * (taps - 1); }
+  for (let i = 0; i < n; i++) { const a = 0.30 + Math.random() * (0.85 - w - 0.30); plan.push({ a, b: a + w, v }); }
   return { T, plan, maxMiss: T <= 2 ? 2 : 1 };
 }
 function ckStart(key) {
@@ -3572,42 +3663,41 @@ function ckStart(key) {
   if (!ckAnchor || scene !== 'house') { toast('要站在廚房灶台前面'); return; }
   closeKitchen();
   const p = ckPlan(rc), now = Date.now();
-  cooking = { id: ++cookSeq, rc, T: p.T, plan: p.plan, maxMiss: p.maxMiss, miss: 0, done: 0, i: 0, hit: 0, itId: ckAnchor.id, fx: ckAnchor.fx, fy: ckAnchor.fy, scene, phase: 'wait', t0: now, at: now + 900 + p.plan[0].wait, ok: true, bump: 0 };
+  cooking = { id: ++cookSeq, rc, T: p.T, plan: p.plan, maxMiss: p.maxMiss, miss: 0, done: 0, i: 0, hit: 0, itId: ckAnchor.id, at: ckAnchor.at || null, fx: ckAnchor.fx, fy: ckAnchor.fy, scene, phase: 'wait', t0: now, at: now + 900, ok: true, heat: 0, lt: now, msg: '', needRel: false };
 }
 function cookCancel() { if (!cooking) return; cooking = null; toast('不煮了（材料沒有消耗）', 1600); }
 function cookMiss(c, msg, now) {
-  c.miss++; c.ok = false; c.phase = 'pause'; c.at = now + 650;
+  c.miss++; c.ok = false; c.phase = 'pause'; c.at = now + 650; c.msg = msg;
   pop(c.fx, c.fy, msg, '#ff9a9a');
   if (navigator.vibrate) try { navigator.vibrate(60); } catch (_) {}
 }
 function cookNext(c, now) {
   c.i++;
   if (c.i >= c.plan.length || c.miss > c.maxMiss) { cookFinish(c.miss <= c.maxMiss); return; }
-  c.phase = 'wait'; c.hit = 0; c.t0 = now; c.at = now + c.plan[c.i].wait;
+  c.phase = 'wait'; c.heat = 0; c.t0 = now; c.at = now + 450;
 }
-function cookAct() {
-  const c = cooking; if (!c) return;
-  const now = Date.now();
-  if (c.phase === 'wait') { cookMiss(c, '太早了！', now); return; }
-  if (c.phase !== 'ready') return;
-  c.hit++; c.bump = now;
-  if (c.hit >= c.plan[c.i].need) { c.done++; c.ok = true; c.phase = 'pause'; c.at = now + 450; sparkle(c.fx, c.fy, '#ffd34d'); }
+function cookAct() { /* 火候條靠「按住」判斷（actHeld），按一下不算 */ }
+function cookJudge(c, now) {
+  const rd = c.plan[c.i], h = c.heat;
+  if (h >= rd.a && h <= rd.b) { c.done++; c.ok = true; c.phase = 'pause'; c.at = now + 600; c.msg = '剛剛好！'; sparkle(c.fx, c.fy, '#ffd34d'); if (navigator.vibrate) try { navigator.vibrate(20); } catch (_) {} }
+  else cookMiss(c, h >= 1 ? '燒焦了！' : h < rd.a ? '太生了…' : '火太大了…', now);
 }
 function cookTick() {
   const c = cooking; if (!c || c.phase === 'serve') return;
   const it = scene === 'house' && house ? house.items.find(x => x.id === c.itId) : null;
   if (c.scene !== scene || !it || paused() || pressed.length) { cookCancel(); return; }
-  const now = Date.now(), rd = c.plan[c.i];
-  if (c.phase === 'wait' && now >= c.at) {
-    c.phase = 'ready'; c.t0 = now; c.hit = 0; sparkle(c.fx, c.fy, '#ffffff');
-    if (navigator.vibrate) try { navigator.vibrate([30, 40, 30]); } catch (_) {}
-  } else if (c.phase === 'ready' && now - c.t0 > rd.win) cookMiss(c, '慢了…', now);
-  else if (c.phase === 'pause' && now >= c.at) cookNext(c, now);
+  const now = Date.now(), rd = c.plan[c.i], dt = Math.min(100, now - (c.lt || now)); c.lt = now;
+  if (c.phase === 'wait') { if (now >= c.at) { c.phase = 'idle'; c.heat = 0; c.needRel = actHeld; } }
+  else if (c.phase === 'idle') { if (c.needRel) { if (!actHeld) c.needRel = false; } else if (actHeld) { c.phase = 'heat'; c.t0 = now; } }
+  else if (c.phase === 'heat') {
+    if (actHeld) { c.heat = Math.min(1, c.heat + rd.v * dt / 1000); if (c.heat >= 1) cookJudge(c, now); }
+    else cookJudge(c, now);
+  } else if (c.phase === 'pause' && now >= c.at) cookNext(c, now);
 }
 const cookTip = () => {
   const c = cooking;
-  return c.phase === 'ready' ? '現在！按動作鍵' + (c.plan[c.i].need > 1 ? '（還要連按 ' + (c.plan[c.i].need - c.hit) + ' 下）' : '') + '！' :
-    c.phase === 'serve' ? '盛盤中…' : '看鍋子上方的倒數，數到 0 出現「!」立刻按動作鍵。太早按會失誤，走開就取消。';
+  return c.phase === 'heat' ? '火在變大…進到綠區就放開！' : c.phase === 'serve' ? '盛盤中…' :
+    '按住動作鍵加熱，指針進到綠區就放開定火（共三段）。走開就取消，材料不會消耗。';
 };
 async function cookFinish(ok) {
   const c = cooking; if (!c) return;
@@ -3615,7 +3705,7 @@ async function cookFinish(ok) {
   let made = false, errMsg = '';
   if (ok) {
     c.phase = 'serve'; ckBusy = true;
-    try { const r = await enqueue(() => rpc('cook', { p_key: rc.key, p_qty: 1 })); if (r.inv) Object.assign(inv, r.inv); made = true; }
+    try { const r = await enqueue(() => rpc('cook', c.at ? { p_key: rc.key, p_qty: 1, p_at: c.at } : { p_key: rc.key, p_qty: 1 })); if (r.inv) Object.assign(inv, r.inv); made = true; }
     catch (err) { errMsg = errText(err); await resync(); }
     ckBusy = false; refreshHud();
   }
@@ -3640,27 +3730,24 @@ function drawCooking(now) {
   const px0 = (RX + rt.x) * T, top = (RY + rt.y) * T, cx = px0 + Math.round(rt.w * T / 2), t = Date.now(), rd = c.plan[Math.min(c.i, c.plan.length - 1)];
   const fl = Math.floor(now / 120) % 3;                       // 爐火
   r('#ff8a3c', px0 + 6, top + 4 - (fl === 0 ? 1 : 0), 2, 2); r('#ffd34d', px0 + 9, top + 4 - (fl === 1 ? 1 : 0), 2, 2);
-  let label, num = '', frac = 1, col = '#f0a64a', edge = '#c9a05a';
-  if (c.phase === 'wait') {
-    const left = Math.max(0, c.at - t);
-    label = '燉煮中 ' + (c.i + 1) + '/' + c.plan.length; num = (left / 1000).toFixed(1); frac = left / Math.max(1, c.at - c.t0);
-  } else if (c.phase === 'ready') {
-    const left = Math.max(0, rd.win - (t - c.t0));
-    frac = left / rd.win; col = frac < 0.3 ? '#ef6a5a' : '#6fcf7f'; edge = Math.floor(now / 110) % 2 ? '#ff5f6e' : '#c03a4a';
-    label = rd.need > 1 ? '連按 ' + (rd.need - c.hit) + ' 下！' : '現在！'; num = (left / 1000).toFixed(1);
-  } else if (c.phase === 'pause') { label = c.ok ? '好！' : '糟了…'; col = c.ok ? '#6fcf7f' : '#ef6a5a'; }
+  let label, edge = '#c9a05a';
+  if (c.phase === 'wait') label = '火候 ' + (c.i + 1) + '/' + c.plan.length;
+  else if (c.phase === 'idle') label = '按住加熱';
+  else if (c.phase === 'heat') { label = '放開定火！'; edge = Math.floor(now / 110) % 2 ? '#ff9a4a' : '#c9742a'; }
+  else if (c.phase === 'pause') { label = c.msg || (c.ok ? '剛剛好！' : '糟了…'); edge = c.ok ? '#6fcf7f' : '#ef6a5a'; }
   else label = '盛盤中…';
   ctx.font = '800 5px "Chiron GoRound TC", "Noto Sans TC", sans-serif';
-  const w = Math.max(40, Math.ceil(ctx.measureText(label).width) + 10), h = 27, x = Math.round(cx - w / 2), y = top - h - 8 - (c.phase === 'ready' && now - c.bump < 110 ? 2 : 0);
+  const bw = 56, w = bw + 10, h = 24, x = Math.round(cx - w / 2), y = top - h - 8;
   ob('#fffaf0', edge, x, y, w, h);
   ctx.textAlign = 'center'; ctx.fillStyle = INK;
   ctx.fillText(label, cx, y + 9);
-  if (num) { ctx.font = '800 8px "Chiron GoRound TC", "Noto Sans TC", sans-serif'; ctx.fillText(num, cx, y + 18); }
-  r('#e6dcd0', x + 4, y + h - 6, w - 8, 3); r(col, x + 4, y + h - 6, Math.max(0, Math.round((w - 8) * clamp(frac, 0, 1))), 3);
-  r(edge, cx - 1, y + h, 3, 1); r('#fffaf0', cx, y + h - 1, 1, 1);
+  const bx = x + 5, by = y + 13, bh = 6, za = Math.round(bw * rd.a), zb = Math.round(bw * rd.b);
+  r('#f6d9c8', bx, by, za, bh); r('#6fcf7f', bx + za, by, zb - za, bh); r('#f1b3a8', bx + zb, by, bw - zb, bh);
+  const mx = bx + Math.min(bw - 1, Math.round(bw * clamp(c.heat, 0, 1)));
+  r('#5a4034', mx - 1, by - 2, 2, bh + 4);
+  if (c.phase === 'heat') { r('#ff8a3c', px0 + 5, top + 2, 2, 3); r('#ffd34d', px0 + 9, top + 2, 2, 3); r('#ff8a3c', px0 + 12, top + 3, 2, 2); }   // 加熱時火變大
   const lives = c.maxMiss + 1;                                // 生命（愛心）
   for (let k = 0; k < lives; k++) heartPx(x + w + 3 + k * 6, y + 2, k < lives - c.miss ? '#ef6a7a' : '#cdbfb4');
-  if (c.phase === 'ready' && Math.floor(now / 110) % 2 === 0) { ob('#ff5f6e', '#c03a4a', cx - 4, y - 14, 8, 11); r('#ffffff', cx - 1, y - 12, 2, 5); r('#ffffff', cx - 1, y - 6, 2, 2); }
 }
 ckCard.addEventListener('click', async e => {
   const b = e.target.closest('button[data-a]');
@@ -4038,7 +4125,7 @@ function lvBar(lo, hi, xp, wait) {
   const pct = hi > lo ? Math.max(0, Math.min(100, (xp - lo) / (hi - lo) * 100)) : 100;
   return '<i class="qbar"><i style="width:' + pct + '%"></i></i>' + (wait ? '<small>' + wait + '</small>' : '');
 }
-function lvHtml() {
+function lvHtml(noSkills) {   // noSkills：每日任務視窗只顯示玩家等級，技能等級留在「等級與解鎖」
   if (!lv) return '';
   const row = (ic, name, sub, bar) => '<div class="row"><span style="font-size:24px;line-height:1">' + ic + '</span><div class="meta"><b>' + name + '</b><small>' + sub + '</small>' + bar + '</div></div>';
   const skill = (ic, n, k) => {
@@ -4047,7 +4134,7 @@ function lvHtml() {
   };
   const nxt = [[2, '牧場／採集／庭院'], [4, '山洞／採礦／高級家具']].find(a => a[0] > lv.pl);
   return row('⭐', '玩家等級 Lv.' + lv.pl, lv.pl >= lv.max_pl ? '已滿級' : '任務與委託經驗 ' + lv.xp_player + ' / ' + lv.pl_next + '（每日任務每天最多 70）' + (nxt ? ' · Lv.' + nxt[0] + '：' + nxt[1] : '') + ' · 田地 ' + plots.size + '/' + plotCap() + (nextCap() ? '（下一級 ' + nextCap() + '）' : ''), lvBar(lv.pl_cur, lv.pl_next, lv.xp_player, '')) +
-    skill('🌱', '農耕', 'farm') + skill('🎣', '釣魚', 'fish') + skill('🦋', '捕蟲', 'bug') + ckSkillHtml();
+    (noSkills ? '' : skill('🌱', '農耕', 'farm') + skill('🎣', '釣魚', 'fish') + skill('🦋', '捕蟲', 'bug') + ckSkillHtml());
 }
 const qEl = $('qm'), qCard = $('qcard');
 let qs = { day: 0, c: {}, claimed: {} }, qBusy = false, qMsg = '', qErr = false;
@@ -4084,7 +4171,7 @@ function renderQuests() {
       btn(q.id, qClaimed(q.id) ? 'got' : qDone(q) ? 'go' : 'wait'));
   }).join('');
   const bonus = row('🎁', '全部完成加碼', '五項都領完，再得 ' + QBONUS + ' G', '', btn('bonus', qClaimed('bonus') ? 'got' : qAllClaimed() ? 'go' : 'wait'));
-  qCard.innerHTML = '<div class="shop-h"><h2>每日任務</h2><span class="chip gold">' + (me ? me.coins : 0) + ' G</span></div>' + lvHtml() + rows + bonus +
+  qCard.innerHTML = '<div class="shop-h"><h2>每日任務</h2><span class="chip gold">' + (me ? me.coins : 0) + ' G</span></div>' + lvHtml(true) + rows + bonus +
     (qMsg ? '<p class="empty" role="alert" style="font-weight:700;word-break:break-all;color:' + (qErr ? 'var(--pink-deep)' : '#3a8a4a') + '">' + esc(qMsg) + '</p>' : '') +
     '<small class="empty">每天凌晨 0 點重置。</small><button type="button" class="btn ghost wide" data-a="close">關閉</button>';
 }
@@ -4145,7 +4232,7 @@ function renderLevels() {
     h += '<details><summary style="cursor:pointer;font-weight:800;margin:8px 0">🍳 烹飪 Lv.' + cmy + '（展開看每一級）</summary>';
     for (let L = 1; L <= 12; L++) {
       const need = Math.max(1, L - 2), st = L <= cmy ? '✓' : L === cmy + 1 ? '下一級' : '🔒', nm = recipes.filter(rc => ckTier(rc) === L).map(rc => rc.name);
-      h += '<div class="lvrow' + (L === cmy ? ' on' : L > cmy ? ' lock' : '') + '"><b>Lv.' + L + ' ' + st + '</b><div>' + (nm.length ? '解鎖：' + esc(nm.join('、')) : '熟練度提升，計時圖示的時間變長') +
+      h += '<div class="lvrow' + (L === cmy ? ' on' : L > cmy ? ' lock' : '') + '"><b>Lv.' + L + ' ' + st + '</b><div>' + (nm.length ? '解鎖：' + esc(nm.join('、')) : '熟練度提升，火候的綠區變寬') +
         '<small>累計 ' + skillNeed(L) + ' 經驗 · 需要玩家 Lv.' + need + '</small></div></div>';
     }
     h += '</details>';
@@ -4484,7 +4571,7 @@ function updateTip() {
     if (x >= 0 && y >= 0 && x < W && y < H) {
       const lx = x - RX, ly = y - RY, hit = house && lx >= 0 && lx < RW && ly >= -2 && ly < RH ? itemAtLocal(lx, ly) : null;
       if (K[y][x] === GT) s = '門口：按動作鍵回農場。';
-      else if (hit) s = ((defOf(hit.k) || {}).name || '') + (DISP[hit.k] ? '：按動作鍵' + (visiting ? '看展示品' : '換展示品') : hit.k === 'kitchen' && !visiting && !edit.on ? '：按動作鍵做料理' : STYLER[hit.k] && !visiting && !edit.on ? '：按動作鍵換造型' : hit.k === 'piano' && !edit.on ? '：按動作鍵彈琴' : SEAT[hit.k] && !edit.on ? '：按動作鍵' + (SEAT[hit.k] === 'lie' ? '躺下' : '坐下') : '');
+      else if (hit) s = ((defOf(hit.k) || {}).name || '') + (DISP[hit.k] ? '：按動作鍵' + (visiting ? '看展示品' : '換展示品') : hit.k === 'kitchen' && !edit.on ? '：按動作鍵做料理' : STYLER[hit.k] && !visiting && !edit.on ? '：按動作鍵換造型' : hit.k === 'tv' && !edit.on ? '：按動作鍵換頻道、看今日情報' : hit.k === 'piano' && !edit.on ? '：按動作鍵彈琴' : SEAT[hit.k] && !edit.on ? '：按動作鍵' + (SEAT[hit.k] === 'lie' ? '躺下' : '坐下') : '');
     }
   } else if (scene === 'plaza') {
     s = '和朋友聊聊天吧，下方可以打字。';
@@ -4852,13 +4939,14 @@ window.addEventListener('keydown', e => {
   if (e.key === ' ' || e.key === 'e' || e.key === 'E' || e.key === 'Enter') {
     e.preventDefault();
     if (!e.repeat) actQueued = true;
+    actHeld = true;
     return;
   }
   if (e.key === 'Tab' && ready && me && !e.ctrlKey && !e.metaKey && !e.altKey) { e.preventDefault(); if (!e.repeat) setHotPage(hotPage + (e.shiftKey ? -1 : 1)); return; }
   if (e.key >= '1' && e.key <= '6') selectTool(+e.key - 1);
 });
-window.addEventListener('keyup', e => { const d = KEYMAP[e.key]; if (d) release(d); });
-window.addEventListener('blur', () => { pressed.length = 0; });
+window.addEventListener('keyup', e => { const d = KEYMAP[e.key]; if (d) release(d); if (e.key === ' ' || e.key === 'e' || e.key === 'E' || e.key === 'Enter') actHeld = false; });
+window.addEventListener('blur', () => { pressed.length = 0; actHeld = false; });
 /* 類比搖桿：圓鈕跟著手指（限制在底盤內），方向取主軸（帶遲滯避免斜推時抖動），
    推得越遠走得越快（格子制移動，所以「類比」體現在速度上）。多指可同時按動作鈕。 */
 const dpadEl = document.querySelector('.dpad'), knobEl = $('knob'), DIRS4 = ['up', 'down', 'left', 'right'];
@@ -4910,7 +4998,8 @@ document.addEventListener('touchend', e => {
   if (now - lastTouchEnd < 350 && !free) e.preventDefault();
   lastTouchEnd = now;
 }, { passive: false });
-$('actbtn').addEventListener('pointerdown', e => { e.preventDefault(); actQueued = true; if (navigator.vibrate) try { navigator.vibrate(8); } catch (_) {} });
+['pointerup', 'pointercancel'].forEach(t => window.addEventListener(t, e => { if (e.pointerId === actPtr) { actHeld = false; actPtr = -1; } }));
+$('actbtn').addEventListener('pointerdown', e => { e.preventDefault(); actQueued = true; actHeld = true; actPtr = e.pointerId; if (navigator.vibrate) try { navigator.vibrate(8); } catch (_) {} });
 
 /* 橫屏選單抽屜 + 全螢幕 */
 const sideEl = $('side'), menuBtn = $('menubtn');
@@ -5033,37 +5122,108 @@ function kickGuest(uid) { if (scene === 'house' && !visiting && net && net.ch) t
 function onKick(p) { if (p && visiting && p.i === visiting.uid && p.to === myUid && scene === 'house') { leaveHouse(true); toast('現在不方便拜訪'); } }
 function onAte(p) { if (p && p.i !== myUid) addSys(clean(p.n, 8) + ' 吃了一份' + clean(p.d, 12)); }
 
-/* ---------- 餐桌：屋主擺菜、訪客直接吃 ---------- */
+/* ---------- 餐桌：屋主擺菜、訪客直接吃，訪客也能放 1 份自己煮的菜 ---------- */
 const dtEl = $('dtm'), dtCard = $('dtcard');
 let dtBusy = false, dtMsg = '';   // dtMsg：餐桌視窗裡的錯誤訊息（toast 會被全螢幕視窗蓋住，所以直接寫在視窗裡）
 const dishName = k => (recipes.find(x => x.key === k) || {}).name || k;
 function openDishTable(it) {
   if (paused() || typeof it.id !== 'number' || !isFinite(it.id)) return;
-  dtId = it.id; dtMsg = ''; dsOpen = true; pressed.length = 0; renderDish(); dtEl.hidden = false; dtCard.focus();
+  dtId = it.id; dtTv = false; dtMsg = ''; dsOpen = true; pressed.length = 0; renderDish(); dtEl.hidden = false; dtCard.focus();
 }
-function renderDish() {
+/* ---------- 電視：換頻道（同一間屋子的人看到一樣的畫面）＋今日情報／天氣預報 ---------- */
+const TV_CH = [{ n: '卡通', t: '播著軟綿綿的卡通。' }, { n: '烹飪節目', t: '主廚說：火候最重要。去灶台試試看吧。' }, { n: '釣魚節目', t: '看起來很好釣的樣子。' }, { n: '天氣預報' }, { n: '今日情報' }];
+let tvCh = {}, dtTv = false, tvFurnLoading = false;   // 家具編號 → 頻道（家具編號全服唯一，所以不同屋子不會撞到）
+try { tvCh = JSON.parse(localStorage.getItem('dw_tv') || '{}') || {}; } catch (e) { tvCh = {}; }
+const tvOf = id => { const c = tvCh[id] | 0; return c >= 0 && c < TV_CH.length ? c : 0; };
+function setTvCh(id, c, send) {
+  c |= 0; if (c < 0 || c >= TV_CH.length) return;
+  tvCh[id] = c;
+  if (!send) return;
+  if (!visiting) try { localStorage.setItem('dw_tv', JSON.stringify(tvCh)); } catch (e) { /* 略過 */ }   // 只記自己家的選擇；拜訪時換的只在這次有效
+  try { if (net && net.ch) net.ch.send({ type: 'broadcast', event: 'tv', payload: { i: myUid, id, c } }); } catch (e) { /* 略過 */ }
+}
+function onTv(p) {
+  if (!p || p.i === myUid || scene !== 'house' || !house) return;
+  const id = +p.id, c = p.c | 0;
+  if (!isFinite(id) || c < 0 || c >= TV_CH.length || !house.items.some(x => x.id === id && x.k === 'tv')) return;
+  tvCh[id] = c;
+  if (dsOpen && dtTv && dtId === id) renderTv();
+}
+async function tvLoadFurn() {
+  if (tvFurnLoading) return;
+  tvFurnLoading = true; if (dsOpen && dtTv) renderTv();
+  await loadFurnToday();
+  tvFurnLoading = false; if (dsOpen && dtTv) renderTv();
+}
+function openTv(it) {
+  if (paused() || typeof it.id !== 'number' || !isFinite(it.id)) return;
+  dtId = it.id; dtTv = true; dtMsg = ''; dsOpen = true; pressed.length = 0; renderTv(); dtEl.hidden = false; dtCard.focus();
+  if (tvOf(it.id) === 4) tvLoadFurn();
+}
+function tvWeatherHtml() {
+  const ms = srvNow(), h0 = Math.floor(ms / 3600000);
+  const icon = h => { const wet = precipHour(h), snow = wet && (seasonAt(h * 3600000) === 'winter' || (SNOW_ON && hash(h, 0, 78) < 0.35)); return wet ? (snow ? '❄️' : '🌧️') : '☀️'; };
+  const cells = []; for (let i = 0; i < 8; i++) cells.push('<span style="display:inline-block;min-width:54px;text-align:center"><small>' + ((h0 + i + 8) % 24) + ' 點</small><br>' + icon(h0 + i) + '</span>');
+  return '<p class="empty">現在：' + icon(h0) + '　' + esc(SEASON_N[seasonAt(ms)] || '') + '</p><div style="margin:4px 0">' + cells.join('') + '</div><small class="empty">下雨下雪的時候，作物不用澆水。</small>';
+}
+function tvInfoHtml() {
+  const ms = srvNow(), d = merchantDay();
+  let mer = '今天在小村（米羅）';
+  if (!merchantHere()) { let o = 1; while (o < 8 && ![5, 6, 0].includes(((d + o) % 7 + 4) % 7)) o++; mer = '今天不在，' + o + ' 天後回來'; }
+  const act = Object.keys(buffs).filter(buffOn).map(k => (BUFF_N[k] || k) + '（剩 ' + Math.ceil((buffs[k] - srvNow()) / 60000) + ' 分鐘）');
+  const furn = tvFurnLoading ? '載入中…' : furnToday ? (furnDailyList().map(c => esc(c.name)).join('、') || '今天沒有上架') : '暫時查不到';
+  return '<p class="empty">' + esc(SEASON_N[seasonAt(ms)] || '') + '</p>' +
+    '<div class="strow"><span>旅行商人</span><span>' + mer + '</span></div>' +
+    '<div class="strow"><span>料理效果</span><span>' + (act.length ? esc(act.join('、')) : '目前沒有') + '</span></div>' +
+    '<div class="strow" style="flex-wrap:wrap"><span>家具店今天上架</span><span style="flex:1;min-width:140px;text-align:right">' + furn + '</span></div>';
+}
+function renderTv() {
   const it = house && house.items.find(i => i.id === dtId); if (!it) { closeDisplay(); return; }
-  const arr = house.disp[dtId] || [], mine = !visiting;
-  let h = '<h2>餐桌</h2><p class="empty">' + (mine ? '擺上料理，朋友來拜訪時可以直接吃' : esc(visiting.name) + ' 的餐桌，每天最多吃 5 份') + '</p>';
+  const cur = tvOf(dtId);
+  let h = '<h2>電視</h2><p class="empty">選一個頻道，同一間屋子的人看到的畫面一樣。</p><div style="display:flex;flex-wrap:wrap;gap:6px;margin:6px 0">' +
+    TV_CH.map((c, i) => '<button type="button" class="btn small' + (i === cur ? '' : ' ghost') + '" data-a="ch" data-c="' + i + '">' + c.n + '</button>').join('') + '</div>';
+  h += cur === 4 ? tvInfoHtml() : cur === 3 ? tvWeatherHtml() : '<p class="empty">' + esc(TV_CH[cur].t) + '</p>';
+  dtCard.innerHTML = h + '<button type="button" class="btn wide" data-a="close">完成</button>';
+}
+const setDishBy = (id, arr) => { if (!house) return; const o = {}; (arr || []).forEach(x => { o[x.s | 0] = { u: String(x.uid), n: clean(x.name, 8) }; }); (house.by || (house.by = {}))[id] = o; };
+function renderDish() {
+  if (dtTv) { renderTv(); return; }
+  const it = house && house.items.find(i => i.id === dtId); if (!it) { closeDisplay(); return; }
+  const arr = house.disp[dtId] || [], by = (house.by && house.by[dtId]) || {}, mine = !visiting;
+  const myPut = Object.keys(by).some(s => arr[s] && arr[s].n > 0 && by[s].u === myUid);   // 訪客：自己是不是已經放了一份
+  let h = '<h2>餐桌</h2><p class="empty">' + (mine ? '擺上料理，朋友來拜訪時可以直接吃；朋友也可以放上自己煮的菜' : esc(visiting.name) + ' 的餐桌，每天最多吃 5 份；你自己同時最多放 1 份') + '</p>';
   const rcOf = k => recipes.find(x => x.key === k) || {};
   const fx = rc => rc.buff ? (BUFF_N[rc.buff] || rc.buff) : '';
   const onTable = {};
   for (let s = 0; s < 4; s++) {
     const d = arr[s], has = d && d.n > 0, rc = has ? rcOf(d.k) : {};
-    if (has) onTable[d.k] = 1;
-    h += '<div class="strow" style="flex-wrap:wrap"><span style="flex:1;min-width:120px">' + (has ? esc(dishName(d.k)) + (d.n > 1 ? ' ×' + d.n : '') + (fx(rc) ? '<small class="empty" style="display:block;color:#5c8a3a">吃了：' + esc(fx(rc)) + '</small>' : '<small class="empty" style="display:block">沒有特別效果</small>') : '（空）') + '</span>' +
-      (has ? (mine ? (rc.buff ? '<button type="button" class="btn small" data-a="selfeat" data-s="' + s + '" data-k="' + esc(d.k) + '">吃一份</button> ' : '') + '<button type="button" class="btn ghost small" data-a="take" data-s="' + s + '">收回</button>' : (rc.buff ? '<button type="button" class="btn small" data-a="eat" data-s="' + s + '">吃一份</button>' : '')) : '') + '</div>';
+    const g = has ? by[s] : null, own = !!(g && g.u === myUid);   // g：訪客放的；own：是我自己放的
+    if (has && !g) onTable[d.k] = 1;
+    const who = g ? '<small class="empty" style="display:block">' + (own ? '你放的' : esc(g.n || '朋友') + ' 放的') + '</small>' : '';
+    let btn = '';
+    if (has) {
+      if (mine) btn = (rc.buff ? '<button type="button" class="btn small" data-a="' + (g ? 'eat' : 'selfeat') + '" data-s="' + s + '" data-k="' + esc(d.k) + '">吃一份</button> ' : '') +
+        '<button type="button" class="btn ghost small" data-a="take" data-s="' + s + '">' + (g ? '請走（退回給 ' + esc(g.n || '朋友') + '）' : '收回') + '</button>';
+      else if (own) btn = '<button type="button" class="btn ghost small" data-a="take" data-s="' + s + '">收回</button>';
+      else if (rc.buff) btn = '<button type="button" class="btn small" data-a="eat" data-s="' + s + '">吃一份</button>';
+    }
+    h += '<div class="strow" style="flex-wrap:wrap"><span style="flex:1;min-width:120px">' + (has ? esc(dishName(d.k)) + (d.n > 1 ? ' ×' + d.n : '') + who + (fx(rc) ? '<small class="empty" style="display:block;color:#5c8a3a">吃了：' + esc(fx(rc)) + '</small>' : '<small class="empty" style="display:block">沒有特別效果</small>') : '（空）') + '</span>' + btn + '</div>';
   }
-  if (mine) {
-    const ds = recipes.filter(rc => have('dish:' + rc.key) > 0 && !onTable[rc.key]);
-    h += '<p class="empty">放上桌（每道料理放 1 份）</p>' + (ds.length ? ds.map(rc => '<button type="button" class="btn ghost small" data-a="put" data-k="' + esc(rc.key) + '">' + esc(rc.name) + '（有 ' + have('dish:' + rc.key) + '）' + (fx(rc) ? ' · ' + esc(fx(rc)) : '') + '</button>').join(' ') : '<small class="empty">背包裡沒有可以放上桌的料理（已經在桌上的不會重複放）。</small>');
-  }
+  if (mine || !myPut) {
+    const ds = recipes.filter(rc => have('dish:' + rc.key) > 0 && (!mine || !onTable[rc.key]));
+    h += '<p class="empty">' + (mine ? '放上桌（每道料理放 1 份）' : '把你煮的菜放上桌（只放 1 份，朋友和屋主都能吃）') + '</p>' + (ds.length ? ds.map(rc => '<button type="button" class="btn ghost small" data-a="put" data-k="' + esc(rc.key) + '">' + esc(rc.name) + '（有 ' + have('dish:' + rc.key) + '）' + (fx(rc) ? ' · ' + esc(fx(rc)) : '') + '</button>').join(' ') : '<small class="empty">背包裡沒有可以放上桌的料理' + (mine ? '（已經在桌上的不會重複放）' : '') + '。</small>');
+  } else h += '<small class="empty">你已經放了一份在桌上，收回後才能再放。</small>';
   if (dtMsg) h += '<p class="empty" role="alert" style="color:#d0475f;font-weight:700">' + esc(dtMsg) + '</p>';
   dtCard.innerHTML = h + '<button type="button" class="btn wide" data-a="close">完成</button>';
 }
 dtCard.addEventListener('click', async e => {
   const b = e.target.closest('button[data-a]'); if (!b || dtBusy) return;
   const a = b.dataset.a, s = +b.dataset.s, id = dtId;
+  if (dtTv) {   // 電視：換頻道
+    if (a === 'close') closeDisplay();
+    else if (a === 'ch') { const c = +b.dataset.c; setTvCh(id, c, true); if (c === 4) tvLoadFurn(); renderTv(); }
+    return;
+  }
   if (a === 'close') { closeDisplay(); return; }
   dtBusy = true; dtMsg = '';
   try {
@@ -5072,6 +5232,7 @@ dtCard.addEventListener('click', async e => {
       if (t && t.inv) Object.assign(inv, t.inv);
       const disp0 = []; ((t && t.display) || []).forEach(x => { disp0[x.s | 0] = { t: 'dish', k: String(x.k), n: x.n | 0 }; });
       if (house) house.disp[id] = disp0;
+      setDishBy(id, t && t.by);
       const r2 = await enqueue(() => rpc('eat', { p_key: b.dataset.k }));
       if (r2 && r2.inv) Object.assign(inv, r2.inv);
       if (r2 && r2.buff) { buffs[r2.buff] = +r2.until; updateBuffChip(); }
@@ -5086,6 +5247,7 @@ dtCard.addEventListener('click', async e => {
     if (!Array.isArray(r.display)) { reloadHouse(); }
     const disp = []; (r.display || []).forEach(x => { disp[x.s | 0] = { t: 'dish', k: String(x.k), n: x.n | 0 }; });
     if (house) house.disp[id] = disp;
+    setDishBy(id, r.by);
     if (a === 'eat') {
       if (r.buff) { buffs[r.buff] = +r.until; updateBuffChip(); }
       toast('好吃！' + (r.buff ? '（' + (BUFF_N[r.buff] || r.buff) + '）' : '')); chime([76, 81], 0.1);
@@ -6150,6 +6312,7 @@ function startNet(rm, priv) {
       .on('broadcast', { event: 'pact' }, m => onPact(m && m.payload))
       .on('broadcast', { event: 'kick' }, m => onKick(m && m.payload))
       .on('broadcast', { event: 'ate' }, m => onAte(m && m.payload))
+      .on('broadcast', { event: 'tv' }, m => onTv(m && m.payload))
       .on('broadcast', { event: 'pno' }, m => onPno(m && m.payload))
       .subscribe(status => {
         if (!net || net.ch !== ch) return;
@@ -6975,11 +7138,11 @@ function drawFloorTile(px, py, tx, ty, st) {
 
 /* 每種家具的像素畫：px, py 是左上角像素，尺寸等於 w×h 格 */
 const FURN = {
-  bed(px, py) {
-    ob('#e8b27a', '#9b6a44', px + 1, py + 1, 30, 30);
-    ob('#ffffff', '#e6d7c3', px + 4, py + 4, 10, 6); ob('#ffffff', '#e6d7c3', px + 18, py + 4, 10, 6);
-    ob('#ff9bb3', '#d4688a', px + 3, py + 12, 26, 18);
-    r('#ffc2d2', px + 3, py + 15, 26, 2); r('#fffaf0', px + 14, py + 21, 2, 2); r('#fffaf0', px + 13, py + 20, 4, 1); r('#fffaf0', px + 12, py + 21, 1, 1); r('#fffaf0', px + 17, py + 21, 1, 1);
+  bed(px, py) {   // 單人床：窄床置中、一個枕頭（左右對稱，翻轉不影響）
+    ob('#e8b27a', '#9b6a44', px + 6, py + 1, 20, 30);
+    ob('#ffffff', '#e6d7c3', px + 11, py + 4, 10, 6);
+    ob('#ff9bb3', '#d4688a', px + 8, py + 12, 16, 18);
+    r('#ffc2d2', px + 8, py + 15, 16, 2); r('#fffaf0', px + 15, py + 21, 2, 2); r('#fffaf0', px + 14, py + 20, 4, 1); r('#fffaf0', px + 13, py + 21, 1, 1); r('#fffaf0', px + 18, py + 21, 1, 1);
   },
   sofa(px, py) {
     ob('#ff9bb3', '#d4688a', px + 2, py + 1, 28, 8);
@@ -7163,6 +7326,27 @@ const DISP = { aquarium: { n: 4, kind: 'fish' }, specimen: { n: 6, kind: 'bug' }
 const dispOf = it => (house && house.disp && house.disp[it.id]) || [];
 /* 展示品（疊在家具上面；不跟著翻轉，所以魚永遠朝游動方向） */
 const DCONT = {
+  tv(it, px, py, now) {   // 電視畫面：0 = 原本的卡通（不蓋掉），1～4 依頻道畫
+    const c = tvOf(it.id); if (!c) return;
+    const x = px + 7, y = py - 4, t = Math.floor(now / 350);
+    if (c === 1) {   // 烹飪節目：冒煙的鍋子
+      r('#2c2230', x, y, 18, 10); r('#9b5a2a', x + 4, y + 5, 1, 2); r('#9b5a2a', x + 13, y + 5, 1, 2); r('#d9884a', x + 5, y + 5, 8, 4);
+      r('#e8e8f0', x + 6 + (t % 3) * 2, y + 3 - (t % 2), 2, 1); r('#e8e8f0', x + 10 - (t % 3), y + 2, 1, 1);
+    } else if (c === 2) {   // 釣魚節目：水面、游動的魚、浮標
+      r('#5aa6d8', x, y, 18, 10); r('#7cc2ea', x, y, 18, 3); r('#3f86bd', x, y + 8, 18, 2);
+      const f = t % 6; r('#ffb347', x + 2 + f * 2, y + 6, 3, 2); r('#ffb347', x + 1 + f * 2, y + 6, 1, 2);
+      r('#ffffff', x + 14, y, 1, 3 + (t % 2)); r('#ff5a5a', x + 13, y + 3 + (t % 2), 3, 2);
+    } else if (c === 3) {   // 天氣預報：照遊戲裡現在的天氣畫
+      const w = world();
+      r(w.wet ? '#7d8a9a' : '#7fc4f0', x, y, 18, 10);
+      if (!w.wet) { r('#ffd34d', x + 11, y + 1, 5, 5); r('#fff0a0', x + 12, y + 2, 3, 3); }
+      r('#ffffff', x + 3, y + 2, 7, 3); r('#ffffff', x + 5, y + 1, 4, 1);
+      if (w.wet) for (let i = 0; i < 5; i++) r(w.snow ? '#ffffff' : '#bfe0ff', x + 3 + i * 3, y + 5 + ((t + i) % 4), 1, w.snow ? 1 : 2);
+    } else if (c === 4) {   // 今日情報：藍底、一條條文字、閃爍的紅點
+      r('#1f3b73', x, y, 18, 10); r('#ffd34d', x + 1, y + 1, 6, 1); r('#cfe0ff', x + 1, y + 3, 16, 1); r('#cfe0ff', x + 1, y + 5, 12, 1); r('#cfe0ff', x + 1, y + 7, 14, 1);
+      if (t % 2) r('#ff5a5a', x + 15, y + 1, 2, 2);
+    }
+  },
   dtable(it, px, py) {
     const arr = dispOf(it);
     for (let s = 0; s < 4; s++) {
@@ -7249,7 +7433,8 @@ function applyHouse(d) {
   (d.catalog || []).forEach(c => { cat[c.key] = c; list.push(c); });
   const disp = {};
   (d.display || []).forEach(x => { const id = +x.id, s = x.s | 0; if (s < 0 || s > 15 || (x.t !== 'fish' && x.t !== 'bug' && x.t !== 'dish')) return; (disp[id] || (disp[id] = []))[s] = { t: x.t, k: String(x.k), n: x.n | 0 }; });
-  house = { style: d.style || { wall: 0, floor: 0 }, items: (d.items || []).map(i => ({ id: +i.id, k: i.k, x: i.x | 0, y: i.y | 0, f: !!i.f, r: (i.r | 0) & 3 })), cat, list, disp };
+  const by = {}; (d.dish_by || []).forEach(x => { (by[+x.id] || (by[+x.id] = {}))[x.s | 0] = { u: String(x.uid), n: clean(x.name, 8) }; });
+  house = { by, style: d.style || { wall: 0, floor: 0 }, items: (d.items || []).map(i => ({ id: +i.id, k: i.k, x: i.x | 0, y: i.y | 0, f: !!i.f, r: (i.r | 0) & 3 })), cat, list, disp };
 }
 async function loadHouse() { applyHouse(await rpc('house_get')); }
 function reloadHouse() {
@@ -7494,7 +7679,7 @@ function startPact(act, rp) {
 let pose = null;                                // { type: 'sit' | 'lie', id, ix, iy, ox, oy, face0, tile, sort, t }
 function takeSeat(it, x, y) {
   const d = dimsOf(it.k, it.r | 0); if (!d || pose) return;
-  if ((it.r | 0) !== 0) { toast('轉過方向的家具不能坐／躺，轉回原位就可以了', 2200); return; }
+  if ((it.r | 0) !== 0 && SEAT[it.k] !== 'lie') { toast('轉過方向的椅子／沙發不能坐，轉回原位就可以了', 2200); return; }   // 床轉過方向也能躺
   if (it.k !== 'sofa' && seatTaken(it)) { toast(it.k === 'bed' ? '床上已經有人了' : '這個位子已經有人坐了', 1400); return; }   // 沙發可以兩個人並排坐，其他家具一次一人
   pose = { type: SEAT[it.k], id: it.id, ix: it.x, iy: it.y, ox: pl.x, oy: pl.y, face0: pl.face, tile: x - (RX + it.x), sort: RY + it.y + d.h - 1 + 0.02, t: 0 };
   pl.x = pl.sx = x; pl.y = pl.sy = y; pl.prog = 1; pl.face = 'down'; pressed.length = 0;
@@ -7506,7 +7691,7 @@ function seatItemAt(x, y, code) {
   if (!house || scene !== 'house') return null;
   const lx = x - RX, ly = y - RY, want = code === 4 ? 'lie' : 'sit';
   return house.items.find(it => {
-    if (SEAT[it.k] !== want || (it.r | 0) !== 0) return false;
+    if (SEAT[it.k] !== want || ((it.r | 0) !== 0 && want !== 'lie')) return false;
     const g_ = itemRect(it);
     return g_ && lx >= g_.x && lx < g_.x + g_.w && ly >= g_.y && ly < g_.y + g_.h;
   }) || null;
@@ -7555,16 +7740,32 @@ function drawSeated(px, py, it, ch, tile) {
   }
 }
 /* 躺著：頭枕在枕頭上，身體蓋在被子下 */
+/* 床上的某一點（以未轉向的床為準）轉成畫面座標，名牌要跟著頭的位置 */
+function bedPt(it, lx, ly) {
+  const d = defOf(it.k), rt = (it.r | 0) & 3, bx = (RX + it.x) * T, by = (RY + it.y) * T;
+  if (!rt || !d) return [bx + lx, by + ly];
+  const rw = rt & 1 ? d.h : d.w, rh = rt & 1 ? d.w : d.h, a = rt * Math.PI / 2, co = Math.round(Math.cos(a)), si = Math.round(Math.sin(a));
+  const dx = lx - d.w * T / 2, dy = ly - d.h * T / 2;
+  return [bx + rw * T / 2 + dx * co - dy * si, by + rh * T / 2 + dx * si + dy * co];
+}
 function drawLying(it, ch) {
-  const bx = (RX + it.x) * T, by = (RY + it.y) * T, hx = it.f ? bx + 18 : bx + 4;
+  const d0 = defOf(it.k), rt = (it.r | 0) & 3, turned = !!(rt && d0);
+  let bx = (RX + it.x) * T, by = (RY + it.y) * T;
+  if (turned) {   // 和 drawFurn 一樣：以轉過之後的佔格中心為軸旋轉，人和床一起轉
+    const rw = rt & 1 ? d0.h : d0.w, rh = rt & 1 ? d0.w : d0.h;
+    g.save(); g.translate(bx + rw * T / 2, by + rh * T / 2); g.rotate(rt * Math.PI / 2); g.translate(-d0.w * T / 2, -d0.h * T / 2);
+    bx = 0; by = 0;
+  }
+  const hx = bx + 11;   // 枕頭在正中間，翻轉也一樣
   const skin = SKINS[ch.skin] || SKINS[0], hair = HAIRS[ch.hair] || HAIRS[0];
   ob(skin, shade(skin, 0.82), hx + 1, by + 4, 8, 7);
   r(hair, hx + 1, by + 4, 8, 3); r(hair, hx + 1, by + 5, 1, 3); r(hair, hx + 8, by + 5, 1, 3);
   r('#4a2c2c', hx + 3, by + 8, 2, 1); r('#4a2c2c', hx + 6, by + 8, 2, 1);
   r('#ffa0b0', hx + 2, by + 9, 1, 1); r('#ffa0b0', hx + 8, by + 9, 1, 1);
-  ob('#ff9bb3', '#d4688a', bx + 3, by + 12, 26, 18);
-  r('#ffc2d2', bx + 3, by + 15, 26, 2);
-  r('#fffaf0', bx + 14, by + 21, 2, 2); r('#fffaf0', bx + 13, by + 20, 4, 1); r('#fffaf0', bx + 12, by + 21, 1, 1); r('#fffaf0', bx + 17, by + 21, 1, 1);
+  ob('#ff9bb3', '#d4688a', bx + 8, by + 12, 16, 18);
+  r('#ffc2d2', bx + 8, by + 15, 16, 2);
+  r('#fffaf0', bx + 15, by + 21, 2, 2); r('#fffaf0', bx + 14, by + 20, 4, 1); r('#fffaf0', bx + 13, by + 21, 1, 1); r('#fffaf0', bx + 18, by + 21, 1, 1);
+  if (turned) g.restore();
 }
 let visiting = null, ownHouse = null;
 async function visitHouse(uid, name) {
@@ -7627,7 +7828,7 @@ function openDisplay(id) {
   if (typeof id !== 'number' || !isFinite(id)) { toast('家具還在存檔，等一下再試', 1800); return; }
   dsId = id; dsOpen = true; pressed.length = 0; renderDisplay(); dsEl.hidden = false; dsCard.focus();
 }
-function closeDisplay() { dsOpen = false; dsEl.hidden = true; dsId = null; $('dtm').hidden = true; dtId = null; renderHousePanel(); }
+function closeDisplay() { dtTv = false; dsOpen = false; dsEl.hidden = true; dsId = null; $('dtm').hidden = true; dtId = null; renderHousePanel(); }
 function renderDisplay() {
   const it = house && house.items.find(i => i.id === dsId), dd = it && DISP[it.k];
   if (!dd) { closeDisplay(); return; }
@@ -7679,18 +7880,16 @@ function renderHousePanel() {
   $('h-edit').textContent = '布置模式：' + (edit.on ? '開' : '關');
   $('h-edit').setAttribute('aria-pressed', edit.on ? 'true' : 'false');
   $('h-edit-box').hidden = !edit.on;
-  $('h-hint').textContent = !edit.on ? '走到門口按動作鍵回農場' : hold ? '點房間的格子放下 ' + (defOf(hold.k) || {}).name : '點家具可以移動、翻轉、旋轉、收回或賣出；從背包選家具來擺';
+  $('h-hint').textContent = !edit.on ? '走到門口按動作鍵回農場' : hold ? '點房間的格子放下 ' + (defOf(hold.k) || {}).name : '點家具選取，按住可以直接拖著移動，按鈕會浮在家具上方；從背包選家具來擺';
   const have_ = house.list.filter(c => ['floor', 'flat', 'wall'].includes(c.layer) && have('f:' + c.key) > 0);
   $('h-inv').innerHTML = have_.length
     ? have_.map(c => '<button type="button" class="chipbtn" data-f="' + esc(c.key) + '" aria-pressed="' + (hold && !hold.fromId && hold.k === c.key ? 'true' : 'false') + '">' + esc(c.name) + ' ×' + have('f:' + c.key) + '</button>').join('')
     : '<span class="empty">背包裡沒有家具，去小村右上角的家具店買吧。</span>';
   const sb_ = $('h-sel');
   if (selIt) {
-    sb_.hidden = false;
-    sb_.innerHTML = '<span class="v-count">' + esc((defOf(selIt.k) || {}).name || '') + '</span><button type="button" class="btn small" data-s="move">移動</button><button type="button" class="btn small" data-s="flip">翻轉</button><button type="button" class="btn small" data-s="rot">旋轉</button>' + (DISP[selIt.k] ? '<button type="button" class="btn small" data-s="disp">展示品</button>' : '') + '<button type="button" class="btn small ghost" data-s="pick">收回背包</button><button type="button" class="btn small ghost" data-s="sell">賣出 +' + sellPrice(selIt.k) + 'G</button><button type="button" class="btn small ghost" data-s="cancel">取消</button>';
+    sb_.hidden = true; sb_.innerHTML = '';   // 選到的家具，按鈕改放在家具上方的浮動條（#hbar）
   } else if (hold && hold.fromId) {
-    sb_.hidden = false;
-    sb_.innerHTML = '<button type="button" class="btn small" data-s="flip-hold">翻轉</button><button type="button" class="btn small" data-s="rot-hold">旋轉</button><button type="button" class="btn small ghost" data-s="cancel">取消移動</button>';
+    sb_.hidden = true; sb_.innerHTML = '';   // 拖曳中不顯示面板
   } else if (hold) {
     sb_.hidden = false;
     sb_.innerHTML = '<span class="v-count">' + esc((defOf(hold.k) || {}).name || '') + '</span><button type="button" class="btn small" data-s="flip-hold">翻轉</button><button type="button" class="btn small" data-s="rot-hold">旋轉</button><button type="button" class="btn small ghost" data-s="sell-bag">賣出1個 +' + sellPrice(hold.k) + 'G</button><button type="button" class="btn small ghost" data-s="cancel">取消</button>';
@@ -7795,9 +7994,105 @@ function houseTap(tx, ty) {
   edit.sel = it ? it.id : null;
   renderHousePanel();
 }
-$('game').addEventListener('pointerdown', ev => { const [tx, ty] = tileFromEvent(ev); houseTap(tx, ty); });
-$('game').addEventListener('pointermove', ev => { if (scene === 'house' && edit.on && edit.hold) { const [tx, ty] = tileFromEvent(ev); edit.hover = [tx - RX, ty - RY]; } });
-$('game').addEventListener('pointerleave', () => { edit.hover = null; });
+/* 佈置模式：按住家具直接拖著移動；選到家具後，旋轉／翻轉／收回／賣出的按鈕浮在家具上方（#hbar） */
+edit.drag = false; edit.drag0 = null;
+const DRAG_PX = 8;
+function houseDragEnd(cancel) {
+  const d0 = edit.drag0;
+  if (!d0) return;
+  edit.drag0 = null;
+  try { $('game').releasePointerCapture(d0.pid); } catch (e) { /* 略過 */ }
+  if (!edit.drag) return;
+  const it = house && house.items.find(i => i.id === d0.id), hold = edit.hold;
+  edit.drag = false; edit.hold = null;
+  if (it && hold && !cancel && edit.hover) {
+    const [ax, ay] = anchorFor(hold.k, edit.hover[0], edit.hover[1], hold.r);
+    if (fitsLocal(hold.k, ax, ay, it.id, hold.r)) { if (ax !== it.x || ay !== it.y) doMove(it, ax, ay, hold.f, hold.r); }
+    else toast('這裡放不下，放回原位', 1300);
+  }
+  edit.hover = null; renderHousePanel();
+}
+$('game').addEventListener('pointerdown', ev => {
+  const [tx, ty] = tileFromEvent(ev);
+  if (scene === 'house' && edit.on && house && !visiting && !edit.hold) {
+    const lx = tx - RX, ly = ty - RY, it = lx >= 0 && lx < RW && ly >= -2 && ly < RH ? itemAtLocal(lx, ly) : null;
+    if (it) {
+      edit.sel = it.id;
+      edit.drag0 = { id: it.id, pid: ev.pointerId, x0: ev.clientX, y0: ev.clientY, ox: lx - it.x, oy: ly - it.y };
+      try { $('game').setPointerCapture(ev.pointerId); } catch (e) { /* 略過 */ }
+      renderHousePanel(); return;
+    }
+  }
+  houseTap(tx, ty);
+});
+$('game').addEventListener('pointermove', ev => {
+  if (scene !== 'house' || !edit.on) return;
+  const d0 = edit.drag0;
+  if (d0 && d0.pid === ev.pointerId) {
+    if (!edit.drag) {
+      if (Math.hypot(ev.clientX - d0.x0, ev.clientY - d0.y0) < DRAG_PX) return;
+      const it = house.items.find(i => i.id === d0.id);
+      if (!it) { edit.drag0 = null; return; }
+      edit.drag = true; edit.hold = { k: it.k, fromId: it.id, f: it.f, r: it.r | 0 }; renderHousePanel();
+    }
+    const [tx, ty] = tileFromEvent(ev);
+    edit.hover = [tx - RX - d0.ox, ty - RY - d0.oy];
+    return;
+  }
+  if (edit.hold) { const [tx, ty] = tileFromEvent(ev); edit.hover = [tx - RX, ty - RY]; }
+});
+$('game').addEventListener('pointerup', ev => { if (edit.drag0 && edit.drag0.pid === ev.pointerId) houseDragEnd(false); });
+$('game').addEventListener('pointercancel', ev => { if (edit.drag0 && edit.drag0.pid === ev.pointerId) houseDragEnd(true); });
+$('game').addEventListener('pointerleave', () => { if (!edit.drag) edit.hover = null; });
+
+const hbarEl = $('hbar');
+let hbarKey = '', hbarSell = 0, hbarSellT = 0;
+hbarEl.addEventListener('pointerdown', e => e.stopPropagation());
+hbarEl.addEventListener('click', e => {
+  const b = e.target.closest('button[data-b]');
+  const it = house && house.items.find(i => i.id === edit.sel);
+  if (!b || !it) return;
+  const a = b.dataset.b;
+  if (a === 'rot') doRotate(it);
+  else if (a === 'flip') doFlip(it);
+  else if (a === 'disp') openDisplay(it.id);
+  else if (a === 'pick') { doPickup(it); edit.sel = null; }
+  else if (a === 'sell') {
+    if (hbarSell !== it.id) { hbarSell = it.id; clearTimeout(hbarSellT); hbarSellT = setTimeout(() => { hbarSell = 0; }, 2500); return; }   // 賣出要按兩下，避免誤觸
+    clearTimeout(hbarSellT); hbarSell = 0; doSell(it); edit.sel = null;
+  }
+  renderHousePanel(); refreshHud();
+});
+function houseBarSync() {
+  if (!edit.hold && edit.drag) edit.drag = false;
+  if (!edit.on) edit.drag0 = null;
+  const selIt = house && edit.on && scene === 'house' && !visiting && !edit.hold && !paused() ? house.items.find(i => i.id === edit.sel) : null;
+  const g_ = selIt && itemRect(selIt);
+  if (!g_) { if (!hbarEl.hidden) { hbarEl.hidden = true; hbarKey = ''; } return; }
+  const armed = hbarSell === selIt.id, key = selIt.id + '|' + selIt.k + '|' + (DISP[selIt.k] ? 1 : 0) + '|' + (armed ? 1 : 0);
+  if (key !== hbarKey) {
+    hbarKey = key;
+    const btn = (b, ic, t, cls) => '<button type="button" data-b="' + b + '"' + (cls ? ' class="' + cls + '"' : '') + ' aria-label="' + t + '"><i aria-hidden="true">' + ic + '</i><span>' + t + '</span></button>';
+    hbarEl.innerHTML = btn('rot', '↻', '旋轉') + btn('flip', '⇋', '翻轉') + (DISP[selIt.k] ? btn('disp', '✨', '展示品') : '') +
+      '<b class="sep"></b>' + btn('pick', '🎒', '收回') + btn('sell', '💰', armed ? '再按一次 +' + sellPrice(selIt.k) : '賣出', armed ? 'danger armed' : 'danger');
+  }
+  hbarEl.hidden = false;
+  const rc = cv.getBoundingClientRect(), st = stageEl.getBoundingClientRect();
+  if (!rc.width) return;
+  const k = cv.width / rc.width, s_ = imm ? view.s : S;
+  const ox = rc.left - st.left - stageEl.clientLeft, oy = rc.top - st.top - stageEl.clientTop;
+  const X0 = (RX + g_.x) * T, Y0 = (RY + g_.y) * T, X1 = X0 + g_.w * T, Y1 = Y0 + g_.h * T;
+  const px = wx => (wx * s_ - Math.round(view.x * s_)) / k + ox, py = wy => (wy * s_ - Math.round(view.y * s_)) / k + oy;
+  const cx = (px(X0) + px(X1)) / 2, top = py(Y0), bot = py(Y1);
+  const bw = hbarEl.offsetWidth, bh = hbarEl.offsetHeight, sw = stageEl.clientWidth, sh = stageEl.clientHeight;
+  const left = clamp(cx - bw / 2, 4, Math.max(4, sw - bw - 4));
+  let ty_ = top - bh - 12, below = false;
+  if (ty_ < 4) { ty_ = bot + 12; below = true; }
+  if (ty_ + bh > sh - 4) { ty_ = clamp(top - bh - 12, 4, Math.max(4, sh - bh - 4)); below = false; }   // 上下都放不下就夾在畫面裡
+  hbarEl.style.left = Math.round(left) + 'px'; hbarEl.style.top = Math.round(ty_) + 'px';
+  hbarEl.style.setProperty('--ax', Math.round(clamp(cx - left, 16, Math.max(16, bw - 16))) + 'px');
+  hbarEl.classList.toggle('below', below);
+}
 
 /* ---------- 家具店 ---------- */
 const fsEl = $('fshop'), fsCard = $('fshopcard');
@@ -8169,7 +8464,7 @@ function drawEditOverlay(now) {
   r('rgba(255,255,255,.07)', RX * T, RY * T, RW * T, RH * T);
   if (!visiting) for (let ty = 0; ty < RH; ty++) for (let tx = 0; tx < RW; tx++) if (tx >= houseW() || ty >= houseD()) r('rgba(40,30,20,.35)', (RX + tx) * T, (RY + ty) * T, T, T);
   const selIt = house.items.find(i => i.id === edit.sel);
-  if (selIt) { const g_ = itemRect(selIt); if (g_) box(g_, '#ff5f8a'); }
+  if (selIt) { const g_ = itemRect(selIt); if (g_) { if (edit.drag) r('rgba(60,40,30,.3)', (RX + g_.x) * T, (RY + g_.y) * T, g_.w * T, g_.h * T); else box(g_, '#ff5f8a'); } }
   if (edit.hold && edit.hover) {
     const d = dimsOf(edit.hold.k, edit.hold.r | 0);
     if (d) {
@@ -8436,7 +8731,7 @@ function draw(now) {
         const px = Math.round(pl.x * T), py = Math.round(pl.y * T);
         if (pose.type === 'lie') {
           drawLying(pit, ch);
-          nameTag(ch.name, (RX + pit.x) * T + (pit.f ? 23 : 9), (RY + pit.y) * T + 1, '#ffffff');
+          { const q = bedPt(pit, 16, 1); nameTag(ch.name, q[0], q[1], '#ffffff'); }
         } else {
           drawSeated(px, py, pit, ch);
           nameTag(ch.name, px + 8, py - 7, '#ffffff');
@@ -8477,7 +8772,7 @@ function draw(now) {
     const seated = rp.sit && !mv, gs = rp.gsit && !mv;
     const fit = rp.fs && !mv ? seatItemAt(rp.tx, rp.ty, rp.fs) : null;
     if (fit) {
-      if (rp.fs === 4) { drawLying(fit, rp.char); nameTag(rp.name, (RX + fit.x) * T + (fit.f ? 23 : 9), (RY + fit.y) * T + 1, '#fff3b0'); }
+      if (rp.fs === 4) { drawLying(fit, rp.char); const q = bedPt(fit, 16, 1); nameTag(rp.name, q[0], q[1], '#fff3b0'); }
       else { drawSeated(px, py, fit, rp.char, Math.round(rp.x) - (RX + fit.x)); nameTag(rp.name, px + 8, py - 7, '#fff3b0'); }
       return;
     }
@@ -8560,6 +8855,8 @@ function draw(now) {
     ctx.globalAlpha = 1;
   }
 
+  tutDrawHint(now);
+
   ctx.font = '800 7px "Chiron GoRound TC", "Noto Sans TC", sans-serif';
   ctx.textAlign = 'center'; ctx.lineJoin = 'round';
   pops.forEach(p => {
@@ -8634,6 +8931,97 @@ hbEl.addEventListener('click', e => {
   else setHot(false);
 }, true);
 document.addEventListener('pointerdown', e => { if (hbEl.classList.contains('open') && !hbEl.contains(e.target)) setHot(false); }, true);
+/* ---------- 新手教學的視覺指引：A 工具格子閃爍、B 目標位置跳動箭頭 ---------- */
+const TUT_NEED = { till: ['hoe', '鋤頭'], plant: ['seed', '種子'], water: ['can', '水壺'], fish: ['rod', '釣竿'] };
+let tutTgt = null;
+const tutToolOk = (t, id) => !!t && t.id === id && (id !== 'seed' || have('s:' + t.crop) > 0);
+function tutMark(el, tip) {   // 只在狀態改變時動 DOM，閃爍動畫才不會被重置
+  const on = !!tip;
+  if (el.classList.contains('tuthint') !== on) el.classList.toggle('tuthint', on);
+  if (on) { if (el.getAttribute('data-tip') !== tip) el.setAttribute('data-tip', tip); }
+  else if (el.hasAttribute('data-tip')) el.removeAttribute('data-tip');
+}
+function tutValid(ev, x, y) {
+  const p = plots.get(pk(x, y));
+  if (ev === 'till') return !p && farmable(x, y) && K[y][x] === G && !yardMap.has(pk(x, y)) && plots.size < plotCap();
+  if (ev === 'plant') return !!p && !p.crop;
+  if (ev === 'water') return !!p && !!p.crop && (world().wet || !isWet(p));
+  if (ev === 'fish') return K[y][x] === WA;
+  return false;
+}
+function tutPickTarget(ev) {
+  if (scene !== 'farm') return null;
+  if (ev === 'shop') return { k: 'shop', ev, x: 9 * T, y: 3 * T, w: 2 * T, h: 2 * T };
+  if (ev === 'house') return { k: 'door', ev, x: 4 * T, y: 3 * T, w: T, h: T };
+  if (!TUT_NEED[ev]) return null;
+  if (tutTgt && tutTgt.ev === ev) {   // 目標還有效就不換，箭頭才不會跟著玩家亂跳
+    const [kx, ky] = tutTgt.k.split(',').map(Number);
+    if (tutValid(ev, kx, ky)) return tutTgt;
+  }
+  let best = null, bd = 1e9;
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    if (!tutValid(ev, x, y)) continue;
+    const d = Math.abs(x - pl.x) + Math.abs(y - pl.y);
+    if (d < bd) { bd = d; best = { k: x + ',' + y, ev, x: x * T, y: y * T, w: T, h: T }; }
+  }
+  return best;
+}
+function tutSyncHint() {
+  const ev = tutI >= 0 && tutI < TUT.length ? TUT[tutI].ev : null;
+  const live = !!ev && ready && !paused();
+  const need = live ? TUT_NEED[ev] : null;
+  let slotAt = -1, slotTip = '', pageTip = '', hbTip = '';
+  if (need && !tutToolOk(curTool(), need[0])) {
+    const collapsed = imm && portraitNow() && !hbEl.classList.contains('open');
+    slotAt = hot.findIndex(i => tutToolOk(TOOLS[i], need[0]));
+    if (collapsed) hbTip = '點開選' + need[1];
+    else if (slotAt >= 0) slotTip = '選' + need[1];
+    else if (hotSets.some(set => set !== hot && set.some(i => tutToolOk(TOOLS[i], need[0])))) pageTip = '換組找' + need[1];
+  }
+  slots.forEach((s, i) => tutMark(s.el, i === slotAt ? slotTip : ''));
+  tutMark(pgBtn, pageTip);
+  tutMark(hbEl, hbTip);
+  tutTgt = live ? tutPickTarget(ev) : null;
+}
+setInterval(tutSyncHint, 250);
+/* 像素箭頭（預設朝下，9×8），其他方向用翻轉／轉置產生 */
+const TUT_ARW = [[3, 0, 3, 3], [0, 3, 9, 1], [1, 4, 7, 1], [2, 5, 5, 1], [3, 6, 3, 1], [4, 7, 1, 1]];
+function tutArrow(x, y, dir, col, line) {
+  const paint = (ox, oy, c) => TUT_ARW.forEach(([a, b, w, h]) => {
+    let X = a, Y = b, WW = w, HH = h;
+    if (dir === 'up') Y = 8 - b - h;
+    else if (dir === 'right') { X = b; Y = a; WW = h; HH = w; }
+    else if (dir === 'left') { X = 8 - b - h; Y = a; WW = h; HH = w; }
+    r(c, x + X + ox, y + Y + oy, WW, HH);
+  });
+  [[-1, 0], [1, 0], [0, -1], [0, 1]].forEach(([ox, oy]) => paint(ox, oy, line));
+  paint(0, 0, col);
+}
+function tutDrawHint(now) {
+  const t = tutTgt;
+  if (!t || tutI < 0 || scene !== 'farm') return;
+  const sc = imm ? view.s : S, vw = cv.width / sc, vh = cv.height / sc;
+  const a = (0.55 + 0.4 * (0.5 + 0.5 * Math.sin(now / 260))).toFixed(2);
+  const line = 'rgba(255,243,176,' + a + ')', edge = 'rgba(122,74,74,' + (a * 0.8).toFixed(2) + ')';
+  r(edge, t.x - 1, t.y - 1, t.w + 2, 1); r(edge, t.x - 1, t.y + t.h, t.w + 2, 1);
+  r(edge, t.x - 1, t.y, 1, t.h); r(edge, t.x + t.w, t.y, 1, t.h);
+  r(line, t.x, t.y, t.w, 1); r(line, t.x, t.y + t.h - 1, t.w, 1);
+  r(line, t.x, t.y + 1, 1, t.h - 2); r(line, t.x + t.w - 1, t.y + 1, 1, t.h - 2);
+  const tcx = t.x + t.w / 2, tcy = t.y + t.h / 2, bob = Math.round(Math.abs(Math.sin(now / 280)) * 3);
+  const outside = t.x + t.w < view.x || t.x > view.x + vw || t.y + t.h < view.y || t.y > view.y + vh;
+  let ax, ay, dir;
+  if (outside) {   // 目標在畫面外：在畫面邊緣放箭頭指方向
+    const mx0 = view.x + 10, mx1 = view.x + vw - 24, my0 = view.y + 10, my1 = view.y + vh - 22;
+    const dx = tcx - (view.x + vw / 2), dy = tcy - (view.y + vh / 2);
+    if (Math.abs(dx) * vh > Math.abs(dy) * vw) {
+      dir = dx > 0 ? 'right' : 'left'; ay = clamp(tcy - 4, my0, my1); ax = dir === 'right' ? mx1 + bob : mx0 - bob;
+    } else {
+      dir = dy > 0 ? 'down' : 'up'; ax = clamp(tcx - 4, mx0, mx1); ay = dir === 'down' ? my1 + bob : my0 - bob;
+    }
+  } else if (t.y - 12 < view.y + 4) { dir = 'up'; ax = tcx - 4; ay = t.y + t.h + 4 - bob; }
+  else { dir = 'down'; ax = tcx - 4; ay = t.y - 12 + bob; }
+  tutArrow(Math.round(ax), Math.round(ay), dir, '#ffe066', INK);
+}
 fitView();
 
 let last = performance.now();
@@ -8643,6 +9031,7 @@ function frame(now) {
   last = now;
   update(dt);
   draw(now);
+  houseBarSync();
   requestAnimationFrame(frame);
 }
 
