@@ -4,6 +4,7 @@
 let sb = null;
 let me = null;                    // { username, name, look, coins }
 let inv = {};                     // 's:radish' / 'c:radish' -> 數量
+const INV_CAP = 999;             // 每種物品最多 999 個（要和 SQL 的上限一致；真正擋住的是伺服器，這裡只負責顯示）
 let plots = new Map();            // 'x,y' -> { crop, grown, tick, wet }
 let cfg = { wet_s: 10800 };
 let tool = 0, offset = 0, ready = false;
@@ -23,6 +24,13 @@ const MINE_FALLBACK = {
   'm:stone': { name: '石頭', shape: 'rock', color: '#b4b8c4' }, 'm:copper': { name: '銅礦', shape: 'ore', color: '#d98a52' }, 'm:gem': { name: '水晶', shape: 'gem', color: '#8fd3ff' },
   'm:iron': { name: '鐵礦', shape: 'ore', color: '#8e93a6' }, 'm:coal': { name: '煤炭', shape: 'rock', color: '#4a4658' }, 'm:gold': { name: '金礦', shape: 'ore', color: '#ffd34d' }
 };
+/* 伺服器的物品表沒列到的雜物，用內建的中文名稱和圖示當後備（不然商人、牧場、背包會直接顯示 hay、fert2、egg 這種英文代號）。價格交給伺服器，這裡只管名字和外觀。 */
+const ITEM_FALLBACK = {
+  'a:hay': { name: '乾草', shape: 'sack', color: '#e8c070' }, 'a:egg': { name: '雞蛋', shape: 'round', color: '#fff3d6' },
+  'a:milk': { name: '牛奶', shape: 'bottle', color: '#ffffff' }, 'a:wool': { name: '羊毛', shape: 'cloud', color: '#f4f4f4' },
+  'x:fert': { name: '肥料', shape: 'sack', color: '#8c6a44' }, 'x:fert2': { name: '高級肥料', shape: 'sack', color: '#f0c040' }
+};
+const fallbackItem = k => ITEM_FALLBACK[k] || ITEM_FALLBACK['a:' + k] || ITEM_FALLBACK['x:' + k] || null;   // 也接受沒有前綴的寫法（egg、hay、fert2）
 let itemMeta = {}, forPool = [], forTaken = new Set(), fgSlot = -1, rocksAt = {}, fgList = [];
 let soldToday = {}, soldDay = 0, bugTaken = new Set(), dexClaims = {};
 /* 收購飽和（要和 SQL 的 _sell_value 一致）：每種魚、蟲每天前 5 隻原價、第 6~10 隻 6 折、之後 3 折（GMT+8 凌晨重置） */

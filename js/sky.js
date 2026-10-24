@@ -277,12 +277,15 @@ function draw(now) {
   if (syncScene()) remotes.forEach(rp => { if (rp.emo && hereRp(rp)) emoteBubble(rp.emo, Math.round(rp.x * T) + 13, Math.round(rp.y * T) - 6, now); });
   if (!syncScene() && myShow) showCard(myShow, Math.round(rx * T) + 8, Math.round(ry * T) - 11, now);
   if (syncScene()) {
-    if (myBubble) bubble(myBubble, Math.round(rx * T) + 8, Math.round(ry * T) - 11, now);
-    if (myShow) showCard(myShow, Math.round(rx * T) + 8, Math.round(ry * T) - (myBubble && now - myBubble.at < 6000 ? 23 : 11), now);
+    if (myTyping) typingBubble(Math.round(rx * T) + 8, Math.round(ry * T) - 11, now);
+    else if (myBubble) bubble(myBubble, Math.round(rx * T) + 8, Math.round(ry * T) - 11, now);
+    if (myShow) showCard(myShow, Math.round(rx * T) + 8, Math.round(ry * T) - (myTyping || (myBubble && now - myBubble.at < 6000) ? 23 : 11), now);
     remotes.forEach(rp => {
       if (!hereRp(rp)) return;
-      if (rp.bubble) bubble(rp.bubble, Math.round(rp.x * T) + 8, Math.round(rp.y * T) - 11, now);
-      if (rp.show) showCard(rp.show, Math.round(rp.x * T) + 8, Math.round(rp.y * T) - (rp.bubble && now - rp.bubble.at < 6000 ? 23 : 11), now);
+      const tp = typingOn(rp);
+      if (tp) typingBubble(Math.round(rp.x * T) + 8, Math.round(rp.y * T) - 11, now);
+      else if (rp.bubble) bubble(rp.bubble, Math.round(rp.x * T) + 8, Math.round(rp.y * T) - 11, now);
+      if (rp.show) showCard(rp.show, Math.round(rp.x * T) + 8, Math.round(rp.y * T) - (tp || (rp.bubble && now - rp.bubble.at < 6000) ? 23 : 11), now);
     });
   }
 

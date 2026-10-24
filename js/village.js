@@ -5,6 +5,7 @@
 const FACEIDX = { down: 0, right: 1, up: 2, left: 3 };
 const remotes = new Map();
 let net = null, roomInfo = null, myUid = '', pingTimer = 0, myBubble = null, myShow = null;
+let myTyping = false, typingSentAt = 0;   // 方案 A：自己正在輸入（會廣播給別人，頭上顯示三個跳動的點）
 let lastPosKey = '', posAcc = 0, lastMoveAt = 0, lastChat = 0, lastTrackAt = 0, lastSendAt = 0;
 const vPanel = $('village'), vList = $('v-list'), vLog = $('v-log');
 
@@ -28,6 +29,17 @@ function bubble(b, cx, cy, now) {
   ctx.fillStyle = INK; ctx.fillText(t, cx, y + 7);
   ctx.globalAlpha = 1;
 }
+/* 「正在輸入」：三個跳動的點，畫在說話氣泡原本的位置；送出後就被正式氣泡取代 */
+function typingBubble(cx, cy, now) {
+  const w = 17, h = 10, x = Math.round(cx - w / 2), y = cy - h;
+  ob('#ffffff', '#e0b896', x, y, w, h);
+  r('#e0b896', cx - 1, y + h, 3, 1); r('#ffffff', cx, y + h - 1, 1, 1);
+  for (let i = 0; i < 3; i++) {
+    const up = Math.sin(now / 170 - i * 0.9) > 0.35;   // 三個點依序輪流跳起來
+    r(up ? INK : '#c9a98a', x + 4 + i * 4, y + (up ? 3 : 5), 2, 2);
+  }
+}
+const typingOn = rp => !!rp.typing && performance.now() - rp.typing < 6000;   // 對方每 3 秒會補送一次，超過 6 秒沒更新就當作沒在輸入了
 /* 同步的「世界」：p 廣場、t 塔羅屋、h 屋子（拜訪朋友或自己的家，各屋子有自己的頻道）。
    廣場和塔羅屋共用同一條村頻道，靠位置訊息裡的 w 分開；只有和自己同一個世界的人才會畫出來。 */
 const worldKey = () => scene === 'tarot' ? 't' : scene === 'house' ? 'h' : 'p';
@@ -150,7 +162,7 @@ function onPos(p) {
   } else if (typeof p.n === 'string') { rp.name = clean(p.n, 8) || rp.name; rp.char = toChar(rp.name, p.c); }
   rp.heard = performance.now();
   if (nx !== rp.tx || ny !== rp.ty) rp.fish = null;
-  if (rp.w !== wk) { rp.w = wk; rp.x = nx; rp.y = ny; rp.fish = null; rp.bubble = null; }   // 換了世界：直接放到新位置
+  if (rp.w !== wk) { rp.w = wk; rp.x = nx; rp.y = ny; rp.fish = null; rp.bubble = null; rp.typing = 0; }   // 換了世界：直接放到新位置
   rp.tx = nx; rp.ty = ny; rp.f = intIn(p.f, 0, 3, rp.f); rp.posAt = performance.now();
   rp.sit = wk === 'p' && p.s === 1 && pkind[ny][nx] === BN; rp.gsit = p.s === 2; rp.fs = wk === 'h' && (p.s === 3 || p.s === 4) ? p.s : 0;                  // 只有真的在長椅那一格才當作坐著
 }
@@ -194,15 +206,20 @@ function onChat(p) {
   const rp = typeof p.i === 'string' ? remotes.get(p.i) : null;
   const text = clean(p.t, 40).trim();
   if (!rp || !text) return;
-  rp.bubble = { txt: text, at: performance.now() };
+  rp.bubble = { txt: text, at: performance.now() }; rp.typing = 0;
   addLog(rp.name, text, false);
+}
+function onTyping(p) {
+  if (!p || typeof p !== 'object') return;
+  const rp = typeof p.i === 'string' ? remotes.get(p.i) : null;
+  if (rp) rp.typing = p.a === 1 ? performance.now() : 0;
 }
 /* 同一個主題的頻道在 supabase-js 裡會被重用：舊的還沒離開乾淨就用同名開新的，會拿到壞掉的舊頻道。
    所以每次換頻道都要等舊的完全移除後才建立新的。 */
 let netGate = Promise.resolve(), netTok = 0;
 const dropChannel = ch => { try { return Promise.resolve(sb.removeChannel(ch)).catch(() => {}); } catch (e) { return Promise.resolve(); } };
 function stopNet() {
-  netTok++;
+  netTok++; myTyping = false;
   if (!net) return;
   const n = net; net = null;
   netGate = netGate.then(() => dropChannel(n.ch));
@@ -218,6 +235,7 @@ function startNet(rm, priv) {
       .on('broadcast', { event: 'pos' }, m => onPos(m && m.payload))
       .on('broadcast', { event: 'bye' }, m => onBye(m && m.payload))
       .on('broadcast', { event: 'chat' }, m => onChat(m && m.payload))
+      .on('broadcast', { event: 'typing' }, m => onTyping(m && m.payload))
       .on('broadcast', { event: 'fish' }, m => onFish(m && m.payload))
       .on('broadcast', { event: 'show' }, m => onShow(m && m.payload))
       .on('broadcast', { event: 'emo' }, m => onEmo(m && m.payload))
@@ -344,9 +362,29 @@ function sendChat(text) {
   if (now - lastChat < 900) { toast('慢一點，別洗頻喔', 1200); return; }
   lastChat = now;
   try { net.ch.send({ type: 'broadcast', event: 'chat', payload: { i: myUid, t: text } }); } catch (e) { return; }
-  myBubble = { txt: text, at: now };
+  myBubble = { txt: text, at: now }; myTyping = false;
   addLog(me.name, text, true);
 }
+/* 輸入中：框裡有字就廣播 a:1（每 3 秒補送一次），清空、失焦、關閉或送出就廣播 a:0 */
+function setTyping(on) {
+  on = !!on && !!net && net.ok && syncScene();
+  const now = performance.now();
+  if (on === myTyping && !(on && now - typingSentAt > 3000)) return;
+  const was = myTyping;
+  myTyping = on;
+  if (!on && !was) return;
+  typingSentAt = now;
+  try { net.ch.send({ type: 'broadcast', event: 'typing', payload: { i: myUid, a: on ? 1 : 0 } }); } catch (e) { /* 略過 */ }
+}
+const typingBoxes = ['v-input', 'cinput'].map(id => $(id)).filter(Boolean);
+const stillTyping = () => typingBoxes.some(el => el.value.trim().length > 0 && document.activeElement === el);
+setInterval(() => { if (myTyping) setTyping(stillTyping()); }, 1000);   // 每秒檢查：還在打就補送心跳，框清空了（例如送出被擋）就收掉
+['v-input', 'cinput'].forEach(id => {
+  const el = $(id);
+  if (!el) return;
+  const sync = () => setTyping(el.value.trim().length > 0 && document.activeElement === el);
+  el.addEventListener('input', sync); el.addEventListener('focus', sync); el.addEventListener('blur', () => setTyping(false));
+});
 $('v-form').addEventListener('submit', e => {
   e.preventDefault();
   const inp = $('v-input'), v = inp.value;

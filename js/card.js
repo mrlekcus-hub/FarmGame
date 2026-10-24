@@ -36,7 +36,8 @@ const itemName = k => {
   if (itemMeta[k]) return itemMeta[k].name;
   if (t === 'f') { const d = defOf(id); return d ? d.name : id; }
   if (t === 's') return (CROPS[id] ? CROPS[id].n : id) + '種子';
-  return id;
+  const fb = fallbackItem(k);
+  return fb ? fb.name : id;
 };
 let cdGift = false;
 function renderCard() {

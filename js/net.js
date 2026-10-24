@@ -14,7 +14,7 @@ const ERR = {
   village_full: '這個村莊已經滿 8 人了', bad_village_code: '村莊邀請碼要 6 個字元', bad_mode: '操作不對', look_locked: '這個造型還沒買', fit_not_today: '這件衣服今天沒有上架，明天再來看看', bad_color: '沒有這個顏色', use_buy_fit: '這件衣服要在裁縫鋪按顏色購買', too_fast: '別急，再等一下', max_rod: '已經是最高級的釣竿了', no_user: '找不到這位玩家', bond_locked: '友情等級還不夠，這個動作還沒解鎖', no_pending: '對方的邀請已經過期了', bad_act: '沒有這個動作', friend_self: '不能加自己為好友', already_friends: '已經是好友了', already_sent: '已經送出過申請了，等對方回覆吧', too_many_requests: '送出的申請太多了，先等對方回覆吧', friend_full: '你的好友已經滿了', target_full: '對方的好友已經滿了', no_request: '這個申請已經不存在了', bad_fish: '沒有這種魚', bad_bug: '沒有這種蟲', bug_gone: '這隻已經飛走了', nothing_to_claim: '現在沒有可以領的獎勵', not_friend: '只能拜訪好友的家', bad_slot: '這個格子不能用', bad_msg: '信的內容要 1～200 字', mail_limit: '今天寄太多了，明天再寄吧（一天最多 30 張）', no_item: '找不到這個家具', bad_item: '這個家具不能這樣用', cannot_place: '這裡放不下', house_full: '家裡的家具太多了',
   no_kitchen: '家裡要先擺一台廚房灶台才能做料理', host_no_kitchen: '這個家沒有廚房灶台', visitor_limit: '你已經在這張桌上放了一份，先收回才能再放', not_enough_items: '材料不夠', bad_recipe: '沒有這道料理', not_edible: '這道菜不能吃，拿去賣或交委託吧', no_dish: '背包裡沒有這道料理了',
   order_done: '這張委託已經完成了', bad_order: '沒有這張委託', max_tool: '已經是最高等級了', bad_tool: '沒有這種工具',
-  no_hay: '沒有乾草了，到村裡的牧場小屋買', nothing_to_feed: '動物都吃飽了', nothing_to_collect: '現在沒有可以收的', barn_full: '穀倉住滿了（玩家升級會變大）', rock_busy: '這顆礦石還在恢復', sold_out: '今天已經買過或賣滿了', not_on_sale: '這件家具今天沒有上架', merchant_away: '旅行商人今天不在', already_fert: '已經施過肥了', story_end: '故事暫時告一段落，之後還會有新章節', yard_full: '庭院已經擺滿 60 件了', cannot_sell: '這個不能賣', visit_closed: '現在不方便拜訪', block_full: '黑名單最多 20 人', table_full: '桌上放不下了（一格最多 10 份）', eat_limit: '今天吃了太多份了，明天再來吧', buff_full: '這個效果已經滿 60 分鐘了，晚點再吃'
+  no_hay: '沒有乾草了，到村裡的牧場小屋買', nothing_to_feed: '動物都吃飽了', nothing_to_collect: '現在沒有可以收的', barn_full: '穀倉住滿了（玩家升級會變大）', rock_busy: '這顆礦石還在恢復', sold_out: '今天已經買過或賣滿了', not_on_sale: '這件家具今天沒有上架', merchant_away: '旅行商人今天不在', already_fert: '已經施過肥了', story_end: '故事暫時告一段落，之後還會有新章節', yard_full: '庭院已經擺滿 60 件了', cannot_sell: '這個不能賣', visit_closed: '現在不方便拜訪', block_full: '黑名單最多 20 人', table_full: '桌上放不下了（一格最多 10 份）', eat_limit: '今天吃了太多份了，明天再來吧', buff_full: '這個效果已經滿 60 分鐘了，晚點再吃', item_cap: '這種東西已經有 999 個了，先賣掉或用掉一些吧'
 };
 const errText = e => {
   const m = String((e && (e.message || e.msg)) || e || '');
@@ -55,7 +55,8 @@ function applyState(d) {
   recipes = d.recipes || []; buffs = d.buffs || {}; toolLv = { hoe: 1, can: 1, ...(d.tools || {}) }; toolCost = d.toolcost || {};
   bugTaken = new Set(d.bugtaken || []); dexClaims = d.dexclaims || {};
   itemMeta = {}; (d.items || []).forEach(m => { itemMeta[m.key] = m; });
-  Object.keys(MINE_FALLBACK).forEach(k => { if (!itemMeta[k]) itemMeta[k] = { key: k, price: 0, buy: 0, ...MINE_FALLBACK[k] }; });   // 伺服器的物品表沒有礦物時，用內建的中文名稱和圖示（背包才看得到）
+  Object.keys(MINE_FALLBACK).forEach(k => { if (!itemMeta[k]) itemMeta[k] = { key: k, price: 0, buy: 0, ...MINE_FALLBACK[k] }; });
+  Object.keys(ITEM_FALLBACK).forEach(k => { if (!itemMeta[k]) itemMeta[k] = { key: k, price: 0, buy: 0, ...ITEM_FALLBACK[k] }; });   // 乾草、蛋、奶、毛、肥料：伺服器沒給就用內建名稱   // 伺服器的物品表沒有礦物時，用內建的中文名稱和圖示（背包才看得到）
   featNeed = { ...featNeed, ...(d.featneed || {}) };
   featNeed.mine = Math.max(featNeed.mine | 0, 4); featNeed.cave = Math.max(featNeed.cave | 0, 4);   // 山洞、採礦至少玩家 Lv.4（伺服器舊值較低也以這裡為準）
   fishRec = d.fishrec || {}; if (Array.isArray(d.ycat) && d.ycat.length) ycat = d.ycat; storyDone = d.story | 0;
