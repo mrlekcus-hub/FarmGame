@@ -75,7 +75,7 @@ function update(dt) {
   if (moodAcc > 1000) { moodAcc = 0; if (Music) { Music.setMood(darkness(world().min), scene === 'plaza'); syncBgm(); } updateBuffChip(); updateCheer(); }
   fishTick();
   cookTick();
-  if (paused()) { actQueued = false; return; }
+  if (paused()) { actQueued = false; autoPath = null; return; }
   if (anim && (pressed.length || pose || pl.prog < 1)) anim = null;   // 走動或坐下就中斷動作
   if (pose) {                                   // 坐著或躺著：家具被搬走、離開屋子或按方向鍵就起身
     const furn = !pose.bench && !pose.ground;             // 坐家具／躺床才需要檢查家具還在不在
@@ -89,10 +89,16 @@ function update(dt) {
     }
   }
   updateCritters(dt);
-  if (pl.prog < 1) pl.prog = Math.min(1, pl.prog + dt / stepMs());
+  if (pressed.length || (autoPath && (paused() || fishing))) autoPath = null;   // 手動操作（鍵盤、搖桿）一動，自動走路就取消
+  let over = 0;
+  if (pl.prog < 1) {
+    pl.prog += dt / stepMs();
+    if (pl.prog >= 1) { over = (pl.prog - 1) * stepMs(); pl.prog = 1; }   // 這格走完多出來的時間，留給下一格，不要丟掉，連續走路才不會一格一頓
+  }
   if (pl.prog >= 1) {
     const d = pressed[pressed.length - 1];
-    if (d) tryMove(d);
+    if (d) tryMove(d); else if (autoPath) pathStep();
+    if (pl.prog === 0 && over > 0) pl.prog = Math.min(0.6, over / stepMs());
   }
   if (actQueued) { actQueued = false; act(); }
   updateClock(); updateTip();

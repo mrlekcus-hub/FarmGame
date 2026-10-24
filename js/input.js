@@ -60,20 +60,33 @@ window.addEventListener('blur', () => { pressed.length = 0; actHeld = false; });
 /* 類比搖桿：圓鈕跟著手指（限制在底盤內），方向取主軸（帶遲滯避免斜推時抖動），
    推得越遠走得越快（格子制移動，所以「類比」體現在速度上）。多指可同時按動作鈕。 */
 const dpadEl = document.querySelector('.dpad'), knobEl = $('knob'), DIRS4 = ['up', 'down', 'left', 'right'];
-let dpId = null, stickMag = 0, stickDir = null;
+let dpId = null, stickMag = 0, stickDir = null, fOrg = null;
+/* 操作方式設定：浮動搖桿（手按哪裡搖桿就出現在哪裡）、點地面走過去。手機預設開，電腦預設關，設定裡可以改 */
+const coarseMain = !!(window.matchMedia && matchMedia('(pointer:coarse)').matches);
+const loadFlag = (key, def) => { try { const v = localStorage.getItem(key); if (v === '1') return true; if (v === '0') return false; } catch (e) { /* 略過 */ } return def; };
+let floatOn = loadFlag('dw_float', coarseMain), tapOn = loadFlag('dw_tap', coarseMain);
+function applyCtl() { document.body.classList.toggle('fl', floatOn); }
+applyCtl();
+/* 浮動搖桿的外觀：只有按下去才出現，位置就是手指按下的地方 */
+const FS_R = 64;
+const fltEl = document.createElement('div');
+fltEl.id = 'fstick'; fltEl.hidden = true; fltEl.innerHTML = '<div class="stick-base"></div><i class="stick-knob"></i>';
+document.body.appendChild(fltEl);
+const fltKnob = fltEl.querySelector('.stick-knob');
 function dpSet(d) {
   DIRS4.forEach(x => { if (x !== d) release(x); });
   if (d && !paused() && pressed[pressed.length - 1] !== d) press(d);
-  dpadEl.classList.toggle('on', !!d);
+  dpadEl.classList.toggle('on', !!d); fltEl.classList.toggle('on', !!d);
   if (!d) stickDir = null;
-  if (dpId === null) { knobEl.style.transform = ''; stickMag = 0; }
+  if (dpId === null) { knobEl.style.transform = ''; fltKnob.style.transform = ''; stickMag = 0; fOrg = null; fltEl.hidden = true; }
 }
 function dpDir(e) {
-  const rc = dpadEl.getBoundingClientRect(), R = rc.width / 2;
-  const dx = e.clientX - (rc.left + R), dy = e.clientY - (rc.top + R);
+  let R, dx, dy, kel;
+  if (fOrg) { R = FS_R; dx = e.clientX - fOrg.x; dy = e.clientY - fOrg.y; kel = fltKnob; }
+  else { const rc = dpadEl.getBoundingClientRect(); R = rc.width / 2; dx = e.clientX - (rc.left + R); dy = e.clientY - (rc.top + R); kel = knobEl; }
   const len = Math.hypot(dx, dy), travel = R * 0.5;
   const k = len > travel ? travel / len : 1;
-  knobEl.style.transform = 'translate(' + (dx * k).toFixed(1) + 'px,' + (dy * k).toFixed(1) + 'px)';
+  kel.style.transform = 'translate(' + (dx * k).toFixed(1) + 'px,' + (dy * k).toFixed(1) + 'px)';
   if (len < R * 0.28) { stickMag = 0; stickDir = null; return null; }          // 死區（調大一點，手指輕輕放著不會亂動）
   stickMag = clamp((len - R * 0.28) / (R * 0.55), 0, 1);
   const ax = Math.abs(dx), ay = Math.abs(dy);
@@ -82,21 +95,65 @@ function dpDir(e) {
   stickDir = horiz ? (dx < 0 ? 'left' : 'right') : (dy < 0 ? 'up' : 'down');
   return stickDir;
 }
-const stepMs = () => ((dpId !== null && stickMag > 0) ? 290 - 140 * stickMag : STEP_MS) * (buffOn('swift') ? 0.8 : 1);   // 搖桿：輕推約 290ms 一步，推到底約 150ms 一步（鍵盤維持 120ms）
+const stepMs = () => ((dpId !== null && stickMag > 0) ? 240 - 100 * stickMag : STEP_MS) * (buffOn('swift') ? 0.8 : 1);   // 搖桿：輕推約 240ms 一步，推到底約 140ms 一步（鍵盤維持 120ms）
+function fsStart(e, x, y) {
+  if (dpId !== null) return;
+  dpId = e.pointerId; fOrg = { x, y };
+  fltEl.style.left = x + 'px'; fltEl.style.top = y + 'px'; fltEl.hidden = false;
+  dpSet(dpDir(e));
+}
 dpadEl.addEventListener('pointerdown', e => {
   e.preventDefault();
   if (dpId !== null) return;
-  dpId = e.pointerId;
   try { dpadEl.setPointerCapture(e.pointerId); } catch (_) {}
+  if (floatOn && e.pointerType !== 'mouse') { fsStart(e, e.clientX, e.clientY); return; }   // 浮動模式：從按下的地方當中心，不用瞄準底盤
+  dpId = e.pointerId;
   dpSet(dpDir(e));
 });
-dpadEl.addEventListener('pointermove', e => { if (e.pointerId === dpId) dpSet(dpDir(e)); });
-['pointerup', 'pointercancel', 'lostpointercapture'].forEach(t => dpadEl.addEventListener(t, e => {
+/* 搖桿底下的空白處（動作鈕以外的左側）也能直接按 */
+$('pad').addEventListener('pointerdown', e => {
+  if (!floatOn || e.pointerType === 'mouse' || dpId !== null || (e.target.closest && e.target.closest('#actbtn,.dpad'))) return;
+  const rc = $('pad').getBoundingClientRect();
+  if (e.clientX > rc.left + rc.width * 0.6) return;
+  e.preventDefault();
+  try { $('pad').setPointerCapture(e.pointerId); } catch (_) {}
+  fsStart(e, e.clientX, e.clientY);
+});
+/* 畫面手勢：左半邊按住（或拖一下）＝浮動搖桿；快速點一下＝走到那一格 */
+let gest = null, gestTimer = 0;
+const gestOK = () => ready && !!me && !paused() && !(scene === 'house' && edit.on);
+cv.addEventListener('pointerdown', e => {
+  if (gest || dpId !== null || e.isPrimary === false || !gestOK()) return;
+  if (e.pointerType === 'mouse' && e.button !== 0) return;
+  const rc = cv.getBoundingClientRect();
+  const fl = floatOn && e.pointerType !== 'mouse' && (e.clientX - rc.left) < rc.width * 0.55;
+  if (!fl && !tapOn) return;
+  gest = { id: e.pointerId, x: e.clientX, y: e.clientY, t: performance.now(), fl, stick: false, moved: false };
+  if (!fl) return;
+  try { cv.setPointerCapture(e.pointerId); } catch (_) {}
+  const go = () => { if (gest && !gest.stick && !gest.moved) { gest.stick = true; fsStart({ pointerId: gest.id, clientX: gest.x, clientY: gest.y }, gest.x, gest.y); } };
+  if (tapOn) gestTimer = setTimeout(go, 200); else go();   // 有開點地面：超過 0.2 秒才算按住，之前放開就是「點一下」
+});
+function gestMove(e) {
+  if (!gest || e.pointerId !== gest.id || gest.stick) return;
+  if (Math.hypot(e.clientX - gest.x, e.clientY - gest.y) < 10) return;
+  clearTimeout(gestTimer);
+  if (gest.fl) { gest.stick = true; fsStart(e, gest.x, gest.y); } else gest.moved = true;
+}
+function gestEnd(e, type) {
+  if (!gest || e.pointerId !== gest.id) return;
+  clearTimeout(gestTimer);
+  const g0 = gest; gest = null;
+  if (type === 'pointerup' && !g0.stick && !g0.moved && tapOn && performance.now() - g0.t < (g0.fl ? 200 : 450) && gestOK()) tapMove(e);
+}
+window.addEventListener('pointermove', e => { gestMove(e); if (e.pointerId === dpId) dpSet(dpDir(e)); });
+['pointerup', 'pointercancel', 'lostpointercapture'].forEach(t => window.addEventListener(t, e => {
+  if (t !== 'lostpointercapture') gestEnd(e, t);
   if (e.pointerId !== dpId) return;
   dpId = null; dpSet(null);
 }));
-['blur', 'orientationchange', 'resize'].forEach(t => window.addEventListener(t, () => { dpId = null; dpSet(null); }));
-document.addEventListener('visibilitychange', () => { if (document.hidden) { dpId = null; dpSet(null); } });
+['blur', 'orientationchange'].forEach(t => window.addEventListener(t, () => { dpId = null; gest = null; dpSet(null); }));   // 不再聽 resize：手機網址列收起來也會觸發 resize，會讓手指還按著、搖桿卻被放開
+document.addEventListener('visibilitychange', () => { if (document.hidden) { dpId = null; gest = null; dpSet(null); } });
 ['pad', 'game'].forEach(id => $(id).addEventListener('contextmenu', e => e.preventDefault()));
 /* iOS Safari 防縮放：它無視 user-scalable=no，所以要自己擋雙指縮放、雙擊放大 */
 ['gesturestart', 'gesturechange', 'gestureend'].forEach(t => document.addEventListener(t, e => e.preventDefault()));

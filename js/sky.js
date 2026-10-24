@@ -143,6 +143,19 @@ function syncCanvasRows() {
   if (cv.style.aspectRatio !== ar) cv.style.aspectRatio = ar;
 }
 
+/* 點地面走過去：目標格的四個角閃動，路上的小白點 */
+function drawTapMark(now) {
+  const a = autoPath;
+  if (!a || a.scene !== scene) return;
+  const px = a.tx * T, py = a.ty * T, o = Math.floor(now / 260) % 2, c = a.act ? '#ffd23f' : '#ff7a9b', e = T - 4;   // 金黃色＝到了會自動動作
+  [[0, 0, 1, 1], [e, 0, -1, 1], [0, e, 1, -1], [e, e, -1, -1]].forEach(([ox, oy, sx, sy]) => {
+    const x = px + 2 + ox + o * sx, y = py + 2 + oy + o * sy;
+    r(c, sx > 0 ? x : x - 3, y, 4, 1); r(c, x, sy > 0 ? y : y - 3, 1, 4);
+  });
+  ctx.globalAlpha = 0.7;
+  a.tiles.slice(a.i, -1).forEach(([x, y]) => r('#ffffff', x * T + 7, y * T + 7, 2, 2));
+  ctx.globalAlpha = 1;
+}
 function draw(now) {
   g = ctx;
   syncCanvasRows();
@@ -154,7 +167,11 @@ function draw(now) {
     const tx = vw >= W * T ? (W * T - vw) / 2 : clamp(cx - vw / 2, 0, W * T - vw);
     const ty = vh >= H * T + sk ? (H * T - sk - vh) / 2 : clamp(cy - vh / 2, -sk, H * T - vh);
     if (view.snap || view.scene !== scene) { view.x = tx; view.y = ty; view.snap = false; view.scene = scene; }
-    else { view.x += (tx - view.x) * 0.2; view.y += (ty - view.y) * 0.2; }
+    else {   // 鏡頭追角色：用經過的時間算，不管 30 還是 60 幀，追的速度都一樣
+      const fk = 1 - Math.pow(0.8, clamp((now - (view.t || now)) / 16.667, 0.25, 4));
+      view.x += (tx - view.x) * fk; view.y += (ty - view.y) * fk;
+    }
+    view.t = now;
     if (imm) { ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#6fbf73'; ctx.fillRect(0, 0, cv.width, cv.height); }
     ctx.setTransform(s, 0, 0, s, -Math.round(view.x * s), -Math.round(view.y * s));
   }
@@ -289,6 +306,7 @@ function draw(now) {
     });
   }
 
+  drawTapMark(now);
   drawFishing(now);
   drawCooking(now);
   drawCookWatch(now);

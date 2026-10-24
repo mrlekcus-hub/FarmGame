@@ -187,4 +187,84 @@ function tryMove(dir) {
   const nx = pl.x + d[0], ny = pl.y + d[1];
   if (walkable(nx, ny)) { pl.sx = pl.x; pl.sy = pl.y; pl.x = nx; pl.y = ny; pl.prog = 0; pl.step++; tutEvent('move'); }
 }
+/* 點地面走過去：用廣度優先搜尋找最短路徑。點到走不進去的格子（門、NPC、家具、水邊），就走到旁邊並面向它，再按動作鍵 */
+let autoPath = null;
+function planPath(tx, ty, force) {
+  if (tx < 0 || ty < 0 || tx >= W || ty >= H) return null;
+  const sx = pl.x, sy = pl.y, idx = (x, y) => y * W + x, DL = [['up', 0, -1], ['down', 0, 1], ['left', -1, 0], ['right', 1, 0]];
+  const direct = !force && walkable(tx, ty), goals = new Set();   // force：野外採集物、飛著的蟲，一律走到旁邊再動手
+  if (direct) goals.add(idx(tx, ty));
+  else DL.forEach(([, dx, dy]) => { const x = tx + dx, y = ty + dy; if (x >= 0 && y >= 0 && x < W && y < H && walkable(x, y)) goals.add(idx(x, y)); });
+  if (!goals.size) return null;
+  const prev = new Int16Array(W * H).fill(-2); prev[idx(sx, sy)] = -1;
+  const q = [[sx, sy]]; let hit = -1;
+  for (let h = 0; h < q.length; h++) {
+    const [x, y] = q[h];
+    if (goals.has(idx(x, y))) { hit = idx(x, y); break; }
+    for (const [, dx, dy] of DL) {
+      const nx = x + dx, ny = y + dy;
+      if (nx < 0 || ny < 0 || nx >= W || ny >= H || prev[idx(nx, ny)] !== -2 || !walkable(nx, ny)) continue;
+      prev[idx(nx, ny)] = idx(x, y); q.push([nx, ny]);
+    }
+  }
+  if (hit < 0) return null;
+  const tiles = [];
+  for (let c = hit; c !== idx(sx, sy); c = prev[c]) tiles.push([c % W, (c / W) | 0]);
+  tiles.reverse();
+  const dirs = []; let cx = sx, cy = sy;
+  tiles.forEach(([x, y]) => { dirs.push(x > cx ? 'right' : x < cx ? 'left' : y > cy ? 'down' : 'up'); cx = x; cy = y; });
+  const face = direct ? null : (tx > cx ? 'right' : tx < cx ? 'left' : ty > cy ? 'down' : 'up');
+  return { scene, tiles, dirs, i: 0, face, tx, ty, act: !direct };   // act：點的是門、NPC、水、家具這類走不進去的格子，到了就自動按一次動作鍵
+}
+/* 點到可以「動手」的東西：野外採集物（農場）、拿著捕蟲網時點到的蟲蝶。回傳要動手的那一格，不是就回 null */
+function tapTarget(tx, ty) {
+  if (scene === 'farm' && !yardMap.has(pk(tx, ty)) && fgList.some(f => f.x === tx && f.y === ty && !forTaken.has(f.slot + ':' + f.i))) return [tx, ty, 'fg'];
+  if (scene === 'farm') { const p = plots.get(pk(tx, ty)); if (p && p.crop && ripeNow(p)) return [tx, ty, 'crop']; }   // 熟了的作物也一樣：走到旁邊直接收
+  if (scene === 'farm' && curTool().crop) { const p = plots.get(pk(tx, ty)); if (p && !p.crop) return [tx, ty, 'plant']; }   // 裝備種子：點翻好的空田，走到旁邊直接播種
+  if (scene === 'farm' && curTool().id === 'can' && !world().wet) { const p = plots.get(pk(tx, ty)); if (p && !isWet(p)) return [tx, ty, 'water']; }   // 裝備水壺：點還乾的田，走到旁邊直接澆（下雨天不用澆，照一般走路）
+  if ((scene === 'farm' || scene === 'forest') && curTool().id === 'net') {
+    let best = null, bd = 1.0;
+    critters.forEach(c => { const d = Math.hypot(c.x - (tx + 0.5), c.y - (ty + 0.5)); if (d < bd) { bd = d; best = c; } });
+    if (best) return [Math.floor(best.x), Math.floor(best.y), 'bug'];   // 蟲會飛，以牠現在所在的格子為目標；揮網有範圍，飄一點也抓得到
+  }
+  return null;
+}
+/* 走到了：採集物直接採（不靠面向那一格），其他的按一次動作鍵 */
+function pathDone(a) {
+  if (a.face) pl.face = a.face;
+  if (!a.act) return;
+  if (a.kind === 'fg' && !catchShown && !fishing) {
+    const f = fgList.find(q => q.x === a.tx && q.y === a.ty && !forTaken.has(q.slot + ':' + q.i));
+    if (f) { takeForage(f); return; }
+  }
+  actQueued = true;
+}
+function tapMove(e) {
+  let [tx, ty] = tileFromEvent(e);
+  if (catchShown) { hideCatch(); return; }   // 釣到魚、抓到蟲的視窗開著：點一下就收起來
+  if (fishing) {   // 釣魚中：有咬鉤就收竿；等待中點水面不理它；點別的地方才算收竿走開
+    if (fishing.phase === 'bite') { actQueued = true; return; }
+    if (fishing.phase !== 'wait' || (tx === fishing.x && ty === fishing.y)) return;
+  }
+  const tg = tapTarget(tx, ty);
+  if (tg) { tx = tg[0]; ty = tg[1]; }
+  if (!tg && tx === pl.x && ty === pl.y) return;
+  const p = planPath(tx, ty, !!tg);
+  if (p && tg) p.kind = tg[2];
+  if (!p) { pop(tx, ty - 0.3, '走不到', '#ffffff'); return; }
+  if (fishing) fishCancel();
+  if (cooking) cookCancel();
+  if (!p.dirs.length) { if (!pose) pathDone(p); return; }
+  autoPath = p;
+}
+function pathStep() {
+  const a = autoPath;
+  if (!a || a.scene !== scene) { autoPath = null; return; }
+  if (a.i >= a.dirs.length) { pathDone(a); autoPath = null; return; }
+  if (pose) standUp();
+  const px = pl.x, py = pl.y;
+  tryMove(a.dirs[a.i]);
+  if (pl.x === px && pl.y === py) { autoPath = null; return; }   // 被擋住了（有東西擋路）就停下
+  a.i++;
+}
 const facing = () => [pl.x + DIRS[pl.face][0], pl.y + DIRS[pl.face][1]];

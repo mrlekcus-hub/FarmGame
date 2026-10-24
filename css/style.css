@@ -861,3 +861,10 @@ body.imm.modal .buffbar{visibility:hidden!important;pointer-events:none!importan
 .cheer:active{transform:translateX(-50%) translateY(2px);box-shadow:0 1px 0 var(--edge)}
 body.imm .cheer{position:fixed;z-index:6;top:max(12px,env(safe-area-inset-top,0px))}
 body.imm.modal .cheer{visibility:hidden!important;pointer-events:none!important}
+
+/* 浮動搖桿：按下去才出現，位置在手指下方 */
+#fstick{position:fixed;z-index:40;width:128px;height:128px;margin:-64px 0 0 -64px;pointer-events:none;opacity:.92}
+#fstick[hidden]{display:none}
+#fstick.on .stick-knob{background:#ff7a9b}
+body.fl canvas#game{touch-action:none;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.strow-hint{margin:-4px 0 8px;font-size:12px;line-height:1.4;color:var(--muted)}
