@@ -221,6 +221,7 @@ function startNet(rm, priv) {
       .on('broadcast', { event: 'fish' }, m => onFish(m && m.payload))
       .on('broadcast', { event: 'show' }, m => onShow(m && m.payload))
       .on('broadcast', { event: 'emo' }, m => onEmo(m && m.payload))
+    .on('broadcast', { event: 'cook' }, m => onCook(m && m.payload))
       .on('broadcast', { event: 'pact' }, m => onPact(m && m.payload))
       .on('broadcast', { event: 'kick' }, m => onKick(m && m.payload))
       .on('broadcast', { event: 'ate' }, m => onAte(m && m.payload))

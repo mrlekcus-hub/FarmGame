@@ -104,6 +104,7 @@ dtCard.addEventListener('click', async e => {
   }
   if (a === 'close') { closeDisplay(); return; }
   dtBusy = true; dtMsg = '';
+  let ate = null;
   try {
     if (a === 'selfeat') {   // 自己吃：先收回桌上那份，再當成背包的料理吃掉（加成和廚房的「吃一份」一樣）
       const t = await enqueue(() => rpc('dish_table_take', { p_id: id, p_slot: s }));
@@ -115,7 +116,10 @@ dtCard.addEventListener('click', async e => {
       if (r2 && r2.inv) Object.assign(inv, r2.inv);
       if (r2 && r2.buff) { buffs[r2.buff] = +r2.until; updateBuffChip(); }
       toast('好吃！' + (r2 && r2.buff ? '（' + (BUFF_N[r2.buff] || r2.buff) + '）' : '')); chime([76, 81], 0.1);
-      refreshHud(); dtBusy = false; if (dsOpen && dtId != null) renderDish(); return;
+      refreshHud(); dtBusy = false;
+      if (r2 && r2.buff) { closeDisplay(); playEat(b.dataset.k, r2.buff); }   // 關掉餐桌視窗才看得到角色吃東西
+      else if (dsOpen && dtId != null) renderDish();
+      return;
     }
     const call = a === 'put' ? () => rpc('dish_table_put', { p_id: id, p_key: b.dataset.k, p_n: 1 })
       : a === 'take' ? () => rpc('dish_table_take', { p_id: id, p_slot: s }) : () => rpc('dish_table_eat', { p_id: id, p_slot: s });
@@ -129,9 +133,12 @@ dtCard.addEventListener('click', async e => {
     if (a === 'eat') {
       if (r.buff) { buffs[r.buff] = +r.until; updateBuffChip(); }
       toast('好吃！' + (r.buff ? '（' + (BUFF_N[r.buff] || r.buff) + '）' : '')); chime([76, 81], 0.1);
+      if (r.buff) ate = { k: r.k, b: r.buff };
       try { net.ch.send({ type: 'broadcast', event: 'ate', payload: { i: myUid, n: me.name, d: dishName(r.k) } }); } catch (er) { /* 略過 */ }
     }
     refreshHud();
   } catch (er) { console.error('dish_table', a, er); toast(errText(er)); dtMsg = errText(er); }
-  dtBusy = false; if (dsOpen && dtId != null) renderDish();
+  dtBusy = false;
+  if (ate) { closeDisplay(); playEat(ate.k, ate.b); }   // 吃的時候關掉視窗，讓你看到角色的動作
+  else if (dsOpen && dtId != null) renderDish();
 });

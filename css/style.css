@@ -826,3 +826,37 @@ body.imm .cfab,body.imm #cfeed{transition:opacity .45s}
 #frpop .fp-hint{margin:0;font-size:12px;color:var(--muted)}
 #frpop .fp-hint.warn{color:#c0392b}
 @media (orientation:landscape) and (max-height:560px){#frpop{top:calc(8px + env(safe-area-inset-top,0px));width:min(320px,calc(100vw - 170px))}#pactbox{max-width:calc(100vw - 170px)}}
+
+/* 料理 buff：圖示＋倒數圓環，點開看說明 */
+.buffbar{position:absolute;left:8px;top:8px;z-index:3;line-height:1;display:flex;flex-direction:column;align-items:flex-start;gap:8px}
+.buffbar[hidden]{display:none}
+.buffbar .brow{display:flex;gap:8px}
+.bring{--p:100;width:46px;height:46px;padding:0;border:0;border-radius:50%;cursor:pointer;display:grid;place-items:center;
+  background:conic-gradient(var(--leaf) calc(var(--p)*1%),rgba(255,250,240,.55) 0);box-shadow:0 3px 0 rgba(107,72,72,.25)}
+.bring span{width:36px;height:36px;border-radius:50%;background:var(--panel);display:grid;place-items:center;font-size:19px}
+.bring.low{background:conic-gradient(var(--pink-deep) calc(var(--p)*1%),rgba(255,250,240,.55) 0);animation:bufflow 1s steps(2) infinite}
+.bring.new{animation:buffnew .7s ease-out}
+.bring:active{transform:translateY(1px)}
+.bring:focus-visible{outline:2px solid #e8833a;outline-offset:2px}
+@keyframes bufflow{50%{opacity:.5}}
+@keyframes buffnew{0%{transform:scale(.4)}60%{transform:scale(1.25)}100%{transform:scale(1)}}
+.bpop{width:min(240px,calc(100vw - 32px));padding:10px;background:rgba(255,250,240,.97);border:2px solid var(--edge);border-radius:16px;box-shadow:0 4px 0 var(--edge);line-height:1.3}
+.bpop h3{margin:0 0 4px;font:800 13px/1.2 var(--f-display);color:var(--pink-deep)}
+.bpop .bli{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px dashed var(--edge)}
+.bpop h3+.bli{border-top:0}
+.bpop .bli i{font-style:normal;font-size:20px}
+.bpop .bli b{display:block;font-size:13px}
+.bpop .bli span{font-size:12px;color:var(--muted)}
+.bpop .bli em{margin-left:auto;font:700 12px/1 var(--f-display);font-style:normal;color:var(--sky);white-space:nowrap}
+.bpop p{margin:4px 0 0;font-size:11px;color:var(--muted)}
+/* 沉浸模式：放在左上角時間／金幣下面 */
+body.imm .buffbar{position:fixed;z-index:6;left:max(12px,env(safe-area-inset-left,0px));top:calc(max(12px,env(safe-area-inset-top,0px)) + 44px);transition:opacity .45s}
+body.imm.idle .buffbar{opacity:.5}
+body.imm.modal .buffbar{visibility:hidden!important;pointer-events:none!important}
+
+/* 有人煮菜時的「喝采」按鈕 */
+.cheer{position:absolute;left:50%;top:8px;transform:translateX(-50%);z-index:3;font:700 13px/1 var(--f-display);color:var(--ink);background:rgba(255,250,240,.96);border:2px solid var(--edge);border-radius:999px;padding:9px 14px;box-shadow:0 3px 0 var(--edge);cursor:pointer;line-height:1}
+.cheer[hidden]{display:none}
+.cheer:active{transform:translateX(-50%) translateY(2px);box-shadow:0 1px 0 var(--edge)}
+body.imm .cheer{position:fixed;z-index:6;top:max(12px,env(safe-area-inset-top,0px))}
+body.imm.modal .cheer{visibility:hidden!important;pointer-events:none!important}

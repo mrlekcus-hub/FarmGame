@@ -5,13 +5,15 @@
 const EMOTES = [
   { id: 'heart', ic: '❤️', n: '愛心' }, { id: 'happy', ic: '😄', n: '開心' }, { id: 'laugh', ic: '😂', n: '大笑' }, { id: 'wow', ic: '😮', n: '驚訝' },
   { id: 'angry', ic: '💢', n: '生氣' }, { id: 'sad', ic: '😢', n: '難過' }, { id: 'sleepy', ic: '💤', n: '想睡' }, { id: 'music', ic: '🎵', n: '哼歌' },
-  { id: 'what', ic: '❓', n: '疑問' }, { id: 'idea', ic: '💡', n: '靈感' }, { id: 'star', ic: '✨', n: '閃亮' }, { id: 'like', ic: '👍', n: '讚' }
+  { id: 'what', ic: '❓', n: '疑問' }, { id: 'idea', ic: '💡', n: '靈感' }, { id: 'star', ic: '✨', n: '閃亮' }, { id: 'like', ic: '👍', n: '讚' },
+  { id: 'clap', ic: '👏', n: '喝采', hide: true }   // 有人煮菜時的「喝采」按鈕用，不放進表情選單
 ];
 const ANIMS = {
   wave: { ic: '👋', n: '揮手', dur: 1800 }, jump: { ic: '🦘', n: '跳躍', dur: 1000 }, dance: { ic: '💃', n: '跳舞', dur: 3000 },
   spin: { ic: '🌀', n: '轉圈', dur: 1200 }, bow: { ic: '🙇', n: '鞠躬', dur: 1300 },
   p_clap: { ic: '🙌', n: '擊掌', dur: 1500, pair: true }, p_dance: { ic: '💃', n: '一起跳舞', dur: 4000, pair: true },
-  p_hug: { ic: '🤗', n: '擁抱', dur: 2400, pair: true }, p_photo: { ic: '📸', n: '合照', dur: 2200, pair: true }
+  p_hug: { ic: '🤗', n: '擁抱', dur: 2400, pair: true }, p_photo: { ic: '📸', n: '合照', dur: 2200, pair: true },
+  eat: { ic: '🍙', n: '吃東西', dur: 2800, hide: true }   // 吃料理時自動播放，不放進表情選單
 };
 let myEmo = null, anim = null, lastEmo = 0;
 /* 動作在這一刻的樣子：位移、朝向、壓扁（鞠躬）、舉手（揮手） */
@@ -32,6 +34,12 @@ function animFx(a, now) {
     fx.face = a.face; fx.dx = Math.round((a.sx || 0) * lunge * k); fx.dy = Math.round((a.sy || 0) * lunge * k);
     if (a.id === 'p_clap') fx.hand = 1 + (Math.floor(t / 150) % 2); else fx.sy = 1 - k * 0.06;
   } else if (a.id === 'p_photo') { fx.face = 'down'; fx.hand = 1 + (Math.floor(t / 280) % 2); }
+  else if (a.id === 'eat') {   // 舉起食物咬三口，接著擴散效果光環、buff 圖示飄起來
+    fx.face = 'down'; fx.hand = (t > 150 && t < 1350) ? 1 : 0;
+    const bt = (t - 350) / 400, bites = bt < 0 ? 0 : Math.min(3, Math.floor(bt) + 1);
+    if (bt >= 0 && bt < 3 && (bt % 1) < 0.3) fx.dy = -1;   // 每咬一口點一下頭
+    fx.eat = { t, rem: (3 - bites) / 3, bt, col: DISHC[a.d] || '#f3c77a', b: a.b };
+  }
   return fx;
 }
 function drawPlayerFx(px, py, face, moving, phase, ch, fx) {
@@ -44,6 +52,39 @@ function drawPlayerFx(px, py, face, moving, phase, ch, fx) {
     const skin = SKINS[(ch || DEF_CHAR).skin] || SKINS[0], hx = px + fx.dx + 13 + (fx.hand === 2 ? 1 : 0);
     r(shade(skin, 0.82), hx, py + 1, 3, 7); r(skin, hx + 1, py + 2, 1, 5);
   }
+  if (fx.eat) drawEatFx(px + fx.dx, py + Math.round(fx.dy), fx.eat);
+}
+const EAT_AURA = { swift: '#5fb8e6', fish: '#4fd0d8', bug: '#7fd08a' };   // 光環顏色跟 buff 走
+function drawEatFx(px, py, e) {
+  const t = e.t;
+  g.save();
+  if (t < 1700 && e.rem > 0) {   // 手上的食物：從手邊舉到嘴邊，一口比一口小
+    const k = clamp(t / 350, 0, 1), w = Math.max(2, Math.round(7 * e.rem)), h = Math.max(2, Math.round(5 * e.rem));
+    const x = Math.round(px + 14 - 4 * k), y = Math.round(py + 9 - 4 * k);
+    r(e.col, x, y, w, h); r(shade(e.col, 0.78), x, y + h - 1, w, 1);
+  }
+  if (e.bt >= 0 && e.bt < 3.6) {   // 咬下去掉碎屑
+    const ph = e.bt % 1;
+    if (ph < 0.5 && e.bt < 3) { const f = Math.round(ph * 10); r(e.col, px + 9, py + 8 + f, 1, 1); r(e.col, px + 12, py + 9 + f, 1, 1); }
+  }
+  if (t >= 1500 && t < 2500 && EAT_AURA[e.b]) {   // 效果光環
+    const p = (t - 1500) / 1000;
+    [0, 0.22].forEach((j, n) => {
+      const pj = p - j; if (pj <= 0 || pj >= 1) return;
+      g.globalAlpha = 1 - pj; g.strokeStyle = n ? '#ffffff' : EAT_AURA[e.b]; g.lineWidth = 2;
+      g.beginPath(); g.arc(px + 8, py + 10, 4 + pj * 14, 0, Math.PI * 2); g.stroke();
+    });
+    g.globalAlpha = 1 - p;
+    for (let i = 0; i < 4; i++) { const an = p * 3 + i * Math.PI / 2; r('#ffffff', Math.round(px + 8 + Math.cos(an) * (6 + p * 10)), Math.round(py + 10 + Math.sin(an) * (6 + p * 10)), 1, 1); }
+  }
+  if (t >= 1500 && BUFF_I[e.b]) {   // buff 圖示往上飄、最後淡出
+    const q = (t - 1500) / 1300;
+    g.globalAlpha = q > 0.7 ? clamp((1 - q) / 0.3, 0, 1) : 1;
+    g.font = '10px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
+    g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#000';
+    g.fillText(BUFF_I[e.b], px + 8, py - 3 - q * 14);
+  }
+  g.restore();
 }
 /* 頭旁邊的表情泡泡（cx, cy = 泡泡左下角） */
 function emoteBubble(e, cx, cy, now) {
@@ -74,12 +115,27 @@ function doEmote(kind, id) {
     try { net.ch.send({ type: 'broadcast', event: 'emo', payload: { i: myUid, k: kind === 'a' ? 'a' : 'e', e: id } }); } catch (e) { /* 略過 */ }
   }
 }
+/* 吃料理的動作：d = 料理 key、b = buff 種類（只用來決定顏色和圖示） */
+function playEat(d, b) {
+  if (!ready || !me || pose || fishing || cooking) return;
+  const now = performance.now();
+  anim = { id: 'eat', t0: now, d, b };
+  lastEmo = now;
+  if (syncScene() && net && net.ok) {
+    try { net.ch.send({ type: 'broadcast', event: 'emo', payload: { i: myUid, k: 'a', e: 'eat', d, b } }); } catch (e) { /* 略過 */ }
+  }
+}
 /* 別人的表情與動作：只認得清單裡的 id，其他一律丟掉 */
 function onEmo(p) {
   if (!p || typeof p !== 'object') return;
   const rp = typeof p.i === 'string' ? remotes.get(p.i) : null;
   if (!rp || typeof p.e !== 'string') return;
   const now = performance.now();
+  if (p.k === 'a' && p.e === 'eat') {   // 吃東西：料理和 buff 都要是認得的才播
+    const own = (o, k) => typeof k === 'string' && Object.prototype.hasOwnProperty.call(o, k);
+    if (own(DISHC, p.d) && own(BUFF_I, p.b) && !rp.sit && !rp.gsit && !rp.fs) rp.anim = { id: 'eat', t0: now, d: p.d, b: p.b };
+    return;
+  }
   if (p.k === 'a' && ANIMS[p.e] && !ANIMS[p.e].pair && !rp.sit && !rp.gsit && !rp.fs) rp.anim = { id: p.e, t0: now };
   else if (p.k === 'e' && EMOTES.some(x => x.id === p.e)) rp.emo = { id: p.e, at: now };
 }
@@ -88,8 +144,8 @@ function openEmote() {
   if (!ready || !me || authOpen || paused()) return;
   if (cOpen) closeChat();
   const btn = (k, id, ic, n) => '<button type="button" data-k="' + k + '" data-e="' + id + '" title="' + n + '" aria-label="' + n + '">' + ic + '</button>';
-  emCard.innerHTML = '<div class="eg">' + EMOTES.map(e => btn('e', e.id, e.ic, e.n)).join('') + '</div>' +
-    '<div class="eg">' + Object.keys(ANIMS).filter(id => !ANIMS[id].pair).map(id => btn('a', id, ANIMS[id].ic, ANIMS[id].n)).join('') + '</div>' +
+  emCard.innerHTML = '<div class="eg">' + EMOTES.filter(e => !e.hide).map(e => btn('e', e.id, e.ic, e.n)).join('') + '</div>' +
+    '<div class="eg">' + Object.keys(ANIMS).filter(id => !ANIMS[id].pair && !ANIMS[id].hide).map(id => btn('a', id, ANIMS[id].ic, ANIMS[id].n)).join('') + '</div>' +
     (chatOn() ? '<div class="eg qq">' + QUICK_CHAT.map(t => btn('q', t, t, t)).join('') + btn('t', '', '✏️ 自己輸入', '自己輸入') + '</div>' : '');
   emOpen = true; emEl.hidden = false; cFab.classList.add('on');
 }

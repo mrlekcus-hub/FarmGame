@@ -32,6 +32,22 @@ function skyCloud(x, y, n, col, a) {   // 像素雲：三層疊起來
   r(col, x + 3, y, 8 + n * 2, 3); r(col, x, y + 2, 14 + n * 3, 3); r(col, x + 2, y + 4, 10 + n * 3, 2);
   ctx.globalAlpha = 1;
 }
+/* 夜晚窗戶光暈（方案 A）：窗玻璃本身在 dark > 0.15 時已經變黃，這裡只補窗外一圈淡光，傍晚時慢慢亮起來 */
+function winGlow(x, y, w, h, a) {
+  r('rgba(255,217,138,' + (0.14 * a).toFixed(3) + ')', x - 4, y - 4, w + 8, h + 8);
+  r('rgba(255,217,138,' + (0.28 * a).toFixed(3) + ')', x - 2, y - 2, w + 4, h + 4);
+}
+function nightGlows(dark) {
+  const a = clamp((dark - 0.15) / 0.35, 0, 1);
+  if (scene === 'farm') { [10, 58].forEach(wx => winGlow(2 * T + wx + 1, T + 30, 10, 9, a)); return; }
+  const list = scene === 'town' ? TOWN_BLD : scene === 'forest' ? FOREST_BLD : null;
+  if (!list) return;
+  list.forEach(b => {
+    if (b.t === 'furn' || b.t === 'mine') return;   // 這兩種外觀沒有一般窗戶
+    const ox = b.x * T, oy = b.y * T, wd = b.w * T, wy = oy + ((b.h * T) >> 1) + 4;
+    winGlow(ox + 8, wy, 9, 8, a); winGlow(ox + wd - 17, wy, 9, 8, a);
+  });
+}
 function drawSky(now, w, dark) {
   const X0 = -300, WD = W * T + 600, top = -SKY * T, m = w.min, ms = srvNow();
   const [cTop, cBot] = skyColors(m), nb = 8, bh = SKY * T / nb;
@@ -272,6 +288,7 @@ function draw(now) {
 
   drawFishing(now);
   drawCooking(now);
+  drawCookWatch(now);
   drawEditOverlay(now);
   fx.forEach(p => {
     ctx.globalAlpha = clamp(1 - p.l / p.max, 0, 1);
@@ -285,6 +302,7 @@ function draw(now) {
   else if (!indoors && SEA === 'winter') r('rgba(215,232,255,.07)', 0, 0, W * T, H * T);
   if (warm > 0) r('rgba(255,150,130,' + warm.toFixed(3) + ')', 0, 0, W * T, H * T);
   if (dark > 0 && !indoors) r('rgba(70,50,130,' + (dark * 0.45).toFixed(3) + ')', 0, 0, W * T, H * T);
+  if (!indoors && dark > 0.15) nightGlows(dark);   // 夜晚窗戶光暈：畫在夜色濾鏡之後才不會被壓暗
   if (w.wet && !indoors) {
     if (w.snow) {
       r('rgba(225,238,255,.16)', 0, 0, W * T, H * T);

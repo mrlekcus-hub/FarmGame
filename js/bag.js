@@ -20,6 +20,7 @@ function furnIcon(cv, key) {
   else if (FURN[key]) FURN[key](0, 0, 0);
   g = ctx;
 }
+let bagEating = false;
 function bagGroups() {
   const out = [];
   const tools = [0, 1, 5, 6, 10, 12].map(i => ({ t: 'tool', k: String(i), name: TOOLS[i].n, n: null }));
@@ -84,7 +85,8 @@ function bagDetail(it) {
     const can = canShowHere() && (bugLog[it.k] | 0) > 0;
     a.push('<button type="button" class="btn small"' + (can ? '' : ' disabled') + ' data-b="show">' + (syncScene() && net && net.ok ? '展示給大家看' : '展示') + '</button>' + (can ? '' : '<small class="empty">（還沒抓到過）</small>'));
   } else if (it.t === 'dish') {
-    info = it.rc.descr + ' 每份賣 ' + it.rc.price + ' G；到家裡的廚房灶台可以吃，也能交委託。';
+    info = it.rc.descr + ' 每份賣 ' + it.rc.price + ' G，也能交委託。' + (it.rc.buff ? '吃下去會「' + (BUFF_N[it.rc.buff] || it.rc.buff) + '」（同一種效果最多累積 60 分鐘）。' : '這道料理沒有效果，只能賣或交委託。');
+    if (it.rc.buff) a.push('<button type="button" class="btn small" data-b="eat"' + (bagEating ? ' disabled' : '') + '>吃一份</button>');
   } else if (it.t === 'furn') {
     const st = it.d.layer === 'wall_style' || it.d.layer === 'floor_style';
     info = st ? '已購買的款式，在家裡的「牆面地板」可以隨時換上。' : '回家進入「布置模式」就能擺放。不要的話，在布置模式可以賣掉，得 ' + Math.floor(it.d.price / 2) + ' G。';
@@ -145,6 +147,17 @@ bagCard.addEventListener('click', e => {
   if (d.b === 'hslot') {
     const idx = bagSel ? catIdx(bagSel) : -1;
     if (idx >= 0) { setSlot(+d.s, idx); renderBag(); } else toast('先點下面的工具或種子，再點這一格', 1600);
+    return;
+  }
+  if (d.b === 'eat' && bagSel && bagSel.t === 'dish') {
+    if (bagEating) return;
+    const dk = bagSel.k;
+    bagEating = true; renderBag();
+    eatDish(dk).then(r => {
+      bagEating = false; refreshHud();
+      if (r && r.buff) { closeBag(); playEat(dk, r.buff); }   // 關掉背包才看得到角色吃東西
+      else if (bagOpen) renderBag();
+    });
     return;
   }
   if (d.b === 'show' && bagSel && (bagSel.t === 'fish' || bagSel.t === 'bug')) { showItem(bagSel.t, bagSel.k); closeBag(); return; }
