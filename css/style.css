@@ -797,7 +797,7 @@ body.imm .cfab,body.imm #cfeed{transition:opacity .45s}
 .bondtag{display:inline-block;margin-left:4px;padding:0 6px;border-radius:10px;background:#fff0f3;border:2px solid #f08fa4;color:#d4688a;font-size:11px;font-weight:700;line-height:16px;vertical-align:middle}
 .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:6px;margin:6px 0}
 .pgrid .btn[disabled]{opacity:.45}
-#pactbox{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:60;background:var(--panel);border:3px solid var(--edge);border-radius:16px;padding:10px 14px;box-shadow:0 6px 0 rgba(107,72,72,.18);display:flex;gap:10px;align-items:center;max-width:92vw;color:var(--ink);font-size:14px}
+#pactbox{position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:62;background:var(--panel);border:3px solid var(--edge);border-radius:16px;padding:10px 14px;box-shadow:0 6px 0 rgba(107,72,72,.18);display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center;width:max-content;max-width:calc(100vw - 100px);color:var(--ink);font-size:14px}
 #pactbox[hidden]{display:none}
 
 /* ---- 電腦版寬螢幕：左側資訊、中間遊戲、右側聊天 ---- */
@@ -815,3 +815,14 @@ body.imm .cfab,body.imm #cfeed{transition:opacity .45s}
   body:not(.imm) .sideR .v-log{height:clamp(160px,34vh,360px)}
   body:not(.imm) .sideR .v-head{flex-wrap:wrap}
 }
+
+/* 面對朋友的互動浮窗 */
+#frpop{position:fixed;left:50%;top:calc(64px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:60;width:min(300px,calc(100vw - 100px));background:var(--panel);border:3px solid var(--edge);border-radius:16px;padding:10px 12px;box-shadow:0 6px 0 rgba(107,72,72,.18);color:var(--ink);font-size:14px;display:flex;flex-direction:column;gap:6px}
+#frpop[hidden]{display:none}
+#frpop .fp-h{font-size:15px}
+#frpop .fp-g{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+#frpop .fp-g .btn,#frpop .fp-r .btn{min-height:40px;padding:6px 4px;font-size:13px;white-space:nowrap}
+#frpop .fp-r{display:flex;gap:6px}#frpop .fp-r .btn{flex:1}
+#frpop .fp-hint{margin:0;font-size:12px;color:var(--muted)}
+#frpop .fp-hint.warn{color:#c0392b}
+@media (orientation:landscape) and (max-height:560px){#frpop{top:calc(8px + env(safe-area-inset-top,0px));width:min(320px,calc(100vw - 170px))}#pactbox{max-width:calc(100vw - 170px)}}

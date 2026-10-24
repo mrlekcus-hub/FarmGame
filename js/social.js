@@ -123,7 +123,7 @@ async function pactInvite(uid, act) {
   const P = PACTS[act], rp = remotes.get(uid);
   if (!P || !ready || !me) return;
   if (!syncScene() || !net || !net.ok) { toast('要連上即時連線才能做雙人動作（廣場、塔羅屋、屋子裡都可以）', 2600); return; }
-  if (!rp || !nearRemote(rp)) { toast('要站在對方旁邊（面對面）才能邀請', 2200); return; }
+  if (!rp || !nearRemote(rp)) { toast('距離不夠：走到對方的上、下、左或右一格，面對面才能邀請', 3200); return; }
   if (fishing || cooking) { toast((cooking ? '烹飪' : '釣魚') + '的時候不能互動', 1800); return; }
   if (pose) { toast('起身後才能邀請', 1800); return; }
   const b = bondOf(uid);
@@ -149,7 +149,7 @@ function onPact(p) {
     const P = PACTS[p.a];
     if (!isFriend(p.i) || bondOf(p.i).lv < P.need || fishing || pose || !syncScene() || !nearRemote(rp) || pIn) { sendPact(p.i, 'no', p.a); return; }
     pIn = { from: p.i, act: p.a, s: p.s === 1, at: performance.now() };
-    showPactBox(rp.name, P); chime([81, 88], 0.1);
+    showPactBox(rp.name, P); chime([81, 88], 0.1); if (navigator.vibrate) try { navigator.vibrate([60, 40, 60]); } catch (_) {}
     clearTimeout(pTimer); pTimer = setTimeout(() => { if (pIn && pIn.from === p.i) { pIn = null; hidePactBox(); } }, 15000);
   } else if (p.t === 'ok') {
     if (!pAct || pAct.to !== p.i || pAct.act !== p.a || pose || fishing) return;
@@ -216,6 +216,68 @@ function startPact(act, rp) {
   else if (act === 'hug') { pop(mx, my, '❤️', '#ff8fa8'); setTimeout(() => pop(mx, my, '❤️', '#ff8fa8'), 900); }
   else if (act === 'photo') setTimeout(() => { pop(mx, my, '📸', '#ffffff'); chime([88], 0.1); }, 1000);
 }
+
+
+/* ---------- 面對朋友按動作鍵：浮窗互動選單（不蓋住畫面、不用進整頁好友名單；要看名單按「更多」） ---------- */
+let fpId = '', fpTimer = 0;
+const fpop = document.createElement('div'); fpop.id = 'frpop'; fpop.hidden = true; fpop.setAttribute('role', 'dialog'); fpop.setAttribute('aria-label', '和朋友互動'); document.body.appendChild(fpop);
+const fpOpen = () => !fpop.hidden;
+function renderFriendPop() {
+  const rp = remotes.get(fpId);
+  if (!rp) { closeFriendPop(); return; }
+  const u = esc(rp.id), near = nearRemote(rp);
+  let h = '<div class="fp-h"><b>' + esc(rp.name) + '</b>';
+  if (isFriend(rp.id)) {
+    const b = bondOf(rp.id);
+    h += ' <span class="bondtag">❤️Lv.' + b.lv + '</span></div><div class="fp-g">';
+    Object.keys(PACTS).forEach(k => {
+      const P = PACTS[k], lock = b.lv < P.need;
+      h += '<button type="button" class="btn small' + (lock ? ' ghost' : '') + '" data-a="pact" data-p="' + k + '" data-u="' + u + '">' + P.ic + ' ' + P.n + (lock ? ' 🔒' + P.need : '') + '</button>';
+    });
+    h += '<button type="button" class="btn small ghost" data-a="card" data-u="' + u + '">名片</button></div>';
+    h += near ? '<p class="fp-hint">' + bondLine(b) + '</p>' : '<p class="fp-hint warn">走到對方旁邊一格、面對面才能邀請。</p>';
+    h += '<div class="fp-r"><button type="button" class="btn small" data-a="visit" data-u="' + u + '">拜訪</button><button type="button" class="btn small ghost" data-a="more" data-u="' + u + '">更多…</button></div>';
+  } else {
+    h += '</div>';
+    if (fr.incoming.some(f => f.uid === rp.id)) h += '<p class="fp-hint">對方想加你為好友。</p><div class="fp-r"><button type="button" class="btn small" data-a="accept" data-u="' + u + '">接受</button><button type="button" class="btn small ghost" data-a="more" data-u="' + u + '">更多…</button></div>';
+    else if (fr.outgoing.some(f => f.uid === rp.id)) h += '<p class="fp-hint">已送出申請，等對方同意。</p><div class="fp-r"><button type="button" class="btn small ghost" data-a="more" data-u="' + u + '">更多…</button></div>';
+    else h += '<p class="fp-hint">成為好友後可以擊掌、跳舞、擁抱和合照。</p><div class="fp-r"><button type="button" class="btn small" data-a="reqid" data-u="' + u + '">加好友</button><button type="button" class="btn small ghost" data-a="more" data-u="' + u + '">更多…</button></div>';
+  }
+  fpop.innerHTML = h;
+}
+function openFriendPop(rp) {
+  if (!rp || !ready || !me || frOpen || shopOpen || makerOpen || bagOpen) return;
+  fpId = rp.id; pressed.length = 0; renderFriendPop(); fpop.hidden = false;
+  clearInterval(fpTimer);
+  fpTimer = setInterval(() => {                 // 走遠、換場景或對方離開就自動收起來
+    const r = remotes.get(fpId);
+    if (!r || !hereRp(r) || Math.abs(r.tx - pl.x) + Math.abs(r.ty - pl.y) > 2 || frOpen) closeFriendPop();
+    else if (fpOpen()) renderFriendPop();
+  }, 400);
+}
+function closeFriendPop() { fpop.hidden = true; fpId = ''; clearInterval(fpTimer); }
+fpop.addEventListener('pointerdown', e => e.stopPropagation());
+fpop.addEventListener('click', async e => {
+  const b = e.target.closest('button[data-a]');
+  if (!b) return;
+  const a = b.dataset.a, u = b.dataset.u, rp = remotes.get(u);
+  if (a === 'pact') { closeFriendPop(); pactInvite(u, b.dataset.p); return; }
+  if (a === 'card') { closeFriendPop(); openCard(u); return; }
+  if (a === 'visit') { closeFriendPop(); visitHouse(u, rp && rp.name); return; }
+  if (a === 'more') { closeFriendPop(); openFriends(rp || { id: u, name: '旅人' }); return; }
+  if (frBusy) return;
+  frBusy = true;
+  try {
+    const before = fr.friends.length;
+    applyFriends(await rpc(a === 'accept' ? 'friend_accept' : 'friend_request_uid', { p_uid: u }));
+    notifyFriend(u);
+    toast(fr.friends.length > before ? '你們成為好友了！' : '已送出好友申請', 2500);
+  } catch (er) { toast(errText(er)); }
+  frBusy = false;
+  if (fpOpen()) renderFriendPop();
+});
+document.addEventListener('pointerdown', e => { if (fpOpen() && !fpop.contains(e.target) && !(e.target.closest && e.target.closest('#actbtn'))) closeFriendPop(); }, true);
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && fpOpen()) closeFriendPop(); });
 
 /* ---------- 坐椅子、躺床（在自己家或朋友家都可以） ---------- */
 let pose = null;                                // { type: 'sit' | 'lie', id, ix, iy, ox, oy, face0, tile, sort, t }

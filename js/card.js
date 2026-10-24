@@ -41,7 +41,7 @@ const itemName = k => {
 let cdGift = false;
 function renderCard() {
   let h = '<div class="shop-h"><h2>' + (cd && cd.self ? '我的名片' : '玩家名片') + '</h2></div>';
-  if (!cd) h += '<p class="empty">' + esc(cdMsg || '讀取中…') + '</p>';
+  if (!cd) h += '<p class="empty">' + esc(cdMsg || '讀取中…') + '</p>' + (cdMsg ? '<button type="button" class="btn wide" data-a="retry">重試</button>' : '');
   else if (cdGift) {
     const items = Object.keys(inv).filter(k => /^(c|fish|bug):[a-z0-9_]+$/.test(k) && have(k) > 0);
     h += '<p class="empty">選一樣送給 ' + esc(cd.name) + '（每天最多送 3 份，一次送 1 個）</p>' + (cdMsg ? '<p class="mk-msg">' + esc(cdMsg) + '</p>' : '') +
@@ -80,18 +80,39 @@ function renderCard() {
   const cv = $('cd-av');
   if (cv && cd) { const c2 = cv.getContext('2d'); c2.clearRect(0, 0, 16, 22); g = c2; try { drawPlayer(0, 6, 'down', false, 0, toChar(cd.name, cd.look)); } catch (e) { /* 略過 */ } g = ctx; }
 }
+let cdUid = '';
+const cdTimeout = (p, ms) => Promise.race([p, new Promise((_, rj) => setTimeout(() => rj(new Error('timeout')), ms))]);
+const cdArr = v => Array.isArray(v) ? v : (v && typeof v === 'object' ? Object.keys(v) : []);   // 伺服器偶爾回物件（空的 {}）而不是陣列
+function cdNorm(r) {
+  if (Array.isArray(r)) r = r[0];                                  // 回傳成資料表時是「只有一列的陣列」
+  if (!r || typeof r !== 'object') return null;
+  r.ach = cdArr(r.ach); r.badges = cdArr(r.badges);
+  if (!r.stats || typeof r.stats !== 'object') r.stats = {};
+  return r;
+}
+function cdShow() {                                                // 畫面出錯也不要一直卡在「讀取中…」
+  try { renderCard(); }
+  catch (e) { console.error('名片顯示失敗', e); cd = null; cdMsg = '名片資料讀取失敗，請重試'; try { renderCard(); } catch (e2) { /* 略過 */ } }
+}
+async function loadCard() {
+  const my = ++cdSeq; cd = null; cdMsg = ''; cdGift = false; cdCat = ''; cdShow();
+  try {
+    const r = cdNorm(await cdTimeout(rpc('card_get', cdUid ? { p_uid: cdUid } : {}), 12000));
+    if (my === cdSeq) { cd = r; if (!r) cdMsg = '找不到這張名片，對方可能剛離開'; }
+  } catch (e) { if (my === cdSeq) cdMsg = /timeout/.test(String((e && e.message) || e)) ? '讀取太久了，請檢查網路後按重試' : errText(e); }
+  if (my === cdSeq && cdOpen) cdShow();
+}
 async function openCard(uid) {
   if (!ready || !me || authOpen || paused()) return;
-  cdOpen = true; pressed.length = 0; cd = null; cdMsg = ''; cdGift = false; cdCat = ''; renderCard(); cdEl.hidden = false; cdCard.focus();
-  const my = ++cdSeq;
-  try { const r = await rpc('card_get', uid ? { p_uid: uid } : {}); if (my === cdSeq) cd = r; } catch (e) { if (my === cdSeq) cdMsg = errText(e); }
-  if (my === cdSeq && cdOpen) renderCard();
+  cdOpen = true; pressed.length = 0; cdUid = uid || ''; cdEl.hidden = false; cdCard.focus();
+  await loadCard();
 }
 function closeCard() { cdOpen = false; cdEl.hidden = true; cdSeq++; }
 cdCard.addEventListener('click', async e => {
   const b = e.target.closest('[data-a]'); if (!b || !b.dataset.a) return;
   const a = b.dataset.a;
   if (a === 'close') closeCard();
+  else if (a === 'retry') loadCard();
   else if (a === 'lv') { closeCard(); openLevels(); }
   else if (a === 'gift') { const u = cd && cd.uid; closeCard(); if (u && isFriend(u)) openMail(u); else toast('要先成為好友才能寄明信片'); }
   else if (a === 'back') { cdGift = false; cdMsg = ''; renderCard(); }

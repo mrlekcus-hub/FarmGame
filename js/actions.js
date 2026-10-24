@@ -28,6 +28,7 @@ function canOne(x, y) {
   act2('water', { p_x: x, p_y: y }); tutEvent('water'); qAdd('water'); return true;
 }
 function act() {
+  if (fpOpen()) { closeFriendPop(); return; }   // 互動浮窗開著時再按動作鍵＝收起來
   if (pose) { standUp(); return; }
   if (cooking) { cookAct(); return; }
   const [x, y] = facing();
@@ -40,14 +41,14 @@ function act() {
     else if (k2 === WA && curTool().id === 'rod') startFish(x, y);
     else if (k2 === WA) pop(x, y, '這是池塘（換成釣竿就能釣魚）', '#cfe8f7');
     else if (k2 === BN) takeBench(x, y);
-    else if (rp) openFriends(rp);
+    else if (rp) openFriendPop(rp);
     else if (k2 === TS) enterLekcus();
     return;
   }
   if (scene === 'house') {
     if (K[y][x] === GT) { leaveHouse(); return; }
     const rpH = remoteAt(x, y);
-    if (rpH) { openFriends(rpH); return; }
+    if (rpH) { openFriendPop(rpH); return; }
     const lx = x - RX, ly = y - RY, hit = house && lx >= 0 && lx < RW && ly >= -2 && ly < RH ? itemAtLocal(lx, ly) : null;
     if (hit && hit.k === 'dtable') openDishTable(hit);
     else if (hit && hit.k === 'tv' && !edit.on) openTv(hit);
@@ -59,7 +60,7 @@ function act() {
     else if (hit) pop(x, y, (defOf(hit.k) || {}).name || '', '#fff3b0');
     return;
   }
-  if (scene === 'tarot') { const rpT = remoteAt(x, y); if (rpT) { openFriends(rpT); return; } lekcusRoomAct(x, y); return; }
+  if (scene === 'tarot') { const rpT = remoteAt(x, y); if (rpT) { openFriendPop(rpT); return; } lekcusRoomAct(x, y); return; }
   if (scene === 'town') { townAct(x, y); return; }
   if (scene === 'forest') { forestAct(x, y); return; }
   if (scene === 'cave') { caveAct(x, y); return; }
