@@ -25,6 +25,8 @@ const ACH_CATS = [
   { k: 'f', ic: '👗', n: '服裝', ids: ACH.filter(x => /^fit\d+$/.test(x.id)).map(x => x.id) }
 ];
 ACH_CATS.forEach(c => { c.a = c.ids.map(id => ACH.find(x => x.id === id)).filter(Boolean); });
+/* 商人專屬家具的中文名（伺服器家具目錄沒給時的備用，不然會顯示英文 key） */
+const MERCHANT_FURN_N = { lantern: '紙燈籠', globe: '地球儀', vase: '青花瓶' };
 const itemName = k => {
   if (/^y:/.test(k)) { const yc = ycat.find(q => q.key === k.slice(2)); return yc ? yc.name : k.slice(2); }
   const [t, id] = [k.slice(0, k.indexOf(':')), k.slice(k.indexOf(':') + 1)];
@@ -34,7 +36,7 @@ const itemName = k => {
   if (t === 'dish') { const rc = recipes.find(x => x.key === id); return rc ? rc.name : id; }
   if (t === 'q1' || t === 'q2') return (t === 'q2' ? '金星' : '銀星') + (CROPS[id] ? CROPS[id].n : id);
   if (itemMeta[k]) return itemMeta[k].name;
-  if (t === 'f') { const d = defOf(id); return d ? d.name : id; }
+  if (t === 'f') { const d = defOf(id); return d ? d.name : (MERCHANT_FURN_N[id] || id); }
   if (t === 's') return (CROPS[id] ? CROPS[id].n : id) + '種子';
   const fb = fallbackItem(k);
   return fb ? fb.name : id;

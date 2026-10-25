@@ -223,6 +223,7 @@ function tapTarget(tx, ty) {
   if (scene === 'farm' && !yardMap.has(pk(tx, ty)) && fgList.some(f => f.x === tx && f.y === ty && !forTaken.has(f.slot + ':' + f.i))) return [tx, ty, 'fg'];
   if (scene === 'farm') { const p = plots.get(pk(tx, ty)); if (p && p.crop && ripeNow(p)) return [tx, ty, 'crop']; }   // 熟了的作物也一樣：走到旁邊直接收
   if (scene === 'farm' && curTool().crop) { const p = plots.get(pk(tx, ty)); if (p && !p.crop) return [tx, ty, 'plant']; }   // 裝備種子：點翻好的空田，走到旁邊直接播種
+  if (scene === 'farm' && curTool().id === 'hoe' && K[ty] && K[ty][tx] === G && !plots.has(pk(tx, ty)) && !yardMap.has(pk(tx, ty)) && farmable(tx, ty) && plots.size < plotCap()) return [tx, ty, 'till'];   // 裝備鋤頭：點能耕種的空草地，走到旁邊直接翻土
   if (scene === 'farm' && curTool().id === 'can' && !world().wet) { const p = plots.get(pk(tx, ty)); if (p && !isWet(p)) return [tx, ty, 'water']; }   // 裝備水壺：點還乾的田，走到旁邊直接澆（下雨天不用澆，照一般走路）
   if ((scene === 'farm' || scene === 'forest') && curTool().id === 'net') {
     let best = null, bd = 1.0;

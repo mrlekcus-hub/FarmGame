@@ -13,6 +13,7 @@ window.addEventListener('keydown', e => {
   if (e.key === 'Escape' && dgOpen) { closeDlg(); return; }
   if (e.key === 'Escape' && rcOpen) { closeRanch(); return; }
   if (e.key === 'Escape' && mcOpen) { closeMerchant(); return; }
+  if (e.key === 'Escape' && mnOpen) { closeManual(); return; }
   if (e.key === 'Escape' && lvOpen) { closeLevels(); return; }
   if (e.key === 'Escape' && cdOpen) { closeCard(); return; }
   if (e.key === 'Escape' && qOpen) { closeQuests(); return; }

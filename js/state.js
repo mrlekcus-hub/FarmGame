@@ -52,8 +52,8 @@ let frOpen = false;
 let hwUi = false, hwDark = 0;   // 萬聖節糖果攤／魔女鍋視窗是否開著、現在的夜色深度（夜行 buff 用）
 let lkOpen = false, bdOpen = false, ckOpen = false, rcOpen = false, mcOpen = false, dgOpen = false;
 let syOpen = false, lvOpen = false, cdOpen = false, dexOpen = false, qOpen = false, dsOpen = false, emOpen = false, stOpen = false, imm = false, sheetOpen = false, trOpen = false;
-let pnOpen = false;
-const paused = () => lkOpen || bdOpen || ckOpen || rcOpen || mcOpen || dgOpen || lvOpen || cdOpen || dexOpen || qOpen || dsOpen || pnOpen || stOpen || trOpen || (imm && sheetOpen) || frOpen || mlOpen || snOpen || hwUi || bagOpen || shopOpen || makerOpen || authOpen || vmOpen || gmOpen || fOpen || syOpen || !ready;
+let pnOpen = false, mnOpen = false;
+const paused = () => lkOpen || bdOpen || ckOpen || rcOpen || mcOpen || mnOpen || dgOpen || lvOpen || cdOpen || dexOpen || qOpen || dsOpen || pnOpen || stOpen || trOpen || (imm && sheetOpen) || frOpen || mlOpen || snOpen || hwUi || bagOpen || shopOpen || makerOpen || authOpen || vmOpen || gmOpen || fOpen || syOpen || !ready;
 
 /* ---------- 小提示與特效 ---------- */
 const toastEl = $('toast');
