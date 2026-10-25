@@ -23,6 +23,10 @@ async function loadLevel() {
     if (old) {
       if (lv.pl > old.pl) levelUp('玩家等級 Lv.' + lv.pl, plUnlocks(lv.pl).map(x => '解鎖：' + x));
       ['farm', 'fish', 'bug'].forEach(k => { if (lv[k] > old[k]) levelUp(SK[k].n + '等級 Lv.' + lv[k], [SK[k].un[lv[k]] ? '解鎖：' + SK[k].un[lv[k]] : '熟練度又提升了']); });
+      if (old.cook != null && lv.cook > old.cook) {
+        const names = recipes.filter(rc => !/^hw_/.test(rc.key) && ckTier(rc) === lv.cook).map(rc => rc.name);
+        levelUp('烹飪等級 Lv.' + lv.cook, [names.length ? '解鎖：' + names.join('、') : '熟練度又提升了', '火候的綠區變寬了，更好停']);
+      }
     }
     if (qOpen) renderQuests(); if (shopOpen) renderShop(); if (lvOpen) renderLevels();
   } catch (e) { /* 伺服器還沒裝等級功能就略過 */ }

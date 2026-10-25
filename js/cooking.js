@@ -21,12 +21,10 @@ let ckBusy = false;
 function openKitchen() { if (ckOpen) return; ckOpen = true; pressed.length = 0; renderKitchen(); ckEl.hidden = false; ckCard.focus(); }
 function closeKitchen() { cgStop(); ckOpen = false; ckEl.hidden = true; }
 function maxCook(rc) { let m = 99; for (const k in rc.ing) m = Math.min(m, Math.floor(have(k) / rc.ing[k])); return m; }
-/* ---- 烹飪技能：經驗存在這台裝置上；等級上限跟其他技能一樣（玩家等級＋2） ---- */
-let ckXp = 0, ckXpUser = null;
-const ckKey = () => 'dewfarm_cook_' + authUser;
-function ckLoadXp() { if (ckXpUser === authUser) return; ckXpUser = authUser; ckXp = 0; try { ckXp = Math.max(0, parseInt(localStorage.getItem(ckKey()), 10) || 0); } catch (e) { /* 略過 */ } }
+/* ---- 烹飪技能：等級與經驗以伺服器為準（level_get 的 cook／xp_cook），跟其他技能一樣；上限＝玩家等級＋2 ---- */
 const ckCap = () => (lv && +lv.cap) ? Math.min(12, +lv.cap) : 12;
-function ckLv() { ckLoadXp(); let L = 1; while (L < 12 && ckXp >= skillNeed(L + 1)) L++; return Math.min(L, ckCap()); }
+const ckXpNow = () => (lv && +lv.xp_cook) || 0;
+function ckLv() { return lv && +lv.cook ? Math.min(12, +lv.cook) : 1; }
 /* 料理難度（1～5 星）：照售價由低到高分組，星數 = 需要的烹飪等級 */
 function ckTier(rc) {
   if (/^hw_/.test(rc.key)) return HW_TIER[rc.key] || 2;   // 萬聖節料理（魔女鍋）：難度固定，不參與一般料理的排名
@@ -34,25 +32,10 @@ function ckTier(rc) {
   const i = Math.max(0, s.findIndex(x => x.key === rc.key));
   return Math.min(5, 1 + Math.floor(i * 5 / Math.max(1, s.length)));
 }
-function ckAddXp(n) {
-  const before = ckLv(), cap = ckCap();
-  if (before >= 12 || before >= cap) return 0;
-  if (cap < 12) n = Math.min(n, skillNeed(cap + 1) - 1 - ckXp);
-  if (n <= 0) return 0;
-  ckXp += n;
-  try { localStorage.setItem(ckKey(), String(ckXp)); } catch (e) { /* 略過 */ }
-  const after = ckLv();
-  if (after > before) {
-    const names = recipes.filter(rc => !/^hw_/.test(rc.key) && ckTier(rc) === after).map(rc => rc.name);
-    levelUp('烹飪等級 Lv.' + after, [names.length ? '解鎖：' + names.join('、') : '熟練度又提升了', '火候的綠區變寬了，更好停']);
-  }
-  if (lvOpen) renderLevels();
-  return n;
-}
 function ckSkillHtml() {
   const L = ckLv(), cap = ckCap(), mx = L >= 12, atCap = L >= cap && !mx;
-  const sub = mx ? '已滿級' : atCap ? '需要玩家 Lv.' + (lv ? lv.pl + 1 : '?') + ' 才能繼續成長' : '經驗 ' + ckXp + ' / ' + skillNeed(L + 1);
-  return '<div class="row"><span style="font-size:24px;line-height:1">🍳</span><div class="meta"><b>烹飪 Lv.' + L + ' / 上限 ' + cap + '</b><small>' + sub + '</small>' + lvBar(skillNeed(L), skillNeed(L + 1), ckXp, '') + '</div></div>';
+  const sub = mx ? '已滿級' : atCap ? '需要玩家 Lv.' + (lv ? lv.pl + 1 : '?') + ' 才能繼續成長' : '經驗 ' + ckXpNow() + ' / ' + skillNeed(L + 1);
+  return '<div class="row"><span style="font-size:24px;line-height:1">🍳</span><div class="meta"><b>烹飪 Lv.' + L + ' / 上限 ' + cap + '</b><small>' + sub + '</small>' + lvBar(skillNeed(L), skillNeed(L + 1), ckXpNow(), '') + '</div></div>';
 }
 function renderKitchen() {
   const dis = ckBusy ? ' disabled' : '';
@@ -136,18 +119,17 @@ const cookTip = () => {
 async function cookFinish(ok) {
   const c = cooking; if (!c) return;
   const rc = c.rc, perfect = c.miss === 0;
-  let made = false, errMsg = '';
+  let made = false, errMsg = '', srvXp = 0;
   if (ok) {
     c.phase = 'serve'; ckBusy = true;
-    try { const r = await enqueue(() => c.hw ? rpc('hw_cook', { p_key: rc.key, p_qty: 1 }) : rpc('cook', c.host ? { p_key: rc.key, p_qty: 1, p_at: c.host } : { p_key: rc.key, p_qty: 1 })); if (r.inv) Object.assign(inv, r.inv); made = true; }
+    try { const r = await enqueue(() => c.hw ? rpc('hw_cook', { p_key: rc.key, p_qty: 1 }) : rpc('cook', c.host ? { p_key: rc.key, p_qty: 1, p_perfect: perfect, p_at: c.host } : { p_key: rc.key, p_qty: 1, p_perfect: perfect })); if (r.inv) Object.assign(inv, r.inv); srvXp = +r.xp || 0; made = true; }
     catch (err) { errMsg = errText(err); await resync(); }
     ckBusy = false; refreshHud();
   }
   if (cooking === c) cooking = null;
   ckSend(made ? 'done' : 'fail', c);
-  const gain = c.hw ? 0 : made ? Math.round((6 + 4 * c.T) * (perfect ? 1.5 : 1)) : ok ? 0 : 2;   // 魔女鍋不給烹飪經驗
-  const got = gain ? ckAddXp(gain) : 0;
-  const xp = got ? ' · 烹飪經驗 +' + got : '';
+  if (made && !c.hw) loadLevel();   // 伺服器已加經驗，重新抓等級（升級彈窗也在裡面）
+  const xp = srvXp ? ' · 烹飪經驗 +' + srvXp : '';
   dishIcon(catchCv.getContext('2d'), rc.key);
   catchT.textContent = made ? rc.name + (perfect ? '　完美！' : '') : !ok ? '糊掉了…' : '做不出來';
   catchS.textContent = (made ? '已放進背包，現在持有 ' + have('dish:' + rc.key) + ' 份' + (perfect ? '（零失誤，經驗加成）' : '') : errMsg ? errMsg : '失誤太多了，材料沒有消耗，再試一次吧') + xp;

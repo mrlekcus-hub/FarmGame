@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>雷克斯農場</title>
+<meta name="build" content="fe144fc525">
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="manifest" href="app/manifest.webmanifest">
@@ -13,7 +14,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chiron+GoRound+TC:wght@400;600;800&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap">
-<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/style.css?v=e1adc607">
 </head><body>
 
 
@@ -22,6 +23,7 @@
     <h1>雷克斯農場</h1>
     <div class="stats">
       <span class="chip" id="clock">06:00</span>
+      <span class="chip" id="wxs"></span>
       <span class="chip" id="wx">晴天</span>
       <span class="chip gold" id="gold">100 G</span>
       <span class="chip" id="who">未登入</span>
@@ -233,63 +235,64 @@
 
 <div class="maker" id="boot" hidden><div class="maker-card"><h2 id="boot-t">載入中…</h2><p class="auth-note" id="boot-m"></p></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
-<script src="js/core.js"></script>
-<script src="js/tools/utils.js"></script>
-<script src="js/tools/draw.js"></script>
-<script src="js/data.js"></script>
-<script src="js/art/tiles.js"></script>
-<script src="js/art/character.js"></script>
-<script src="js/art/icons.js"></script>
-<script src="js/state.js"></script>
-<script src="js/art/village-tiles.js"></script>
-<script src="js/world.js"></script>
-<script src="js/net.js"></script>
-<script src="js/actions.js"></script>
-<script src="js/shop.js"></script>
-<script src="js/scenes.js"></script>
-<script src="js/npc.js"></script>
-<script src="js/items.js"></script>
-<script src="js/barn.js"></script>
-<script src="js/tarot-room.js"></script>
-<script src="js/tarot-games.js"></script>
-<script src="js/ranch.js"></script>
-<script src="js/merchant.js"></script>
-<script src="js/cooking.js"></script>
-<script src="js/board.js"></script>
-<script src="js/bag.js"></script>
-<script src="js/dex.js"></script>
-<script src="js/progress.js"></script>
-<script src="js/card.js"></script>
-<script src="js/tutorial.js"></script>
-<script src="js/manual.js"></script>
-<script src="js/hotbar.js"></script>
-<script src="js/ui.js"></script>
-<script src="js/fishing.js"></script>
-<script src="js/input.js"></script>
-<script src="js/pwa.js"></script>
-<script src="js/settings.js"></script>
-<script src="js/tv.js"></script>
-<script src="js/piano.js"></script>
-<script src="js/tarot.js"></script>
-<script src="js/look.js"></script>
-<script src="js/auth.js"></script>
-<script src="js/login-cover.js"></script>
-<script src="js/village.js"></script>
-<script src="js/chat.js"></script>
-<script src="js/friends.js"></script>
-<script src="js/mail.js"></script>
-<script src="js/snakes.js"></script>
-<script src="js/halloween.js"></script>
-<script src="js/plaza-light.js"></script>
-<script src="js/gm.js"></script>
-<script src="js/bgm.js"></script>
-<script src="js/house.js"></script>
-<script src="js/social.js"></script>
-<script src="js/hw-cook.js"></script>
-<script src="js/decor.js"></script>
-<script src="js/stores.js"></script>
-<script src="js/render.js"></script>
-<script src="js/sky.js"></script>
-<script src="js/immersive.js"></script>
-<script src="js/main.js"></script>
+<script src="js/core.js?v=2eb46027"></script>
+<script src="js/tools/utils.js?v=fe84d8af"></script>
+<script src="js/tools/draw.js?v=edf668db"></script>
+<script src="js/data.js?v=63d0b45d"></script>
+<script src="js/art/tiles.js?v=eebff733"></script>
+<script src="js/art/character.js?v=5699e4d9"></script>
+<script src="js/art/icons.js?v=44cf3975"></script>
+<script src="js/state.js?v=5a8253d4"></script>
+<script src="js/art/village-tiles.js?v=d87a6633"></script>
+<script src="js/world.js?v=84c89760"></script>
+<script src="js/net.js?v=fa6e06d9"></script>
+<script src="js/actions.js?v=0bda4c7a"></script>
+<script src="js/shop.js?v=93121519"></script>
+<script src="js/scenes.js?v=2d58779c"></script>
+<script src="js/npc.js?v=66a1c86b"></script>
+<script src="js/items.js?v=a6f79b30"></script>
+<script src="js/barn.js?v=c8897aee"></script>
+<script src="js/tarot-room.js?v=9d3b111c"></script>
+<script src="js/tarot-games.js?v=32353489"></script>
+<script src="js/ranch.js?v=594bf0fb"></script>
+<script src="js/merchant.js?v=97277b9b"></script>
+<script src="js/cooking.js?v=a1a61a8e"></script>
+<script src="js/board.js?v=f1bf518f"></script>
+<script src="js/bag.js?v=878ca5d4"></script>
+<script src="js/dex.js?v=592be67c"></script>
+<script src="js/progress.js?v=e1f35775"></script>
+<script src="js/card.js?v=c35b87e5"></script>
+<script src="js/tutorial.js?v=68192820"></script>
+<script src="js/manual.js?v=d71f114c"></script>
+<script src="js/hotbar.js?v=2d9e9808"></script>
+<script src="js/ui.js?v=d56b5f0e"></script>
+<script src="js/fishing.js?v=59715ccb"></script>
+<script src="js/input.js?v=7a6b4e0a"></script>
+<script src="js/pwa.js?v=4b7d5452"></script>
+<script src="js/settings.js?v=fa9fccdc"></script>
+<script src="js/tv.js?v=68d46f9c"></script>
+<script src="js/piano.js?v=8996a55c"></script>
+<script src="js/tarot.js?v=e0f226d1"></script>
+<script src="js/look.js?v=611ad471"></script>
+<script src="js/auth.js?v=15a3fb48"></script>
+<script src="js/login-cover.js?v=9af92c6c"></script>
+<script src="js/village.js?v=c4b6e3b8"></script>
+<script src="js/chat.js?v=e054a3ef"></script>
+<script src="js/friends.js?v=8292535f"></script>
+<script src="js/mail.js?v=e5c99256"></script>
+<script src="js/snakes.js?v=4efbbf09"></script>
+<script src="js/halloween.js?v=ed36cb71"></script>
+<script src="js/plaza-light.js?v=98b46c80"></script>
+<script src="js/gm.js?v=f8a16524"></script>
+<script src="js/bgm.js?v=428caee0"></script>
+<script src="js/house.js?v=cdca8e51"></script>
+<script src="js/social.js?v=6a5693cb"></script>
+<script src="js/hw-cook.js?v=461a2691"></script>
+<script src="js/decor.js?v=7a632515"></script>
+<script src="js/stores.js?v=624dfc39"></script>
+<script src="js/render.js?v=03e8cdcf"></script>
+<script src="js/sky.js?v=de706727"></script>
+<script src="js/immersive.js?v=9d4046fd"></script>
+<script src="js/update.js?v=fc21903b"></script>
+<script src="js/main.js?v=8be1c52f"></script>
 </body></html>

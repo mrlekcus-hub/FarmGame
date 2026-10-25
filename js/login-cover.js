@@ -126,6 +126,7 @@ function showAuth() {
   closeQuests(); qs = { day: 0, c: {}, claimed: {} }; qBadge();
 }
 async function enter(u, uid) {
+  if (typeof updCheck === 'function') updCheck(true);   // 登入時檢查有沒有新版本
   house = null; authUser = u; if (uid) myUid = uid; hotLoad(); tool = 0;
   authEl.hidden = true; setBoot('載入農場…');
   try {

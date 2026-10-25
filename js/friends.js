@@ -85,14 +85,23 @@ function startPresence() {
   const tok = presTok;
   netGate.then(() => { if (tok === presTok && !pres) openPresence(); });
 }
+let presSynced = false;
+const lastOnlineToast = new Map();
+function onFriendOnline(uid) {   // 好友剛上線：跳文字提示＋短音效（同一人 30 秒內只提示一次，避免斷線重連洗版）
+  const f = fr.friends.find(x => x.uid === uid); if (!f) return;
+  const now = Date.now(); if (now - (lastOnlineToast.get(uid) || 0) < 30000) return; lastOnlineToast.set(uid, now);
+  toast('🟢 ' + clean(f.name, 8) + ' 上線了', 3000); chime([76, 83], 0.14);
+}
 function openPresence() {
   const ch = sb.channel('friends:online', { config: { presence: { key: myUid }, broadcast: { self: false, ack: false } } });
-  pres = { ch, ok: false }; lastWhere = '';
+  pres = { ch, ok: false }; lastWhere = ''; presSynced = false;
   ch.on('presence', { event: 'sync' }, () => {
     if (!pres || pres.ch !== ch) return;
     const st = ch.presenceState() || {}, m2 = new Map();
     Object.keys(st).forEach(id => { const m = (st[id] && st[id][0]) || {}; m2.set(id, WHERE[m.w] ? m.w : 'farm'); });
-    onlineMap = m2;
+    const prev = onlineMap; onlineMap = m2;
+    if (presSynced) m2.forEach((w, id) => { if (id !== myUid && !prev.has(id)) onFriendOnline(id); });
+    presSynced = true;
     if (frOpen) renderFriends();
   }).on('broadcast', { event: 'fr' }, m => {
     const p = m && m.payload;

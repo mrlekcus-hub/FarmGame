@@ -81,6 +81,9 @@ function updateClock() {
   wx.textContent = w.snow ? '雪天' : w.wet ? '雨天' : '晴天';
   wx.classList.toggle('rain', w.wet);
   $('sn').textContent = SEASON_N[sea];
+  const ws = $('wxs');   // 手機（沉浸／橫屏）把 #wx、#sn 藏起來，改顯示這一個合併的小標籤
+  ws.textContent = (w.snow ? '❄️ 雪' : w.wet ? '🌧️ 雨' : '☀️ 晴') + '・' + SEASON_N[sea].replace(' ', '').replace('天', '');
+  ws.classList.toggle('rain', w.wet);
 }
 function refreshHud() {
   $('gold').textContent = (me ? me.coins : 0) + ' G';
