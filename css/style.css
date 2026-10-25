@@ -44,8 +44,8 @@ body{
 .stage{position:relative;line-height:0;background:#a8dc7a;border-radius:22px;overflow:hidden;border:5px solid #fff;box-shadow:0 5px 0 var(--edge),0 10px 18px rgba(107,72,72,.16)}
 canvas#game{display:block;width:100%;height:auto;aspect-ratio:10/7;image-rendering:pixelated}
 .toast{
-  position:absolute;left:50%;top:10px;transform:translateX(-50%);
-  max-width:92%;line-height:1.5;font-size:13px;font-weight:500;text-align:center;
+  position:fixed;z-index:95;left:50%;top:calc(10px + env(safe-area-inset-top,0px));transform:translateX(-50%);
+  max-width:92vw;line-height:1.5;font-size:13px;font-weight:500;text-align:center;
   background:var(--panel);color:var(--ink);border:3px solid var(--pink);border-radius:16px;
   padding:7px 14px;pointer-events:none;box-shadow:0 3px 0 var(--pink-deep);
 }
@@ -868,3 +868,32 @@ body.imm.modal .cheer{visibility:hidden!important;pointer-events:none!important}
 #fstick.on .stick-knob{background:#ff7a9b}
 body.fl canvas#game{touch-action:none;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 .strow-hint{margin:-4px 0 8px;font-size:12px;line-height:1.4;color:var(--muted)}
+
+.ml-ok{background:#e6f7dc;border:2px solid #8fd47a;color:#2f6a2a;border-radius:12px;padding:8px 10px}
+
+/* 蛇梯棋 */
+#snc{width:min(100%,320px);aspect-ratio:1;image-rendering:pixelated;display:block;margin:0 auto;border-radius:8px;box-shadow:0 3px 0 rgba(90,42,26,.35)}
+#snui{display:flex;flex-direction:column;gap:10px}
+.snchips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.snchip{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;background:#fff;border:2px solid var(--edge);font-size:13px;font-weight:700;color:var(--ink)}
+.snchip i{width:12px;height:12px;border-radius:50%;border:2px solid #3a2a2a;box-sizing:border-box;display:inline-block}
+.snchip.cur{background:#fff3b0;border-color:#e0a040;box-shadow:0 2px 0 #e0a040}
+.snchip.win{background:#ffe27a;border-color:#c9962a}
+.snchip.empty{opacity:.45;border-style:dashed;font-weight:500}
+.snchip small{font-weight:600;opacity:.7}
+.snmsg{background:#fff6e0;border-color:#e8c9a0;color:#7a4a2a;min-height:1.5em}
+.snhint,.snwait{margin:0;text-align:center;font-size:12px;line-height:1.6;color:#a07a6a}
+.snico{image-rendering:pixelated;vertical-align:-3px;display:inline-block}
+.snchip .snico{vertical-align:-2px}
+.snspec{margin:0;display:flex;align-items:center;justify-content:center;gap:4px;flex-wrap:wrap;font-size:12px;color:#7a4a2a}
+.snchat{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.snchat[hidden]{display:none}
+.snlog{background:#fff;border:2px solid var(--edge);border-radius:10px;padding:6px 8px;min-height:44px;max-height:104px;overflow-y:auto;font-size:13px;line-height:1.6;color:var(--ink);text-align:left}
+.snl i{display:inline-block;width:8px;height:8px;border-radius:50%;border:1.5px solid #3a2a2a;margin-right:5px;box-sizing:border-box}
+.snl.me b{color:#d0587a}
+.snl.none{color:#a07a6a;font-size:12px}
+.snq{display:flex;flex-wrap:wrap;gap:6px}
+.snqb{background:#fff;border:2px solid var(--edge);border-radius:999px;padding:3px 12px;font-size:12px;font-weight:700;color:var(--ink);cursor:pointer;font-family:inherit}
+.snform{display:flex;gap:6px}
+.snform input{flex:1;min-width:0;background:#fff;border:2px solid var(--edge);border-radius:10px;padding:6px 10px;font-size:14px;color:var(--ink);font-family:inherit}
+.snclose{margin-top:10px}

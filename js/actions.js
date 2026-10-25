@@ -37,10 +37,12 @@ function act() {
     const k2 = K[y][x], rp = remoteAt(x, y);
     if (catchShown) { hideCatch(); return; }
     if (fishing) { fishAct(); return; }
+    if (hwTouch(x, y)) return;   // 萬聖節：糖果攤、魔女鍋
     if (k2 === GT) leaveVillage();
     else if (k2 === WA && curTool().id === 'rod') startFish(x, y);
     else if (k2 === WA) pop(x, y, '這是池塘（換成釣竿就能釣魚）', '#cfe8f7');
     else if (k2 === BN) takeBench(x, y);
+    else if (k2 === SB) openSnakes();
     else if (rp) openFriendPop(rp);
     else if (k2 === TS) enterLekcus();
     return;

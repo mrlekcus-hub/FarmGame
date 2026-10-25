@@ -28,7 +28,7 @@ function bagGroups() {
   const crops = ALLK.filter(k => have('c:' + k) > 0).map(k => ({ t: 'crop', k, name: CROPS[k].n, n: have('c:' + k) }));
   const qcrops = [];
   ALLK.forEach(k => ['q2', 'q1'].forEach(q => { if (have(q + ':' + k) > 0) qcrops.push({ t: 'qcrop', k: q + ':' + k, name: itemName(q + ':' + k), n: have(q + ':' + k) }); }));
-  const miscs = Object.keys(inv).filter(k => /^(a|g|m|x):/.test(k) && inv[k] > 0 && itemMeta[k]).sort().map(k => ({ t: 'misc', k, name: itemMeta[k].name, n: inv[k] }));
+  const miscs = Object.keys(inv).filter(k => /^(a|g|m|x|h):/.test(k) && inv[k] > 0 && itemMeta[k]).sort().map(k => ({ t: 'misc', k, name: itemMeta[k].name, n: inv[k] }));
   const fish = fishCat.filter(f => have('fish:' + f.key) > 0).map(f => ({ t: 'fish', k: f.key, name: f.name, n: have('fish:' + f.key), f }));
   const bugs = bugCat.filter(b => have('bug:' + b.key) > 0).map(b => ({ t: 'bug', k: b.key, name: b.name, n: have('bug:' + b.key), f: b }));
   const dishes = recipes.filter(rc => have('dish:' + rc.key) > 0).map(rc => ({ t: 'dish', k: rc.key, name: rc.name, n: have('dish:' + rc.key), rc }));
@@ -71,7 +71,7 @@ function bagDetail(it) {
   } else if (it.t === 'qcrop') info = '品質好的作物，賣價比普通的高（銀星 +25%、金星 +50%）。到雜貨攤賣，也可以做料理、交委託。每個 ' + miscPrice(it.k) + ' G。';
   else if (it.t === 'misc') {
     const m = itemMeta[it.k] || {};
-    info = it.k === 'a:hay' ? '拿去穀倉餵動物，每隻餓著的動物吃 1 把。' : /^x:/.test(it.k) ? '裝備後面向有作物的田地按動作鍵，這一輪收成更容易出現銀星和金星（每格一次）。' : (m.price ? '到雜貨攤賣，每個 ' + m.price + ' G。也能做料理、交委託。' : '');
+    info = /^h:/.test(it.k) ? '萬聖節料理的材料：到廣場的魔女鍋旁煮活動料理。' : it.k === 'a:hay' ? '拿去穀倉餵動物，每隻餓著的動物吃 1 把。' : /^x:/.test(it.k) ? '裝備後面向有作物的田地按動作鍵，這一輪收成更容易出現銀星和金星（每格一次）。' : (m.price ? '到雜貨攤賣，每個 ' + m.price + ' G。也能做料理、交委託。' : '');
     if (/^x:/.test(it.k)) a.push(equipRow(it));
   } else if (it.t === 'crop') info = '到雜貨攤可以賣掉，每個 ' + cropPrice(it.k) + ' G' + seasonTag(it.k) + '。也能拿去做料理或交委託。';
   else if (it.t === 'fish') {

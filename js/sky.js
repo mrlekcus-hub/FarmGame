@@ -216,6 +216,9 @@ function draw(now) {
   else if (scene === 'forest') FOREST_BLD.forEach(b => drawBldg(b, now, dark > 0.15));
   else {
     drawTarotStall(now);
+    if (scene === 'plaza') drawSnakeBoard(now);
+    if (scene === 'plaza') drawPlazaLamps(now);   // 廣場路燈（js/plaza-light.js）
+    if (scene === 'plaza') drawHalloween(now);   // 萬聖節佈置（只在活動日期內）
     for (let i = 0; i < 5; i++) {
       const a = now / 520 + i * 1.3, yy = 7 * T + 2 - Math.abs(Math.sin(a)) * 9;
       r('#bfe6ff', 10 * T + 4 + i * 2 + ((i % 2) ? 1 : 0), Math.round(yy), 1, 2);
@@ -290,6 +293,7 @@ function draw(now) {
   } }));
   ents.sort((a, b) => a.y - b.y).forEach(en => en.draw());
   if (scene === 'town' || scene === 'forest') NPCS.forEach(q => (q.sc || 'town') === scene && drawNpcMark(q.x * T, q.y * T, q.k, now));   // 任務「！」畫在最上層，不被房子遮住
+  if (ready && me) snDrawMarks(now, rx, ry);   // 蛇梯棋：玩家頭上骰子、觀戰者頭上眼睛
   if (ready && myEmo) emoteBubble(myEmo, Math.round(rx * T) + 13, Math.round(ry * T) - 6, now);
   if (syncScene()) remotes.forEach(rp => { if (rp.emo && hereRp(rp)) emoteBubble(rp.emo, Math.round(rp.x * T) + 13, Math.round(rp.y * T) - 6, now); });
   if (!syncScene() && myShow) showCard(myShow, Math.round(rx * T) + 8, Math.round(ry * T) - 11, now);
@@ -324,6 +328,8 @@ function draw(now) {
   if (warm > 0) r('rgba(255,150,130,' + warm.toFixed(3) + ')', 0, 0, W * T, H * T);
   if (dark > 0 && !indoors) r('rgba(70,50,130,' + (dark * 0.45).toFixed(3) + ')', 0, 0, W * T, H * T);
   if (!indoors && dark > 0.15) nightGlows(dark);   // 夜晚窗戶光暈：畫在夜色濾鏡之後才不會被壓暗
+  if (scene === 'plaza') drawPlazaLight(now, w, dark);
+  if (ready && me) drawHwBuffFx(now, dark, rx, ry, indoors);   // 萬聖節 buff：夜行的鬼火、提燈的暖光   // 廣場早晚光影（方案 B）：霧、斜光、路燈與南瓜燈光暈、蝙蝠、螢火蟲
   if (w.wet && !indoors) {
     if (w.snow) {
       r('rgba(225,238,255,.16)', 0, 0, W * T, H * T);

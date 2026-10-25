@@ -2,7 +2,7 @@
 /* 明信片與寫信 —— 雷克斯農場。所有檔案共用同一個全域範圍，載入順序見 index.html。 */
 /* ---------- 明信片與寫信：寄給好友，花 1～10 金幣，收件匣最多留 50 封 ---------- */
 const mlEl = $('mlm'), mlCard = $('mlcard');
-let mlOpen = false, ml = { cards: [], inbox: [], unread: 0 }, mlTab = 'in', mlTo = '', mlPick = 'plain', mlMsg = '', mlView = 0, mlItem = '', mlBusy = false, mlErr = '', mlLoaded = false;
+let mlOpen = false, ml = { cards: [], inbox: [], unread: 0 }, mlTab = 'in', mlTo = '', mlPick = 'plain', mlMsg = '', mlView = 0, mlItem = '', mlBusy = false, mlErr = '', mlOk = '', mlLoaded = false;
 function disc(g, cx, cy, rad, col) { g.fillStyle = col; for (let y = -rad; y <= rad; y++) for (let x = -rad; x <= rad; x++) if (x * x + y * y <= rad * rad + rad * 0.5) g.fillRect(cx + x, cy + y, 1, 1); }
 function cardArt(cv, key) {
   const g = cv.getContext('2d'), W2 = 64, H2 = 40;
@@ -105,12 +105,13 @@ function openMail(to) {
   renderMail(); mlEl.hidden = false; mlCard.focus();
   mailLoad(true).then(() => { if (mlOpen && mlTab === 'in' && ml.unread) rpc('mail_read').then(() => { ml.unread = 0; ml.inbox.forEach(m => { m.read = true; }); mailBadge(); }).catch(() => {}); });
 }
-function closeMail() { mlOpen = false; mlEl.hidden = true; }
+function closeMail() { mlOpen = false; mlOk = ''; mlEl.hidden = true; }
 function renderMail() {
   const cname = k => ((ml.cards.find(c => c.key === k) || {}).name || '明信片');
   let h = '<div class="shop-h"><h2>✉️ 信箱</h2><span class="chip gold">' + (me ? me.coins : 0) + ' G</span></div>' +
     '<div class="mltabs"><button type="button" class="btn small' + (mlTab === 'in' ? '' : ' ghost') + '" data-a="tab" data-t="in">收件匣' + (ml.unread ? '（' + ml.unread + '）' : '') + '</button>' +
     '<button type="button" class="btn small' + (mlTab === 'send' ? '' : ' ghost') + '" data-a="tab" data-t="send">寄明信片</button></div>';
+  if (mlOk) h += '<p class="mk-msg ml-ok" role="status">' + esc(mlOk) + '</p>';
   if (mlErr) h += '<p class="mk-msg">' + esc(mlErr) + '</p>';
   if (mlTab === 'in') {
     const v = mlView ? ml.inbox.find(m => m.id === mlView) : null;
@@ -147,7 +148,7 @@ mlCard.addEventListener('input', e => { if (e.target.id === 'ml-msg') mlMsg = e.
 mlCard.addEventListener('change', e => { if (e.target.id === 'ml-to') mlTo = e.target.value; if (e.target.id === 'ml-item') mlItem = e.target.value; });
 mlCard.addEventListener('click', async e => {
   const b = e.target.closest('[data-a]'); if (!b || b.disabled) return;
-  const a = b.dataset.a; mlErr = '';
+  const a = b.dataset.a; mlErr = ''; mlOk = '';
   if (a === 'close') { closeMail(); return; }
   if (a === 'tab') { mlTab = b.dataset.t; mlView = 0; renderMail(); return; }
   if (a === 'open') { mlView = +b.dataset.id; renderMail(); return; }
@@ -173,7 +174,8 @@ mlCard.addEventListener('click', async e => {
       if (typeof r.coins === 'number') me.coins = r.coins;
       if (r.inv) Object.assign(inv, r.inv);
       mlMsg = ''; mlItem = ''; const f = fr.friends.find(x => x.uid === mlTo);
-      toast('明信片寄給 ' + (f ? f.name : '好友') + ' 了！' + (typeof r.left === 'number' && r.inv && Object.keys(r.inv).length ? '今天還能送 ' + r.left + ' 份禮物' : '')); refreshHud();
+      mlOk = '✅ 已發送！明信片寄給 ' + (f ? f.name : '好友') + ' 了' + (typeof r.left === 'number' && r.inv && Object.keys(r.inv).length ? '（今天還能送 ' + r.left + ' 份禮物）' : '');
+      toast(mlOk); refreshHud();
     } catch (err) { mlErr = errText(err); }
     mlBusy = false; renderMail();
   }

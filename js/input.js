@@ -25,6 +25,8 @@ window.addEventListener('keydown', e => {
   if ((e.key === 'b' || e.key === 'B') && !paused()) { openBag(); return; }
   if ((e.key === 'b' || e.key === 'B') && bagOpen) { closeBag(); return; }
   if (e.key === 'Escape' && mlOpen) { closeMail(); return; }
+  if (e.key === 'Escape' && hwUi) { hwClose(); return; }
+  if (e.key === 'Escape' && snOpen) { closeSnakes(); return; }
   if (e.key === 'Escape' && frOpen) { closeFriends(); return; }
   if ((e.key === 'f' || e.key === 'F') && !paused() && ready && me) { openFriends(); return; }
   if ((e.key === 'm' || e.key === 'M') && !paused() && ready && me) { openMail(); return; }
@@ -95,7 +97,7 @@ function dpDir(e) {
   stickDir = horiz ? (dx < 0 ? 'left' : 'right') : (dy < 0 ? 'up' : 'down');
   return stickDir;
 }
-const stepMs = () => ((dpId !== null && stickMag > 0) ? 240 - 100 * stickMag : STEP_MS) * (buffOn('swift') ? 0.8 : 1);   // 搖桿：輕推約 240ms 一步，推到底約 140ms 一步（鍵盤維持 120ms）
+const stepMs = () => ((dpId !== null && stickMag > 0) ? 240 - 100 * stickMag : STEP_MS) * (buffOn('swift') || ((buffOn('night') || buffOn('witch')) && hwDark > 0.2) ? 0.8 : 1);   // 搖桿：輕推約 240ms 一步，推到底約 140ms 一步（鍵盤維持 120ms）
 function fsStart(e, x, y) {
   if (dpId !== null) return;
   dpId = e.pointerId; fOrg = { x, y };

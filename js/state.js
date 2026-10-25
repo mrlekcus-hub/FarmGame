@@ -28,7 +28,8 @@ const MINE_FALLBACK = {
 const ITEM_FALLBACK = {
   'a:hay': { name: '乾草', shape: 'sack', color: '#e8c070' }, 'a:egg': { name: '雞蛋', shape: 'round', color: '#fff3d6' },
   'a:milk': { name: '牛奶', shape: 'bottle', color: '#ffffff' }, 'a:wool': { name: '羊毛', shape: 'cloud', color: '#f4f4f4' },
-  'x:fert': { name: '肥料', shape: 'sack', color: '#8c6a44' }, 'x:fert2': { name: '高級肥料', shape: 'sack', color: '#f0c040' }
+  'x:fert': { name: '肥料', shape: 'sack', color: '#8c6a44' },
+  'h:candy': { name: '萬聖糖果', shape: 'berry', color: '#ff6a8a' }, 'h:caramel': { name: '焦糖', shape: 'gem', color: '#d89a3a' }, 'h:spice': { name: '魔女香料', shape: 'leaf', color: '#9a6ae0' },
 };
 const fallbackItem = k => ITEM_FALLBACK[k] || ITEM_FALLBACK['a:' + k] || ITEM_FALLBACK['x:' + k] || null;   // 也接受沒有前綴的寫法（egg、hay、fert2）
 let itemMeta = {}, forPool = [], forTaken = new Set(), fgSlot = -1, rocksAt = {}, fgList = [];
@@ -48,10 +49,11 @@ let bagOpen = false, shopOpen = false, makerOpen = false, authOpen = true, actQu
 let pendingInvite = '';
 const pressed = [];
 let frOpen = false;
+let hwUi = false, hwDark = 0;   // 萬聖節糖果攤／魔女鍋視窗是否開著、現在的夜色深度（夜行 buff 用）
 let lkOpen = false, bdOpen = false, ckOpen = false, rcOpen = false, mcOpen = false, dgOpen = false;
 let syOpen = false, lvOpen = false, cdOpen = false, dexOpen = false, qOpen = false, dsOpen = false, emOpen = false, stOpen = false, imm = false, sheetOpen = false, trOpen = false;
 let pnOpen = false;
-const paused = () => lkOpen || bdOpen || ckOpen || rcOpen || mcOpen || dgOpen || lvOpen || cdOpen || dexOpen || qOpen || dsOpen || pnOpen || stOpen || trOpen || (imm && sheetOpen) || frOpen || mlOpen || bagOpen || shopOpen || makerOpen || authOpen || vmOpen || gmOpen || fOpen || syOpen || !ready;
+const paused = () => lkOpen || bdOpen || ckOpen || rcOpen || mcOpen || dgOpen || lvOpen || cdOpen || dexOpen || qOpen || dsOpen || pnOpen || stOpen || trOpen || (imm && sheetOpen) || frOpen || mlOpen || snOpen || hwUi || bagOpen || shopOpen || makerOpen || authOpen || vmOpen || gmOpen || fOpen || syOpen || !ready;
 
 /* ---------- 小提示與特效 ---------- */
 const toastEl = $('toast');

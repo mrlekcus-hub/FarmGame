@@ -27,7 +27,7 @@ const wakeUI = () => { lastInputAt = performance.now(); };
 function idleTick(now) {
   chatTick();
   /* 商店、背包、圖鑑這些全頁視窗打開時，把搖桿、動作鈕、工具列、選單把手都藏起來，才不會蓋住視窗底下的按鈕 */
-  const modal = imm && (lkOpen || bdOpen || ckOpen || rcOpen || mcOpen || dgOpen || lvOpen || cdOpen || dexOpen || qOpen || dsOpen || pnOpen || stOpen || trOpen || frOpen || mlOpen || bagOpen || shopOpen || makerOpen || authOpen || vmOpen || gmOpen || fOpen || syOpen);
+  const modal = imm && (lkOpen || bdOpen || ckOpen || rcOpen || mcOpen || dgOpen || lvOpen || cdOpen || dexOpen || qOpen || dsOpen || pnOpen || stOpen || trOpen || frOpen || mlOpen || snOpen || hwUi || bagOpen || shopOpen || makerOpen || authOpen || vmOpen || gmOpen || fOpen || syOpen);
   if (modal !== document.body.classList.contains('modal')) document.body.classList.toggle('modal', modal);
   const idle = imm && !sheetOpen && !pressed.length && now - lastInputAt > 3000;
   if (idle !== document.body.classList.contains('idle')) document.body.classList.toggle('idle', idle);

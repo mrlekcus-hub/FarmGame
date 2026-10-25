@@ -66,6 +66,7 @@ const fromServer = j => ({ crop: j.crop || null, grown: +j.grown || 0, tick: +j.
 /* ---------- 地圖規則（要和 schema.sql 的 _farmable 一致） ---------- */
 /* 農場右邊多一道村莊大門，通往公共廣場 */
 const GT = 7, FR = 8, BN = 9, TS = 10, BD = 11, BR = 12, RK = 13, NP = 14, HB = 15, FG = 16, WL = 17, TG = 18;   // HB 建築 FG 小村通往農場的門 WL 水井 TG 農場通往小村的門
+const SB = 60;   // 廣場左上角的蛇梯棋棋盤（js/snakes.js），佔 (1,1)～(6,6)，走不進去，面向它按動作鍵開始
 const CS = 29, BS = 30, FS = 31, RS = 32, WK = 33;   // WK 村長家（園藝工坊）的門   // RS 牧場小屋的門（室內場景 'stylist' 的 ranch 房間）   // CS 裁縫鋪的門  BS 理髮店的門  FS 家具店的門（走進去是室內場景 'stylist'）
 const FW = 40, FE = 41, CV = 42, CW = 43, CX = 44;   // CW 山洞岩壁  CX 山洞出口   // FW 小村通往西邊森林的門  FE 森林回小村的門  CV 森林北邊的山洞入口
    // BD：委託布告欄（農場）   // TS：塔羅小攤（3×2 格，不能走進去，面向它按動作鍵占卜）
@@ -163,12 +164,13 @@ for (let y = 1; y <= 12; y++) pkind[y][10] = P;
 for (let x = 8; x <= 12; x++) for (let y = 5; y <= 9; y++) if (x === 8 || x === 12 || y === 5 || y === 9) pkind[y][x] = P;
 for (let x = 9; x <= 11; x++) for (let y = 6; y <= 8; y++) pkind[y][x] = FR;
 pkind[7][10] = WA;
-[[6, 4], [14, 4], [6, 10], [14, 10]].forEach(([x, y]) => { pkind[y][x] = BN; });
+[[14, 4], [6, 10], [14, 10]].forEach(([x, y]) => { pkind[y][x] = BN; });   // 左上的長椅 (6,4) 讓位給蛇梯棋
 for (let y = 9; y <= 12; y++) for (let x = 15; x <= 18; x++) {
   const dx = (x - 16.5) / 2.4, dy = (y - 10.6) / 2.4;
   if (dx * dx + dy * dy + hash(x, y, 9) * 0.25 <= 1) pkind[y][x] = WA;
 }
-[[3, 3], [16, 3], [3, 10], [2, 11], [5, 2], [15, 2], [2, 6], [17, 8]].forEach(([x, y]) => { pkind[y][x] = TR; });
+[[16, 3], [3, 10], [2, 11], [15, 2], [17, 8]].forEach(([x, y]) => { pkind[y][x] = TR; });   // 左上角原本的 3 棵樹 (3,3) (5,2) (2,6) 移掉了
+for (let y = 1; y <= 6; y++) for (let x = 1; x <= 6; x++) pkind[y][x] = SB;
 for (let y = 1; y <= 2; y++) for (let x = 9; x <= 11; x++) pkind[y][x] = TS;   // 直路最北端，緊貼上方樹籬的正中間
 pkind[13][10] = GT;
 let scene = 'farm', K = kind;
@@ -180,7 +182,7 @@ const plotCap = () => lv ? PLOT_CAP[Math.min(lv.pl, 10) - 1] : 999;
 const nextCap = () => lv && lv.pl < 10 ? PLOT_CAP[lv.pl] : 0;
 const farmable = (x, y) => farmBase(x, y);
 const walkable = (x, y) => x >= 0 && y >= 0 && x < W && y < H &&
-  (K[y][x] === G || K[y][x] === P) && (scene !== 'house' || !houseBlocked(x, y)) && !(scene === 'town' && (x === MXT || x === MXT + 1) && y === MYT && merchantHere()) && !(scene === 'farm' && yardBlocks(x, y));
+  (K[y][x] === G || K[y][x] === P) && !hwBlocked(x, y) && !plBlocked(x, y) && (scene !== 'house' || !houseBlocked(x, y)) && !(scene === 'town' && (x === MXT || x === MXT + 1) && y === MYT && merchantHere()) && !(scene === 'farm' && yardBlocks(x, y));
 function tryMove(dir) {
   const d = DIRS[dir];
   pl.face = dir;

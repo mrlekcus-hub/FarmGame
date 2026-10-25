@@ -29,7 +29,8 @@ const ckCap = () => (lv && +lv.cap) ? Math.min(12, +lv.cap) : 12;
 function ckLv() { ckLoadXp(); let L = 1; while (L < 12 && ckXp >= skillNeed(L + 1)) L++; return Math.min(L, ckCap()); }
 /* 料理難度（1～5 星）：照售價由低到高分組，星數 = 需要的烹飪等級 */
 function ckTier(rc) {
-  const s = recipes.slice().sort((a, b) => (a.price - b.price) || (a.key < b.key ? -1 : 1));
+  if (/^hw_/.test(rc.key)) return HW_TIER[rc.key] || 2;   // 萬聖節料理（魔女鍋）：難度固定，不參與一般料理的排名
+  const s = recipes.filter(x => !/^hw_/.test(x.key)).sort((a, b) => (a.price - b.price) || (a.key < b.key ? -1 : 1));
   const i = Math.max(0, s.findIndex(x => x.key === rc.key));
   return Math.min(5, 1 + Math.floor(i * 5 / Math.max(1, s.length)));
 }
@@ -42,7 +43,7 @@ function ckAddXp(n) {
   try { localStorage.setItem(ckKey(), String(ckXp)); } catch (e) { /* 略過 */ }
   const after = ckLv();
   if (after > before) {
-    const names = recipes.filter(rc => ckTier(rc) === after).map(rc => rc.name);
+    const names = recipes.filter(rc => !/^hw_/.test(rc.key) && ckTier(rc) === after).map(rc => rc.name);
     levelUp('烹飪等級 Lv.' + after, [names.length ? '解鎖：' + names.join('、') : '熟練度又提升了', '火候的綠區變寬了，更好停']);
   }
   if (lvOpen) renderLevels();
@@ -57,7 +58,7 @@ function renderKitchen() {
   const dis = ckBusy ? ' disabled' : '';
   const act_ = Object.keys(buffs).filter(buffOn).map(k => (BUFF_N[k] || k) + '（剩 ' + Math.ceil((buffs[k] - srvNow()) / 60000) + ' 分鐘）');
   const L = ckLv();
-  const rows = recipes.map(rc => {
+  const rows = recipes.filter(rc => !/^hw_/.test(rc.key)).map(rc => {
     const mx = maxCook(rc), dn = have('dish:' + rc.key), T = ckTier(rc), lock = L < T;
     const ing = Object.keys(rc.ing).map(k => esc(itemName(k)) + ' ' + have(k) + '/' + rc.ing[k]).join('、');
     return '<div class="row" style="flex-wrap:wrap;gap:6px"><i class="dot" style="--c:' + (DISHC[rc.key] || '#f3c77a') + '"></i><div class="meta" style="min-width:150px"><b>' + esc(rc.name) + (dn ? '　持有 ' + dn : '') + '</b> <span class="cg-star">' + '★'.repeat(T) + '</span><small>' + ing + '</small><small>' +
@@ -117,7 +118,7 @@ function cookJudge(c, now) {
 }
 function cookTick() {
   const c = cooking; if (!c || c.phase === 'serve') return;
-  const it = scene === 'house' && house ? house.items.find(x => x.id === c.itId) : null;
+  const it = c.hw ? (scene === 'plaza' && hwOn() ? true : null) : scene === 'house' && house ? house.items.find(x => x.id === c.itId) : null;
   if (c.scene !== scene || !it || paused() || pressed.length) { cookCancel(); return; }
   const now = Date.now(), rd = c.plan[c.i], dt = Math.min(100, now - (c.lt || now)); c.lt = now;
   if (c.phase === 'wait') { if (now >= c.at) { c.phase = 'idle'; c.heat = 0; c.needRel = actHeld; } }
@@ -138,13 +139,13 @@ async function cookFinish(ok) {
   let made = false, errMsg = '';
   if (ok) {
     c.phase = 'serve'; ckBusy = true;
-    try { const r = await enqueue(() => rpc('cook', c.host ? { p_key: rc.key, p_qty: 1, p_at: c.host } : { p_key: rc.key, p_qty: 1 })); if (r.inv) Object.assign(inv, r.inv); made = true; }
+    try { const r = await enqueue(() => c.hw ? rpc('hw_cook', { p_key: rc.key, p_qty: 1 }) : rpc('cook', c.host ? { p_key: rc.key, p_qty: 1, p_at: c.host } : { p_key: rc.key, p_qty: 1 })); if (r.inv) Object.assign(inv, r.inv); made = true; }
     catch (err) { errMsg = errText(err); await resync(); }
     ckBusy = false; refreshHud();
   }
   if (cooking === c) cooking = null;
   ckSend(made ? 'done' : 'fail', c);
-  const gain = made ? Math.round((6 + 4 * c.T) * (perfect ? 1.5 : 1)) : ok ? 0 : 2;
+  const gain = c.hw ? 0 : made ? Math.round((6 + 4 * c.T) * (perfect ? 1.5 : 1)) : ok ? 0 : 2;   // 魔女鍋不給烹飪經驗
   const got = gain ? ckAddXp(gain) : 0;
   const xp = got ? ' · 烹飪經驗 +' + got : '';
   dishIcon(catchCv.getContext('2d'), rc.key);
@@ -171,10 +172,10 @@ function ckText(txt, x, y, col) {   // 帶白邊的小字，疊在牆上也看�
 function drawCooking(now) {
   const c = cooking;
   if (!c || c.scene !== scene) return;
-  const it = house ? house.items.find(x => x.id === c.itId) : null, rt = it && itemRect(it);
+  const it = house ? house.items.find(x => x.id === c.itId) : null, rt = c.hw ? true : it && itemRect(it);
   if (!rt) return;
-  const px0 = (RX + rt.x) * T, top = (RY + rt.y) * T, sw = rt.w * T, rd = c.plan[Math.min(c.i, c.plan.length - 1)];
-  stoveFlames(px0, top, now, c.phase === 'heat');
+  const rd = c.plan[Math.min(c.i, c.plan.length - 1)];
+  if (!c.hw) { const px0 = (RX + rt.x) * T, top = (RY + rt.y) * T; stoveFlames(px0, top, now, c.phase === 'heat'); }   // 魔女鍋的泡泡由 halloween.js 畫
   const R = 10, lw = 3.5, ppx = Math.round(pl.x * T), ppy = Math.round(pl.y * T);
   let rx = clamp(ppx + 8, R + 3, ctx.canvas.width - R - 3), ry = ppy - 11 - R - 3, below = false;   // 頭頂：名牌（約 ppy-11）之上
   if (ry - R - 9 < 1) { ry = ppy + 17 + R + 3; below = true; }                                       // 上面沒空間 → 放腳下
