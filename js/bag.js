@@ -15,8 +15,9 @@ function furnIcon(cv, key) {
   const d = defOf(key);
   const c2d = cv.getContext('2d');
   g = c2d; g.clearRect(0, 0, cv.width, cv.height);
-  if (d && d.layer === 'wall_style') drawWallTile(0, 0, 0, 0, +key.split('_')[1]);
-  else if (d && d.layer === 'floor_style') drawFloorTile(0, 0, 0, 0, +key.split('_')[1]);
+  if (DOOR_BY_KEY[key]) doorIcon(DOOR_BY_KEY[key].idx);
+  else if ((d && d.layer === 'wall_style') || (!d && /^wall_\d+$/.test(key))) drawWallTile(0, 0, 0, 0, +key.split('_')[1]);      // 第 0 款（奶油牆）免費初始，伺服器目錄沒有，不能靠 defOf 判斷
+  else if ((d && d.layer === 'floor_style') || (!d && /^floor_\d+$/.test(key))) drawFloorTile(0, 0, 0, 0, +key.split('_')[1]);   // 同上（木地板）
   else if (FURN[key]) FURN[key](0, 0, 0);
   g = ctx;
 }
@@ -88,8 +89,8 @@ function bagDetail(it) {
     info = it.rc.descr + ' 每份賣 ' + it.rc.price + ' G，也能交委託。' + (it.rc.buff ? '吃下去會「' + (BUFF_N[it.rc.buff] || it.rc.buff) + '」（同一種效果最多累積 60 分鐘）。' : '這道料理沒有效果，只能賣或交委託。');
     if (it.rc.buff) a.push('<button type="button" class="btn small" data-b="eat"' + (bagEating ? ' disabled' : '') + '>吃一份</button>');
   } else if (it.t === 'furn') {
-    const st = it.d.layer === 'wall_style' || it.d.layer === 'floor_style';
-    info = st ? '已購買的款式，在家裡的「牆面地板」可以隨時換上。' : '回家進入「布置模式」就能擺放。不要的話，在布置模式可以賣掉，得 ' + Math.floor(it.d.price / 2) + ' G。';
+    const st = it.d.layer === 'wall_style' || it.d.layer === 'floor_style' || it.d.layer === 'door_style';
+    info = st ? '已購買的花紋或門款，在家裡的「布置模式 → 花紋」分頁可以一格一格塗上去。' : '回家進入「布置模式」就能擺放。不要的話，在布置模式可以賣掉，得 ' + Math.floor(it.d.price / 2) + ' G。';
   }
   return '<p><b>' + esc(it.name) + '</b>' + (it.n == null ? '' : '　×' + it.n) + '</p><p>' + info + '</p>' + (a.length ? '<div class="v-quick">' + a.join('') + '</div>' : '');
 }

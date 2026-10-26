@@ -1,10 +1,18 @@
 'use strict';
 /* 屋子：室內、家具、布置、進出 —— 雷克斯農場。所有檔案共用同一個全域範圍，載入順序見 index.html。 */
 /* ---------- 屋子：室內房間、家具、布置 ---------- */
-const RX = 4, RY = 5, RW = 12, RH = 7;           // 地板左上角（地圖格）與大小
-const hkind = Array.from({ length: H }, () => Array(W).fill(TR));
-for (let y = RY; y < RY + RH; y++) for (let x = RX; x < RX + RW; x++) hkind[y][x] = G;
-hkind[12][10] = GT;
+const RX = 4, RY = 5;                             // 地板左上角（地圖格），擴建往右、往下長，所以固定不變
+let RW = 12, RH = 7;                              // 目前房間大小（依階段，applyHouseSize 更新）
+const houseMapW = () => RX * 2 + RW, houseMapH = () => RY + RH + 2;   // 室內場景的地圖格數（階段 0 剛好是 20×14）
+let hkind = [];
+function applyHouseSize(w, h) {
+  RW = Math.max(12, w | 0 || 12); RH = Math.max(7, h | 0 || 7);
+  const mw = houseMapW(), mh = houseMapH();
+  hkind = Array.from({ length: mh }, () => Array(mw).fill(TR));
+  for (let y = RY; y < RY + RH; y++) for (let x = RX; x < RX + RW; x++) hkind[y][x] = G;
+  hkind[RY + RH][RX + 5] = GT; hkind[RY + RH][RX + 6] = GT;   // 前門：兩格寬（跟門口踏墊一樣大），房間內相對座標 (5~6, RH)；出生點 (6, RH-1)
+}
+applyHouseSize(12, 7);
 let house = null;                                // { style, items, cat }
 const edit = { on: false, hold: null, sel: null, hover: null };
 let tmpSeq = 0, fOpen = false, fTab = 'wall';
@@ -296,18 +304,56 @@ function drawFurn(it, px, py, now) {
   if (it.id != null && DCONT[it.k]) DCONT[it.k](it, ox, oy, now);
   g.restore();
 }
-const defOf = k => (house && house.cat[k]) || null;
+const defOf = k => (house && house.cat[k]) || DOOR_BY_KEY[k] || null;   // 門款式伺服器沒給目錄時，用 doors.js 的本機資料
 /* 家具轉過之後的佔格（轉 90／270 度長寬對調，要和 SQL 的 _house_fits 一致） */
 const dimsOf = (k, r) => { const d = defOf(k); if (!d) return null; return (r & 1) ? { ...d, w: d.h, h: d.w } : d; };
 const itemRect = it => { const d = dimsOf(it.k, it.r | 0); return d ? { x: it.x, y: it.y, w: d.w, h: d.h, layer: d.layer } : null; };
-/* 屋子大小固定 12×7（要和 SQL 的 _house_fits 一致） */
-const houseW = () => RW;   // 屋子大小不受等級限制
+/* ---------- 隔間牆與門、逐格花紋（house.walls：1024 字元、列優先、stride 32；a~e 牆、A~E 門、. 空格） ---------- */
+/* 花紋編號 N：0~4 = 牆面花紋（對應家具店 wall_0~4，用在牆紙、隔間牆、門）；5~9 = 地板花紋（對應 floor_0~4）。字母 a + N。
+   第 0 款（奶油牆、木地板）免費，其餘要在家具店買過（背包 f:wall_N／f:floor_N）。 */
+const PAT_N = 10, PAT_NAMES = WALL_NAMES.concat(FLOOR_NAMES);
+const patKind = n => n < 5 ? 'wall' : 'floor', patStyle = n => n < 5 ? n : n - 5, patKey = n => patKind(n) + '_' + patStyle(n);
+const BLANK_WALLS = '.'.repeat(1024), BLANK_FLOOR = '.'.repeat(1024), BLANK_WPAPER = '.'.repeat(128);
+function shadeHex(hex, f) {          // f > 0 變亮、f < 0 變暗
+  const n = parseInt(hex.slice(1), 16), t = f < 0 ? 0 : 255, p = Math.abs(f);
+  const c = s => Math.round(s + (t - s) * p);
+  return '#' + [c(n >> 16 & 255), c(n >> 8 & 255), c(n & 255)].map(v => v.toString(16).padStart(2, '0')).join('');
+}
+/* 把牆字串整理成清單（只含有牆或門的格子），並記下四周有沒有牆：牆會依此自動變成橫段、直段、轉角、T 字、十字；門依所在牆的方向決定朝向 */
+function wallList(s) {
+  const out = [], isP = (x, y) => { if (x < 0 || y < 0 || x > 31 || y > 31) return false; const c = s.charCodeAt(y * 32 + x); return (c >= 97 && c <= 112) || (c >= 65 && c <= 80); };
+  const isD = (x, y) => { if (x < 0 || y < 0 || x > 31 || y > 31) return false; const c = s.charCodeAt(y * 32 + x); return c >= 65 && c <= 80; };
+  for (let i = 0; i < 1024; i++) {
+    const c = s.charCodeAt(i), lo = c >= 97 && c <= 112, up = c >= 65 && c <= 80;
+    if (!lo && !up) continue;
+    const x = i & 31, y = i >> 5, st = (lo ? c - 97 : c - 65), n = isP(x, y - 1), so = isP(x, y + 1), e = isP(x + 1, y), w = isP(x - 1, y);
+    out.push({ x, y, i: st < 5 ? st : 0, door: up, dk: up ? doorStyleOf(st) : 0, n, s: so, e, w, hz: w || e || !(n || so), dn: isD(x, y - 1), ds: isD(x, y + 1), de: isD(x + 1, y), dw: isD(x - 1, y) });   // hz：這扇門在橫牆上（走過去是上下方向）；dk：門的款式（0 布簾、1~4 另外購買的款式）
+  }
+  /* 相連的門整組用同一款：橫牆取最左邊那格、直牆取最上面那格的款式 */
+  const dkAt = (x, y) => doorStyleOf(s.charCodeAt(y * 32 + x) - 65);
+  out.forEach(c => {
+    if (!c.door) return;
+    let x = c.x, y = c.y;
+    if (c.hz) while (isD(x - 1, y)) x--; else while (isD(x, y - 1)) y--;
+    c.dk = dkAt(x, y);
+  });
+  return out;
+}
+/* 房間內相對座標 (lx, ly) 的格子：'wall'、'door' 或 null */
+function partAt(lx, ly) {
+  if (!house || !house.walls || lx < 0 || ly < 0 || lx > 31 || ly > 31) return null;
+  const c = house.walls.charCodeAt(ly * 32 + lx);
+  return c >= 97 && c <= 112 ? 'wall' : (c >= 65 && c <= 80 ? 'door' : null);
+}
+/* 房間大小依階段（要和 SQL 的 _house_dim／_house_fits 一致） */
+const houseW = () => RW;
 const houseD = () => RH;
 function fitsLocal(k, x, y, ignoreId, rot) {
   const d = dimsOf(k, rot | 0);
   if (!d || x < 0 || x + d.w > houseW()) return false;
   if (d.layer === 'wall') { if (y < -2 || y + d.h > 0) return false; }
   else if (y < 0 || y + d.h > houseD()) return false;
+  if (d.layer === 'floor') for (let yy = y; yy < y + d.h; yy++) for (let xx = x; xx < x + d.w; xx++) if (partAt(xx, yy)) return false;   // 落地家具不能壓在牆或門上（平放的地毯可以）
   return !house.items.some(it => {
     if (ignoreId != null && it.id === ignoreId) return false;
     const g = itemRect(it);
@@ -317,6 +363,7 @@ function fitsLocal(k, x, y, ignoreId, rot) {
 function houseBlocked(mx, my) {
   if (!house) return false;
   const lx = mx - RX, ly = my - RY;
+  if (partAt(lx, ly) === 'wall') return true;     // 牆擋住，門可以走過
   return house.items.some(it => { const g = itemRect(it); return g && g.layer === 'floor' && lx >= g.x && lx < g.x + g.w && ly >= g.y && ly < g.y + g.h; });
 }
 const itemAtLocal = (lx, ly) => {
@@ -335,7 +382,16 @@ function applyHouse(d) {
   const disp = {};
   (d.display || []).forEach(x => { const id = +x.id, s = x.s | 0; if (s < 0 || s > 15 || (x.t !== 'fish' && x.t !== 'bug' && x.t !== 'dish')) return; (disp[id] || (disp[id] = []))[s] = { t: x.t, k: String(x.k), n: x.n | 0 }; });
   const by = {}; (d.dish_by || []).forEach(x => { (by[+x.id] || (by[+x.id] = {}))[x.s | 0] = { u: String(x.uid), n: clean(x.name, 8) }; });
-  house = { by, style: d.style || { wall: 0, floor: 0 }, items: (d.items || []).map(i => ({ id: +i.id, k: i.k, x: i.x | 0, y: i.y | 0, f: !!i.f, r: (i.r | 0) & 3 })), cat, list, disp };
+  const sz = d.size || {};
+  const walls = typeof d.walls === 'string' && d.walls.length === 1024 ? d.walls : BLANK_WALLS, pt = d.paint || {};
+  house = { walls, wl: wallList(walls), paint: { floor: typeof pt.floor === 'string' && pt.floor.length === 1024 ? pt.floor : BLANK_FLOOR, wallpaper: typeof pt.wallpaper === 'string' && pt.wallpaper.length === 128 ? pt.wallpaper : BLANK_WPAPER }, w: sz.w | 0 || 12, h: sz.h | 0 || 7, tier: d.tier | 0, paints: Array.isArray(d.paints) ? d.paints.map(x => ({ idx: x.idx | 0, tier: String(x.tier || 'basic'), coins: +x.coins || 0 })) : [], tiers: Array.isArray(d.tiers) ? d.tiers : [], by, style: d.style || { wall: 0, floor: 0 }, items: (d.items || []).map(i => ({ id: +i.id, k: i.k, x: i.x | 0, y: i.y | 0, f: !!i.f, r: (i.r | 0) & 3 })), cat, list, disp };
+  syncHouseSize();
+}
+/* applyHouse 之後呼叫：把房間大小套到地圖；人在屋子裡時（例如剛擴建）連場景大小一起更新 */
+function syncHouseSize() {
+  if (!house) return;
+  applyHouseSize(house.w, house.h);
+  if (scene === 'house') { W = houseMapW(); H = houseMapH(); K = hkind; view.snap = true; fitView(); }
 }
 async function loadHouse() { applyHouse(await rpc('house_get')); }
 function reloadHouse() {
@@ -352,10 +408,12 @@ async function enterHouse() {
   enterBusy = false;
   if (scene !== 'farm') return;
   tutEvent('house');
-  scene = 'house'; K = hkind;
-  pl.x = pl.sx = 10; pl.y = pl.sy = 11; pl.prog = 1; pl.face = 'up'; pressed.length = 0;
+  applyHouseSize(house.w, house.h);
+  scene = 'house'; K = hkind; W = houseMapW(); H = houseMapH();
+  pl.x = pl.sx = RX + 6; pl.y = pl.sy = RY + RH - 1; pl.prog = 1; pl.face = 'up'; pressed.length = 0;
   edit.on = false; edit.hold = null; edit.sel = null; myShow = null;
   $('hpanel').hidden = false; $('game').classList.remove('editing');
+  view.snap = true; fitView();
   renderHousePanel();
   joinHouseRoom(myUid);        // 自己的家也連上頻道，朋友來拜訪時才看得到你
 }

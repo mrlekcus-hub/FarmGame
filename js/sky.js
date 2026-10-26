@@ -240,7 +240,7 @@ function draw(now) {
           { const q = bedPt(pit, 16, 1); nameTag(ch.name, q[0], q[1], '#ffffff'); }
         } else {
           drawSeated(px, py, pit, ch);
-          nameTag(ch.name, px + 8, py - 7, '#ffffff');
+          nameTag(ch.name, px + 8, py - (pit.k === 'shower' ? 19 : pit.k === 'scale' ? 29 : 7), '#ffffff');
         }
       } });
     } else if (pose && ((pose.bench && scene === 'plaza') || (pose.ground && syncScene()))) {
@@ -279,7 +279,7 @@ function draw(now) {
     const fit = rp.fs && !mv ? seatItemAt(rp.tx, rp.ty, rp.fs) : null;
     if (fit) {
       if (rp.fs === 4) { drawLying(fit, rp.char); const q = bedPt(fit, 16, 1); nameTag(rp.name, q[0], q[1], '#fff3b0'); }
-      else { drawSeated(px, py, fit, rp.char, Math.round(rp.x) - (RX + fit.x)); nameTag(rp.name, px + 8, py - 7, '#fff3b0'); }
+      else { drawSeated(px, py, fit, rp.char, Math.round(rp.x) - (RX + fit.x)); nameTag(rp.name, px + 8, py - (fit.k === 'shower' ? 19 : fit.k === 'scale' ? 29 : 7), '#fff3b0'); }
       return;
     }
     if (seated) drawBenchSeated(px, py, rp.char);

@@ -21,6 +21,8 @@ function fitView() {
 window.addEventListener('resize', fitView);
 window.addEventListener('orientationchange', () => setTimeout(fitView, 120));
 if (coarseMQ && coarseMQ.addEventListener) coarseMQ.addEventListener('change', fitView);
+/* 畫布的實際大小變了（登入畫面收起來、換角色、網址列縮放…）也重算一次縮放；用 rAF 合併，避免反覆觸發 */
+if (window.ResizeObserver) { let fvRaf = 0; new ResizeObserver(() => { if (fvRaf) return; fvRaf = requestAnimationFrame(() => { fvRaf = 0; fitView(); }); }).observe(cv); }
 let lastInputAt = performance.now();
 const wakeUI = () => { lastInputAt = performance.now(); };
 ['pointerdown', 'pointermove', 'keydown', 'touchstart'].forEach(t => document.addEventListener(t, wakeUI, { passive: true }));

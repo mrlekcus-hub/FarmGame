@@ -925,3 +925,15 @@ body.fl canvas#game{touch-action:none;-webkit-touch-callout:none;-webkit-user-se
 .mn-d{margin:0;font-size:14px;line-height:1.6;color:var(--ink)}
 .mn-foot{display:flex;gap:8px;justify-content:space-between;align-items:center}
 .mn-foot .btn.ghost{flex:none}
+
+/* 油漆分頁：色票 4×4（觸控目標 ≥ 44px） */
+.prow{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.pgrid{display:grid;grid-template-columns:repeat(4,minmax(44px,1fr));gap:6px;margin-top:8px}
+.pgrid button{min-height:46px;border-radius:10px;border:3px solid var(--edge);cursor:pointer;font:700 12px/1.15 var(--f-display);padding:3px 2px;text-align:center}
+.pgrid button small{display:block;font-size:10px;font-weight:500;opacity:.85}
+.pgrid button[aria-pressed=true]{border-color:var(--pink-deep);box-shadow:0 0 0 2px #fff inset}
+
+/* 花紋面板：每款花紋一個小圖 */
+.pgrid.pat{grid-template-columns:repeat(5,minmax(44px,1fr))}
+.pgrid.pat button{background:#fff8ea;color:#4a3030;min-height:64px}
+.pgrid.pat canvas{display:block;width:32px;height:32px;margin:0 auto 2px;image-rendering:pixelated;border-radius:4px}

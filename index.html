@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>雷克斯農場</title>
-<meta name="build" content="b53470288d">
+<meta name="build" content="5578bf3e08">
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="manifest" href="app/manifest.webmanifest">
@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chiron+GoRound+TC:wght@400;600;800&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap">
-<link rel="stylesheet" href="css/style.css?v=e1adc607">
+<link rel="stylesheet" href="css/style.css?v=02bbea05">
 </head><body>
 
 
@@ -94,12 +94,13 @@
     </div>
     <div class="v-quick" id="h-quick">
       <button type="button" class="btn small" id="h-edit" aria-pressed="false">布置模式：關</button>
-      <button type="button" class="btn small ghost" id="h-shop">牆面地板</button>
       <button type="button" class="btn small ghost" id="h-look">換造型</button>
     </div>
     <div id="h-edit-box" hidden>
+      <div class="v-quick" id="h-tabs"></div>
       <div class="v-list" id="h-inv"></div>
       <div class="v-quick" id="h-sel" hidden></div>
+      <div id="h-paint" hidden></div>
     </div>
   </section>
 
@@ -172,7 +173,6 @@
 <div class="maker" id="dexm" hidden><div class="card maker-card" id="dexcard" tabindex="-1"></div></div>
 <div class="maker" id="bagm" hidden><div class="card maker-card" id="bagcard" tabindex="-1"></div></div>
 <div class="maker" id="sym" hidden><div class="card maker-card" id="sycard" tabindex="-1"></div></div>
-<div class="maker" id="fshop" hidden><div class="card maker-card" id="fshopcard" tabindex="-1"></div></div>
 <div class="maker" id="mlm" hidden><div class="card maker-card" id="mlcard" tabindex="-1"></div></div>
 <div class="maker" id="hwm" hidden><div class="card maker-card" id="hwcard" tabindex="-1"></div></div>
 <div class="maker" id="snm" hidden><div class="card maker-card" id="sncard" tabindex="-1"></div></div>
@@ -246,9 +246,9 @@
 <script src="js/state.js?v=5a8253d4"></script>
 <script src="js/art/village-tiles.js?v=d87a6633"></script>
 <script src="js/world.js?v=f1a11158"></script>
-<script src="js/net.js?v=09a2621f"></script>
-<script src="js/actions.js?v=0bda4c7a"></script>
-<script src="js/shop.js?v=c39e50f8"></script>
+<script src="js/net.js?v=1022cd61"></script>
+<script src="js/actions.js?v=4f6def9d"></script>
+<script src="js/shop.js?v=86fb5d2d"></script>
 <script src="js/scenes.js?v=c848ad01"></script>
 <script src="js/npc.js?v=66a1c86b"></script>
 <script src="js/items.js?v=a6f79b30"></script>
@@ -259,14 +259,14 @@
 <script src="js/merchant.js?v=97277b9b"></script>
 <script src="js/cooking.js?v=a1a61a8e"></script>
 <script src="js/board.js?v=f1bf518f"></script>
-<script src="js/bag.js?v=878ca5d4"></script>
+<script src="js/bag.js?v=68ba8dcb"></script>
 <script src="js/dex.js?v=592be67c"></script>
 <script src="js/progress.js?v=e1f35775"></script>
 <script src="js/card.js?v=c35b87e5"></script>
 <script src="js/tutorial.js?v=68192820"></script>
 <script src="js/manual.js?v=d71f114c"></script>
 <script src="js/hotbar.js?v=2d9e9808"></script>
-<script src="js/ui.js?v=b58805e8"></script>
+<script src="js/ui.js?v=b45d319e"></script>
 <script src="js/fishing.js?v=59715ccb"></script>
 <script src="js/input.js?v=7a6b4e0a"></script>
 <script src="js/pwa.js?v=4b7d5452"></script>
@@ -274,10 +274,10 @@
 <script src="js/tv.js?v=68d46f9c"></script>
 <script src="js/piano.js?v=8996a55c"></script>
 <script src="js/tarot.js?v=e0f226d1"></script>
-<script src="js/look.js?v=f0235a3e"></script>
+<script src="js/look.js?v=5e02a697"></script>
 <script src="js/auth.js?v=15a3fb48"></script>
-<script src="js/login-cover.js?v=9af92c6c"></script>
-<script src="js/village.js?v=c4b6e3b8"></script>
+<script src="js/login-cover.js?v=9e3d5d87"></script>
+<script src="js/village.js?v=8170ea51"></script>
 <script src="js/chat.js?v=e054a3ef"></script>
 <script src="js/friends.js?v=8292535f"></script>
 <script src="js/mail.js?v=e5c99256"></script>
@@ -286,14 +286,17 @@
 <script src="js/plaza-light.js?v=98b46c80"></script>
 <script src="js/gm.js?v=f8a16524"></script>
 <script src="js/bgm.js?v=428caee0"></script>
-<script src="js/house.js?v=cdca8e51"></script>
-<script src="js/social.js?v=6a5693cb"></script>
+<script src="js/house.js?v=757606a9"></script>
+<script src="js/doors.js?v=dc698143"></script>
+<script src="js/social.js?v=f4f3c136"></script>
 <script src="js/hw-cook.js?v=461a2691"></script>
-<script src="js/decor.js?v=7a632515"></script>
-<script src="js/stores.js?v=a06ce22e"></script>
-<script src="js/render.js?v=03e8cdcf"></script>
-<script src="js/sky.js?v=de706727"></script>
-<script src="js/immersive.js?v=9d4046fd"></script>
+<script src="js/decor.js?v=bbabefaa"></script>
+<script src="js/paint.js?v=ae58ce01"></script>
+<script src="js/bath.js?v=53b7a4cf"></script>
+<script src="js/stores.js?v=83d99cae"></script>
+<script src="js/render.js?v=9b528878"></script>
+<script src="js/sky.js?v=64eb599a"></script>
+<script src="js/immersive.js?v=da6fffe9"></script>
 <script src="js/update.js?v=fc21903b"></script>
 <script src="js/main.js?v=8be1c52f"></script>
 </body></html>

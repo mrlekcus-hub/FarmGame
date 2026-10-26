@@ -63,7 +63,10 @@ function renderHousePanel() {
   $('h-edit').textContent = '布置模式：' + (edit.on ? '開' : '關');
   $('h-edit').setAttribute('aria-pressed', edit.on ? 'true' : 'false');
   $('h-edit-box').hidden = !edit.on;
+  const pt_ = edit.on && edit.tab === 'paint';
+  $('h-inv').hidden = pt_;
   $('h-hint').textContent = !edit.on ? '走到門口按動作鍵回農場' : hold ? '點房間的格子放下 ' + (defOf(hold.k) || {}).name : '點家具選取，按住可以直接拖著移動，按鈕會浮在家具上方；從背包選家具來擺';
+  if (pt_) $('h-hint').textContent = '選顏色，在房間格子上點一下或拖曳來上色；有鎖頭的顏色可以先試色，鬆手時再決定要不要買';
   const have_ = house.list.filter(c => ['floor', 'flat', 'wall'].includes(c.layer) && have('f:' + c.key) > 0);
   $('h-inv').innerHTML = have_.length
     ? have_.map(c => '<button type="button" class="chipbtn" data-f="' + esc(c.key) + '" aria-pressed="' + (hold && !hold.fromId && hold.k === c.key ? 'true' : 'false') + '">' + esc(c.name) + ' ×' + have('f:' + c.key) + '</button>').join('')
@@ -77,6 +80,7 @@ function renderHousePanel() {
     sb_.hidden = false;
     sb_.innerHTML = '<span class="v-count">' + esc((defOf(hold.k) || {}).name || '') + '</span><button type="button" class="btn small" data-s="flip-hold">翻轉</button><button type="button" class="btn small" data-s="rot-hold">旋轉</button><button type="button" class="btn small ghost" data-s="sell-bag">賣出1個 +' + sellPrice(hold.k) + 'G</button><button type="button" class="btn small ghost" data-s="cancel">取消</button>';
   } else { sb_.hidden = true; sb_.innerHTML = ''; }
+  renderPaintPanel();
 }
 $('h-edit').addEventListener('click', () => {
   edit.on = !edit.on; edit.hold = null; edit.sel = null;
@@ -196,6 +200,7 @@ function houseDragEnd(cancel) {
   edit.hover = null; renderHousePanel();
 }
 $('game').addEventListener('pointerdown', ev => {
+  if (paintOn()) { paintDown(ev); return; }   // 油漆分頁：交給 paint.js
   const [tx, ty] = tileFromEvent(ev);
   if (scene === 'house' && edit.on && house && !visiting && !edit.hold) {
     const lx = tx - RX, ly = ty - RY, it = lx >= 0 && lx < RW && ly >= -2 && ly < RH ? itemAtLocal(lx, ly) : null;

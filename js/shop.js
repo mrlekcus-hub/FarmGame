@@ -6,7 +6,8 @@ let shopBusy = false;
 let shopMode = 'store';
 const shopCats = () => SHOP_CATS.filter(c => shopMode === 'work' ? (c[0] === 'yard' || c[0] === 'up') : (c[0] === 'seed' || c[0] === 'sell'));
 function openShop(mode) { shopMode = mode === 'work' ? 'work' : 'store'; if (!shopCats().some(c => c[0] === shopCat)) { shopCat = shopMode === 'work' ? 'yard' : 'sell'; shopSel = ''; } shopOpen = true; pressed.length = 0; renderShop(); shopEl.hidden = false; shopCard.focus();
-  if (shopMode === 'work' && !ycat.length) loadYard(); }
+  if (shopMode === 'work' && !ycat.length) loadYard();
+  if (shopMode === 'work' && !house) enqueue(() => loadHouse()).then(() => { if (shopOpen) renderShop(); }).catch(() => {}); }
 function closeShop() { shopOpen = false; shopEl.hidden = true; }
 /* 賣出提示：今天已經賣了幾隻、這次賣會不會降價 */
 function satNote(sd, n, price, val) {
@@ -70,6 +71,20 @@ function shopActLabel(v, q, tot) {
   if (it.buy && tot > v.coins) return '金幣不夠';
   return (it.buy ? '買 ' : '賣 ') + q + ' 個 · ' + tot + ' G';
 }
+/* 房屋擴建（村長家）：顯示目前與下一階段大小、需求，費用未設定時顯示「即將開放」 */
+function houseExpandRow(coins) {
+  if (!house) return '<div class="row"><div class="meta"><small>房屋資料載入中…</small></div></div>';
+  const t = house.tier | 0, cur = { w: house.w, h: house.h }, nx = (house.tiers || []).find(x => (x.tier | 0) === t + 1);
+  if (!nx) return '<div class="row"><div class="meta"><b>目前 ' + cur.w + '×' + cur.h + ' 格</b><small>房子已經是最大的了</small></div></div>';
+  const open = nx.cost_item != null || nx.cost_item2 != null || nx.cost_coins != null;
+  if (!open) return '<div class="row"><div class="meta"><b>目前 ' + cur.w + '×' + cur.h + ' 格 → ' + nx.w + '×' + nx.h + ' 格</b><small>擴建任務即將開放</small></div></div>';
+  const need = nx.need_pl | 0, cc = nx.cost_coins | 0;
+  const mat = [[nx.cost_item, nx.cost_qty | 0], [nx.cost_item2, nx.cost_qty2 | 0]].filter(m => m[0] && m[1] > 0);
+  const lvLock = plv() < need, okMat = mat.every(m => have(m[0]) >= m[1]), okCoin = coins >= cc;
+  const mats = mat.map(m => esc(itemName(m[0])) + ' ×' + m[1] + '（有 ' + have(m[0]) + '）').concat(cc ? [cc + ' G'] : []).join(' ＋ ');
+  return '<div class="row"><div class="meta"><b>' + cur.w + '×' + cur.h + ' → ' + nx.w + '×' + nx.h + ' 格</b><small>往右和往下變大，家具位置不變。需要：' + mats + (need > 1 ? ' · 玩家 Lv.' + need : '') + '</small></div>' +
+    '<button type="button" class="btn" data-a="hexpand"' + (shopBusy || lvLock || !okMat || !okCoin ? ' disabled' : '') + '>' + (lvLock ? '玩家 Lv.' + need + ' 解鎖' : '擴建') + '</button></div>';
+}
 function renderShop() {
   const coins = me ? me.coins : 0;
   const dis = shopBusy ? ' disabled' : '';
@@ -94,7 +109,7 @@ function renderShop() {
   { const sl = shopCat === 'sell' ? list : shopItems('sell'); sellKinds = sl.length; sl.forEach(it => { if (it.a === 'sell' || it.a === 'sellfish' || it.a === 'sellbug') grand += shopTotal(it, it.stock); }); }   // 「全部賣出」（SQL sell_all）只賣作物、魚、蟲，金額也只算這三種
   const rail = shopCats().map(c => '<button type="button" class="shri" data-cat="' + c[0] + '" aria-pressed="' + (c[0] === shopCat) + '"><b>' + c[1] + '</b>' + c[2] + (c[0] === 'sell' && sellKinds ? '<span class="shn">' + sellKinds + '</span>' : '') + '</button>').join('');
   let main = '';
-  if (shopCat === 'up') main = '<h3>釣竿</h3>' + rodRow + '<h3>鋤頭與水壺</h3>' + toolRows;
+  if (shopCat === 'up') main = '<h3>釣竿</h3>' + rodRow + '<h3>鋤頭與水壺</h3>' + toolRows + '<h3>房屋擴建</h3>' + houseExpandRow(coins);
   else {
     if (shopCat === 'sell') main += list.length ? '<div class="shbar"><span>背包可賣 ' + list.length + ' 種 · 全部賣出（作物、魚、蟲）共 ' + grand + ' G</span><button type="button" class="btn small" data-a="sellall"' + dis + '>全部賣出</button></div>' : '<p class="empty">背包裡沒有可以賣的東西。收成作物、釣魚、抓蟲蝶之後再來。</p>';
     main += list.map(it => '<div class="row shr' + (it.id === shopSel ? ' sel' : '') + (it.lock ? ' lk' : '') + '" data-sel="' + esc(it.id) + '">' + shopIcon(it) +
@@ -163,6 +178,7 @@ shopCard.addEventListener('click', async e => {
       if (a === 'rod') return rpc('rod_upgrade');
       if (a === 'selld') return rpc('sell_dish', b.dataset.n ? { p_key: k, p_qty: +b.dataset.n } : { p_key: k });
       if (a === 'tool') return rpc('tool_upgrade', { p_tool: k });
+      if (a === 'hexpand') return rpc('house_expand');
       if (a === 'buyy') return rpc('buy_yard', { p_key: k, p_qty: +b.dataset.n || 1 });
       if (a === 'buym') return rpc('buy_misc', { p_item: k, p_qty: +b.dataset.n || 1 });
       if (a === 'sellm') return rpc('sell_item', b.dataset.n ? { p_item: k, p_qty: +b.dataset.n } : { p_item: k });
@@ -173,6 +189,7 @@ shopCard.addEventListener('click', async e => {
     if (typeof r.coins === 'number') me.coins = r.coins;
     if (typeof r.rod === 'number') { me.rod = r.rod; const rd = rods.find(x => x.lv === r.rod); toast('升級成 ' + (rd ? rd.name : '新釣竿') + '！'); }
     if (r.tool) { toolLv[r.tool] = r.lv | 0; toast('升級成 ' + (r.tool === 'hoe' ? '鋤頭' : '水壺') + ' Lv.' + r.lv + '，一次處理 ' + toolN(r.lv) + ' 格！'); }
+    if (a === 'hexpand') { await loadHouse(); if (r.size) toast('房子擴建成 ' + r.size.w + '×' + r.size.h + ' 格了！', 3000); }
     if (r.earned) toast('賣出得到 ' + r.earned + ' G');
     if (a === 'buy' && CROPS[k]) toast('買了 ' + buyN + ' 個' + CROPS[k].n + '種子');
     if (a === 'buyy') toast('買了 ' + (+b.dataset.n || 1) + ' 個' + itemName('y:' + k) + '，裝備「庭院佈置」工具來擺放');

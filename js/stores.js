@@ -1,40 +1,8 @@
 'use strict';
 /* 家具店、造型店、店裡的房間 —— 雷克斯農場。所有檔案共用同一個全域範圍，載入順序見 index.html。 */
 /* ---------- 家具店 ---------- */
-const fsEl = $('fshop'), fsCard = $('fshopcard');
-function renderFShop() {
-  const tab = (k, n) => '<button type="button" class="cb" data-a="tab" data-c="' + k + '" aria-pressed="' + (fTab === k) + '">' + n + '</button>';
-  const kd = fTab, names = kd === 'wall' ? WALL_NAMES : FLOOR_NAMES, cur = house.style[kd];
-  const rows = names.map((n, i) => {
-    const owned = i === 0 || have('f:' + kd + '_' + i) > 0;
-    return '<div class="row"><i class="swatch" style="background:' + iconRowColor[kd][i] + '"></i><div class="meta"><b>' + n + '</b><small>' + (cur === i ? '目前使用中' : owned ? '已擁有' : '到小村的家具店購買') + '</small></div>' +
-      (cur === i || !owned ? '' : '<button type="button" class="btn small" data-a="style" data-c="' + i + '"' + (fsBusy ? ' disabled' : '') + '>套用</button>') + '</div>';
-  }).join('');
-  fsCard.innerHTML = '<div class="shop-h"><h2>牆面地板</h2></div>' +
-    '<div class="tabs2">' + tab('wall', '牆面') + tab('floor', '地板') + '</div>' + rows +
-    '<button type="button" class="btn ghost wide" data-a="close">關閉</button>';
-}
-let fsBusy = false;
-function openFShop() { if (!house) return; fOpen = true; pressed.length = 0; renderFShop(); fsEl.hidden = false; fsCard.focus(); }
-function closeFShop() { fOpen = false; fsEl.hidden = true; renderHousePanel(); }
-$('h-shop').addEventListener('click', openFShop);
-fsCard.addEventListener('click', async e => {
-  const b = e.target.closest('button[data-a]');
-  if (!b || b.disabled) return;
-  const a = b.dataset.a, c = b.dataset.c;
-  if (a === 'close') { closeFShop(); return; }
-  if (a === 'tab') { fTab = c; renderFShop(); return; }
-  fsBusy = true; renderFShop();
-  try {
-    const r_ = await enqueue(() => rpc('house_style', { p_kind: fTab, p_idx: +c }));
-    if (r_.inv) Object.assign(inv, r_.inv);
-    if (typeof r_.coins === 'number') me.coins = r_.coins;
-    if (r_.style) house.style = r_.style;
-  } catch (err) { toast(errText(err)); await resync(); }
-  fsBusy = false;
-  if (fOpen) renderFShop();
-  refreshHud();
-});
+/* 以前的「牆面地板」整間套用已拿掉：牆面、地板花紋改成在家裡布置模式的「花紋」分頁逐格塗，家具店只負責買。 */
+function closeFShop() { fOpen = false; }
 
 
 /* ---------- 造型店：裁縫鋪與造型店（髮型、帽子、眼鏡；可以走進去，和店員說話才開始選） ---------- */
@@ -192,15 +160,23 @@ function renderFurnShop(head, coins) {
     note = '<p style="margin:6px 0;font-size:12px;opacity:.7">今天上架 ' + list.length + ' 件，GMT+8 0 點換一批新的。今天沒有想要的，明天再來看看。</p>';
     rows = list.length ? list.map(c => '<div class="row"><canvas width="32" height="32" data-fk="' + esc(c.key) + '" style="width:48px;height:48px;image-rendering:pixelated;flex:none"></canvas><div class="meta"><b>' + esc(c.name) + '</b><small>' + c.w + '×' + c.h + ' 格 · ' + (c.layer === 'wall' ? '掛牆' : c.layer === 'flat' ? '地毯' : '落地') + ' · 持有 ' + have('f:' + c.key) + '</small></div>' +
       '<button type="button" class="btn small" data-a="ybuy" data-c="' + esc(c.key) + '"' + (syBusy || coins < c.price ? ' disabled' : '') + '>' + c.price + ' G</button></div>').join('') : '<p class="empty">今天沒有上架的家具</p>';
+  } else if (fyTab === 'door') {
+    note = '<p style=\"margin:6px 0;font-size:12px;opacity:.7\">買一次永久擁有，不限數量。回家進「布置模式 → 花紋 → 隔間牆 → 門」，一格一格畫上去。相連的門會合併成一個大門口，整組用同一款。</p>';
+    rows = DOORS.map((d, k) => {
+      const owned = doorOwned(k), price = doorPrice(k);
+      return '<div class=\"row\"><canvas width=\"16\" height=\"16\" data-fk=\"' + d.key + '\" style=\"width:48px;height:48px;image-rendering:pixelated;flex:none;border-radius:6px\"></canvas><div class=\"meta\"><b>' + d.name + '</b><small>' + (k === 0 ? '初始款，免費' : owned ? '已擁有' : d.blurb) + '</small></div>' +
+        (owned ? '' : '<button type=\"button\" class=\"btn small\" data-a=\"ypat\" data-c=\"' + d.key + '\"' + (syBusy || coins < price ? ' disabled' : '') + '>' + price + ' G</button>') + '</div>';
+    }).join('');
   } else {
-    const kd = fyTab, names = kd === 'wall' ? WALL_NAMES : FLOOR_NAMES, cur = house.style[kd];
+    const kd = fyTab, names = kd === 'wall' ? WALL_NAMES : FLOOR_NAMES;
+    note = '<p style="margin:6px 0;font-size:12px;opacity:.7">買一次永久擁有，不限數量。回家進「布置模式 → 花紋」，一格一格塗在' + (kd === 'wall' ? '牆紙和隔間牆' : '地板') + '上。</p>';
     rows = names.map((n, i) => {
       const key = kd + '_' + i, c = house.cat[key], owned = i === 0 || have('f:' + key) > 0, price = c ? c.price : 0;
-      return '<div class="row"><i class="swatch" style="background:' + iconRowColor[kd][i] + '"></i><div class="meta"><b>' + n + '</b><small>' + (cur === i ? '目前使用中' : owned ? '已擁有' : price + ' G') + '</small></div>' +
-        (cur === i ? '' : '<button type="button" class="btn small" data-a="ystyle" data-c="' + i + '"' + (syBusy || (!owned && coins < price) ? ' disabled' : '') + '>' + (owned ? '套用' : '買並套用') + '</button>') + '</div>';
+      return '<div class="row"><canvas width="16" height="16" data-fk="' + key + '" style="width:48px;height:48px;image-rendering:pixelated;flex:none;border-radius:6px"></canvas><div class="meta"><b>' + n + '</b><small>' + (i === 0 ? '初始花紋，免費' : owned ? '已擁有' : '買一次，永久使用') + '</small></div>' +
+        (owned ? '' : '<button type="button" class="btn small" data-a="ypat" data-c="' + key + '"' + (syBusy || coins < price ? ' disabled' : '') + '>' + price + ' G</button>') + '</div>';
     }).join('');
   }
-  syCard.innerHTML = head + '<div class="tabs2">' + tab('furn', '今日家具') + tab('wall', '牆面') + tab('floor', '地板') + '</div>' + note + rows + tail;
+  syCard.innerHTML = head + '<div class="tabs2">' + tab('furn', '今日家具') + tab('wall', '牆面') + tab('floor', '地板') + tab('door', '門') + '</div>' + note + rows + tail;
   syCard.querySelectorAll('canvas[data-fk]').forEach(cv => { try { furnIcon(cv, cv.dataset.fk); } catch (e) { /* 略過 */ } });
 }
 function openSty(kind) { syKind = kind; syStage = 'talk'; syLine = pickOf(SHOP_STY[kind].hello); syOpen = true; pressed.length = 0; renderSty(); syEl.hidden = false; syCard.focus(); }
@@ -219,14 +195,13 @@ syCard.addEventListener('click', async e => {
   }
   if (a === 'stab') { ssTab = b.dataset.c; renderSty(); return; }
   if (a === 'ytab') { fyTab = b.dataset.c; renderSty(); return; }
-  if (a === 'ybuy' || a === 'ystyle') {
+  if (a === 'ybuy' || a === 'ypat') {
     syBusy = true; renderSty();
     try {
-      const r_ = await enqueue(() => a === 'ybuy' ? rpc('buy_furniture', { p_item: b.dataset.c, p_qty: 1 }) : rpc('house_style', { p_kind: fyTab, p_idx: +b.dataset.c }));
+      const r_ = await enqueue(() => a === 'ybuy' ? rpc('buy_furniture', { p_item: b.dataset.c, p_qty: 1 }) : rpc(/^door_/.test(b.dataset.c) ? 'buy_door' : 'buy_pattern', { p_key: b.dataset.c }));
       if (r_.inv) Object.assign(inv, r_.inv);
       if (typeof r_.coins === 'number') me.coins = r_.coins;
-      if (r_.style) house.style = r_.style;
-      toast(a === 'ybuy' ? '買下了，回家布置吧' : '換好了', 2000);
+      toast(a === 'ybuy' ? '買下了，回家布置吧' : '買下了，到布置模式的「花紋」分頁使用', 2600);
     } catch (err) { toast(errText(err)); await resync(); }
     syBusy = false; if (syOpen) renderSty(); refreshHud(); return;
   }

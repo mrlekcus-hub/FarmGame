@@ -108,12 +108,12 @@ function updateTip() {
     s = fishing.phase === 'bite' ? '魚咬鉤了！快按動作鍵拉竿！' : fishing.phase === 'cast' ? '拋竿…' : fishing.phase === 'reel' ? '拉起來…' : '等魚上鉤…看到「!」立刻按動作鍵。太早拉會嚇跑魚。';
   } else if (scene === 'house') {
     s = visiting ? '這是 ' + visiting.name + ' 的家，隨意參觀吧。' : '這是你的家。按「布置模式」可以擺放家具。';
-    if (pose) s = (pose.type === 'lie' ? '躺著休息中…' : '坐著休息中…') + '按方向鍵或動作鍵起身。';
+    if (pose) s = pose.scale ? '站在體重計上…按方向鍵或動作鍵可以下來。' : pose.shower ? '淋浴中…按方向鍵或動作鍵可以提早出來。' : (pose.type === 'lie' ? '躺著休息中…' : '坐著休息中…') + '按方向鍵或動作鍵起身。';
     else
     if (x >= 0 && y >= 0 && x < W && y < H) {
       const lx = x - RX, ly = y - RY, hit = house && lx >= 0 && lx < RW && ly >= -2 && ly < RH ? itemAtLocal(lx, ly) : null;
       if (K[y][x] === GT) s = '門口：按動作鍵回農場。';
-      else if (hit) s = ((defOf(hit.k) || {}).name || '') + (DISP[hit.k] ? '：按動作鍵' + (visiting ? '看展示品' : '換展示品') : hit.k === 'kitchen' && !edit.on ? '：按動作鍵做料理' : STYLER[hit.k] && !visiting && !edit.on ? '：按動作鍵換造型' : hit.k === 'tv' && !edit.on ? '：按動作鍵換頻道、看今日情報' : hit.k === 'piano' && !edit.on ? '：按動作鍵彈琴' : SEAT[hit.k] && !edit.on ? '：按動作鍵' + (SEAT[hit.k] === 'lie' ? '躺下' : '坐下') : '');
+      else if (hit) s = ((defOf(hit.k) || {}).name || '') + (DISP[hit.k] ? '：按動作鍵' + (visiting ? '看展示品' : '換展示品') : hit.k === 'kitchen' && !edit.on ? '：按動作鍵做料理' : STYLER[hit.k] && !visiting && !edit.on ? '：按動作鍵換造型' : hit.k === 'tv' && !edit.on ? '：按動作鍵換頻道、看今日情報' : hit.k === 'piano' && !edit.on ? '：按動作鍵彈琴' : BATH_ACT[hit.k] && !edit.on ? '：按動作鍵' + BATH_ACT[hit.k].hint : SEAT[hit.k] && !edit.on ? '：按動作鍵' + (SEAT[hit.k] === 'lie' ? '躺下' : '坐下') : '');
     }
   } else if (scene === 'plaza') {
     s = '和朋友聊聊天吧，下方可以打字。';

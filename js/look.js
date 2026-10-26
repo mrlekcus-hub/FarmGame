@@ -13,7 +13,7 @@ function toChar(name, look) {
 const myChar = () => toChar(me && me.name, me && me.look);
 /* 衣櫥側欄：左邊分類、右邊縮圖；沒買到的款式與顏色完全不顯示 */
 const MK_TABS = [
-  { id: 'style', ic: '💇', n: '髮型' }, { id: 'hair', ic: '🎨', n: '髮色' }, { id: 'hat', ic: '🎩', n: '帽子' }, { id: 'glass', ic: '👓', n: '眼鏡' },
+  { id: 'style', ic: '💇', n: '髮型' }, { id: 'hat', ic: '🎩', n: '帽子' }, { id: 'glass', ic: '👓', n: '眼鏡' },
   { id: 'fits', ic: '👕', n: '衣服' }, { id: 'body', ic: '🧑', n: '身體' }
 ];
 let mkTab = 'fits';
@@ -33,9 +33,9 @@ function renderMakerPanel() {
   const m = mkSplit.querySelector('.mk-main');
   let h = '';
   if (mkTab === 'style') {
-    h = '<div class="mk-grid">' + ownedStyles().map(i => mkCell('style', i, STYLES[i], draft.style === i)).join('') + '</div>';
-  } else if (mkTab === 'hair') {
-    h = '<div class="mk-sec"><span class="optlabel">髮色</span><div class="sws">' + mkSw('hair', HAIRS, lookCols('style', draft.style | 0), '髮色') + '</div></div>';
+    h = '<div class="mk-grid">' + ownedStyles().map(i => mkCell('style', i, STYLES[i], draft.style === i)).join('') + '</div>' +
+      '<div class="mk-sec"><span class="optlabel">髮色</span><div class="sws">' + mkSw('hair', HAIRS, lookCols('style', draft.style | 0), '髮色') + '</div></div>' +
+      '<div class="mk-hint">更多髮型和顏色在小村的造型店，每天上架不同的</div>';
   } else if (mkTab === 'hat') {
     h = '<div class="mk-grid">' + ownedHats().map(i => mkCell('hat', i, HATS[i], draft.hat === i)).join('') + '</div>';
     if (draft.hat !== 3) h += '<div class="mk-sec"><span class="optlabel">帽子顏色</span><div class="sws">' + mkSw('hatc', HATCOL, lookCols('hat', draft.hat | 0), '帽子顏色') + '</div></div>';

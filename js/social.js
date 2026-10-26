@@ -443,11 +443,10 @@ async function visitHouse(uid, name) {
     if (scene === 'barn') leaveBarn(true);
     if (scene !== 'farm') { toast('現在不能拜訪'); enterBusy = false; return; }
     closeFriends();
-    W = BW; H = BH;
     pose = null; ownHouse = house; applyHouse(d);
     visiting = { uid, name: clean(d.owner && d.owner.name, 8) || name || '朋友' };
-    scene = 'house'; K = hkind;
-    pl.x = pl.sx = 10; pl.y = pl.sy = 11; pl.prog = 1; pl.face = 'up'; pressed.length = 0;
+    scene = 'house'; K = hkind; W = houseMapW(); H = houseMapH();
+    pl.x = pl.sx = RX + 6; pl.y = pl.sy = RY + RH - 1; pl.prog = 1; pl.face = 'up'; pressed.length = 0;
     edit.on = false; edit.hold = null; edit.sel = null; myShow = null;
     $('hpanel').hidden = false; $('game').classList.remove('editing');
     view.snap = true; fitView();
@@ -477,8 +476,8 @@ function leaveHouse(silent) {
   if (scene !== 'house') return;
   pose = null;
   sayBye(); stopNet(); remotes.clear(); myBubble = null; vPanel.hidden = true;
-  if (visiting) { house = ownHouse; ownHouse = null; visiting = null; }
-  scene = 'farm'; K = kind; W = BW; H = BH; edit.on = false; edit.hold = null; edit.sel = null; myShow = null;
+  scene = 'farm'; K = kind; W = BW; H = BH;
+  if (visiting) { house = ownHouse; ownHouse = null; visiting = null; syncHouseSize(); } edit.on = false; edit.hold = null; edit.sel = null; myShow = null;
   $('hpanel').hidden = true; $('game').classList.remove('editing');
   pl.x = pl.sx = 4; pl.y = pl.sy = 4; pl.prog = 1; pl.face = 'down'; pressed.length = 0;
   view.snap = true; fitView();

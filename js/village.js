@@ -46,8 +46,8 @@ const worldKey = () => scene === 'tarot' ? 't' : scene === 'house' ? 'h' : 'p';
 const syncScene = () => scene === 'plaza' || scene === 'tarot' || (scene === 'house' && !!net);
 const hereRp = rp => (rp.w || 'p') === worldKey();
 const worldOf = w => w === 't' ? 't' : w === 'h' ? 'h' : 'p';
-const worldW = w => w === 't' ? RMW : BW;
-const worldH = w => w === 't' ? RMH : BH;
+const worldW = w => w === 't' ? RMW : w === 'h' ? houseMapW() : BW;
+const worldH = w => w === 't' ? RMH : w === 'h' ? houseMapH() : BH;
 const WORLD_IN = { p: '來到廣場', t: '進了塔羅屋', h: '來到屋子裡' };
 const remoteAt = (x, y) => {
   let hit = null;

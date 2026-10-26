@@ -133,6 +133,7 @@ async function enter(u, uid) {
     const d = await rpc('get_state');
     applyState(d);
     authOpen = false; ready = true; bootEl.hidden = true;
+    view.snap = true; fitView();                     // 登入／換角色後畫布的版面才定下來，要重算一次縮放（否則整個地圖會縮小，進出小屋才恢復）
     pl.x = pl.sx = 4; pl.y = pl.sy = 4; pl.prog = 1; pl.face = 'down';
     refreshHud();
     if (!me) openMaker(true);
