@@ -37,12 +37,12 @@ fsCard.addEventListener('click', async e => {
 });
 
 
-/* ---------- 造型店：裁縫鋪與理髮店（可以走進去，和店員說話才開始選） ---------- */
-/* 擁有紀錄放在背包：hs:編號 = 髮型；服裝是 fc:款式:顏色（每個顏色單獨買，每天隨機上架 6 件，價格在後端 look_items）。髮型價格要和後端 buy_look 一致 */
+/* ---------- 造型店：裁縫鋪與造型店（髮型、帽子、眼鏡；可以走進去，和店員說話才開始選） ---------- */
+/* 擁有紀錄放在背包：hs:編號 = 髮型；服裝是 fc:款式:顏色（每個顏色單獨買，每天隨機上架 6 件，價格在後端 look_items）。髮型 hs:編號、帽子 ht:編號、眼鏡 gl:編號（買過 = 1）。價格要和後端 buy_look 一致 */
 const SHOP_STY = {
-  hair: { title: '理髮店', clerk: '阿剪師傅', ck: 'jian', k: 'style', names: STYLES, price: { 11: 300, 12: 450, 13: 400 }, look: '看看新髮型',
-    hello: ['歡迎光臨，今天想換什麼新髮型？', '來，坐。想剪成什麼樣子都可以說。'],
-    chat: ['頭髮就像田裡的作物，要細心照顧才會好看。', '我的剪刀每天都磨，保證不會剪壞。', '換個髮型，連心情都會跟著換喔。'] },
+  hair: { title: '造型店', clerk: '阿剪師傅', ck: 'jian', k: 'style', look: '看看今天的新造型',
+    hello: ['歡迎光臨造型店，今天想換什麼新造型？', '來，坐。髮型、帽子、眼鏡，都幫你搭搭看。'],
+    chat: ['頭髮就像田裡的作物，要細心照顧才會好看。', '帽子和眼鏡每天進的款式都不一樣，每個人看到的也不同喔。', '換個造型，連心情都會跟著換。'] },
   fit:  { title: '裁縫鋪', clerk: '桃子姊姊', ck: 'tao', k: 'fits', names: FITS, look: '看看今天的新衣服',
     hello: ['歡迎光臨！新做的衣服都掛在牆上喔。', '來啦，想要哪一件？我幫你量一量。'],
     chat: ['桂花婆婆教過我縫紉，她的針腳可是整個村子最細的。', '晚宴長裙我熬了三個晚上才縫好。', '衣服穿得開心，種田也會更有力氣。'] },
@@ -50,7 +50,72 @@ const SHOP_STY = {
     hello: ['歡迎光臨！今天剛進了一批新的家具。', '來看看吧，每天上架的東西都不一樣喔。'],
     chat: ['這些家具都是我一件一件親手做的。', '今天沒有你要的？明天再來，說不定就有了。', '家布置得舒服，種田的心情也會好。'] }
 };
-const styOwned = (k, i) => i < FREE_N[k] || (k === 'fits' ? fitAny(i) : have('hs:' + i) > 0);
+const styOwned = (k, i) => k === 'fits' ? (i < FREE_N[k] || fitAny(i)) : lookOwned(k, i);
+/* 造型店的三種商品：髮型、帽子、眼鏡。常駐款一直都有，每天另外隨機上架 3 款（每個玩家不同，GMT+8 0 點換新） */
+const LOOK_KIND = { style: { n: '髮型', ic: '💇' }, hat: { n: '帽子', ic: '🎩' }, glass: { n: '眼鏡', ic: '👓' } };
+const LOOK_NAMES = { style: STYLES, hat: HATS, glass: GLASSES };
+const LOOK_PREFIX = { style: 'hs:', hat: 'ht:', glass: 'gl:' };
+const LOOK_FIXED = { style: [], hat: [], glass: [] };   // 不再有常駐款：三種都是每天隨機 6 款
+const LOOK_POOL = { style: [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], hat: [4, 5, 6, 7, 8, 9, 10, 11], glass: [1, 2, 3, 4, 5, 6, 7] };
+const LOOK_PRICE = {
+  style: { 11: 300, 12: 450, 13: 400, 14: 350, 15: 450, 16: 400, 17: 350, 18: 400, 19: 450, 20: 400, 21: 350 },
+  hat: { 4: 250, 5: 250, 6: 300, 7: 350, 8: 400, 9: 500, 10: 300, 11: 300 },
+  glass: { 1: 200, 2: 200, 3: 250, 4: 300, 5: 300, 6: 350, 7: 300 }
+};
+const LOOK_DAILY_N = 6;
+/* 每款商品的顏色：髮型用 look.hair（HAIRS）、帽子用 look.hatc（HATCOL）、眼鏡用 look.glassc（GLASSCOL，1～7；0 是原色，不會被抽到） */
+const LOOK_COLKEY = { style: 'hair', hat: 'hatc', glass: 'glassc' };
+const LOOK_COLS = { style: HAIRS, hat: HATCOL, glass: GLASSCOL };
+const LOOK_COLPOOL = { style: HAIRS.map((_, i) => i), hat: HATCOL.map((_, i) => i), glass: GLASSCOL.map((_, i) => i).filter(i => i > 0) };
+/* 擁有紀錄：每個顏色單獨買，key 是 hs:款式:顏色（ht:、gl: 同理）。舊版沒有顏色的 hs:款式 視為「全部顏色都有」，以前買過的不吃虧 */
+const lookHave = (k, i, c) => i < FREE_N[k] || have(LOOK_PREFIX[k] + i) > 0 || have(LOOK_PREFIX[k] + i + ':' + c) > 0;
+const lookOwned = (k, i) => {
+  if (i < FREE_N[k] || have(LOOK_PREFIX[k] + i) > 0) return true;
+  return LOOK_COLS[k].some((_, c) => have(LOOK_PREFIX[k] + i + ':' + c) > 0);
+};
+/* 這個款式我可以穿的顏色（免費款、舊版買過的＝全部；新版買的＝只有買過的顏色） */
+const lookCols = (k, i) => LOOK_COLS[k].map((_, c) => c).filter(c => lookHave(k, i, c));
+let lookToday = null, ssTab = 'style';
+/* 後端 look_daily 還沒更新時的後備：用「帳號＋日期」做種子，同一天同一個人永遠抽到一樣的 6 款＋顏色 */
+function lookPickLocal(day) {
+  let s = 0; for (const ch of String(me && me.username || '')) s = (Math.imul(s, 31) + ch.codePointAt(0)) | 0;
+  const out = { day };
+  Object.keys(LOOK_POOL).forEach((k, ki) => {
+    const cp = LOOK_COLPOOL[k];
+    out[k] = LOOK_POOL[k].map((v, j) => ({ v, o: hash(day, j, s + ki * 7919) })).sort((p, q) => p.o - q.o).slice(0, LOOK_DAILY_N)
+      .map(p => ({ i: p.v, c: cp[Math.floor(hash(day, p.v + 50, s + ki * 104729) * cp.length) % cp.length] }));
+  });
+  return out;
+}
+/* 後端 look_daily 如果已經改成回傳 [{i, c}]（每種 6 款）就用後端的，否則用本機後備 */
+const lookDailyOk = d => d && ['style', 'hat', 'glass'].every(k => Array.isArray(d[k]) && d[k].length && d[k].every(x => x && Number.isInteger(x.i) && Number.isInteger(x.c)));
+async function loadLookToday() {
+  const day = sellDayNow();
+  if (lookToday && lookToday.day === day) return;
+  try {
+    const d = await enqueue(() => rpc('look_daily'));
+    if (lookDailyOk(d)) { lookToday = { day: d.day != null ? d.day : day, style: d.style, hat: d.hat, glass: d.glass }; return; }
+  } catch (e) { /* 後端還沒更新：用本機後備 */ }
+  lookToday = lookPickLocal(day);
+}
+function renderStyleShop(head, cur, coins, S) {
+  const tabs = Object.keys(LOOK_KIND).map(k => '<button type="button" class="cb" data-a="stab" data-c="' + k + '" aria-pressed="' + (ssTab === k) + '">' + LOOK_KIND[k].ic + ' ' + LOOK_KIND[k].n + '</button>').join('');
+  const k = ssTab, ck = LOOK_COLKEY[k], today = lookToday ? lookToday[k] : [];
+  const rows = today.map(({ i, c }) => {
+    const own = lookHave(k, i, c), now = cur[k] === i && cur[ck] === c, pr = LOOK_PRICE[k][i] || 0;
+    return '<div class="row"><canvas width="16" height="22" data-k="' + k + '" data-i="' + i + '" data-c="' + c + '" style="width:48px;height:66px;image-rendering:pixelated;flex:none"></canvas>' +
+      '<div class="meta"><b>' + esc(LOOK_NAMES[k][i]) + ' <span class="sw" style="--c:' + LOOK_COLS[k][c] + ';display:inline-block;width:14px;height:14px;vertical-align:-2px;opacity:1;cursor:default;pointer-events:none" aria-label="今日顏色"></span></b><small>今日新品 · ' + (now ? '目前穿著' : own ? '已擁有' : pr + ' G') + '</small></div>' +
+      (now ? '' : '<button type="button" class="btn small" data-a="' + (own ? 'wear' : 'buy') + '" data-k="' + k + '" data-i="' + i + '" data-c="' + c + '"' + (syBusy || (!own && coins < pr) ? ' disabled' : '') + '>' + (own ? '穿上' : '買並穿上') + '</button>') + '</div>';
+  }).join('');
+  syCard.innerHTML = head + '<div class="tabs2">' + tabs + '</div>' +
+    '<p style="margin:6px 0;font-size:12px;opacity:.7">每天隨機上架 ' + LOOK_DAILY_N + ' 款，顏色也是隨機的，每個人看到的不一樣，GMT+8 0 點換新。買過的款式與顏色可以隨時在衣櫥裡換。</p>' + rows +
+    '<button type="button" class="btn ghost wide" data-a="talk">回去跟' + S.clerk + '說話</button><button type="button" class="btn ghost wide" data-a="close">關閉</button>';
+  syCard.querySelectorAll('canvas[data-i]').forEach(cv => {
+    const c2 = cv.getContext('2d'); c2.clearRect(0, 0, 16, 22); g = c2;
+    try { drawPlayer(0, 6, 'down', false, 0, { ...cur, [cv.dataset.k]: +cv.dataset.i, [LOOK_COLKEY[cv.dataset.k]]: +cv.dataset.c }); } catch (e) { /* 略過 */ }
+    g = ctx;
+  });
+}
 const syEl = $('sym'), syCard = $('sycard');
 let syKind = 'fit', syBusy = false, syStage = 'talk', syLine = '', styRoom = 'fit';
 const pickOf = a => a[Math.floor(Math.random() * a.length)];
@@ -70,20 +135,7 @@ function renderSty() {
   }
   if (syKind === 'fit') { renderFitShop(head, cur, coins); return; }
   if (syKind === 'furn') { renderFurnShop(head, coins); return; }
-  const rows = Object.keys(S.price).map(Number).map(i => {
-    const own = styOwned(S.k, i), now = cur[S.k] === i, pr = S.price[i];
-    return '<div class="row"><canvas width="16" height="22" data-i="' + i + '" style="width:48px;height:66px;image-rendering:pixelated;flex:none"></canvas>' +
-      '<div class="meta"><b>' + esc(S.names[i]) + '</b><small>' + (now ? '目前穿著' : own ? '已擁有' : pr + ' G') + '</small></div>' +
-      (now ? '' : '<button type="button" class="btn small" data-a="' + (own ? 'wear' : 'buy') + '" data-c="' + i + '"' + (syBusy || (!own && coins < pr) ? ' disabled' : '') + '>' + (own ? '穿上' : '買並穿上') + '</button>') + '</div>';
-  }).join('');
-  syCard.innerHTML = head + rows +
-    '<button type="button" class="btn ghost wide" data-a="talk">回去跟' + S.clerk + '說話</button>' +
-    '<button type="button" class="btn ghost wide" data-a="close">關閉</button>';
-  syCard.querySelectorAll('canvas[data-i]').forEach(cv => {
-    const c2 = cv.getContext('2d'); c2.clearRect(0, 0, 16, 22); g = c2;
-    try { drawPlayer(0, 6, 'down', false, 0, { ...cur, [S.k]: +cv.dataset.i }); } catch (e) { /* 略過 */ }
-    g = ctx;
-  });
+  renderStyleShop(head, cur, coins, S);
 }
 let fitToday = null; const fitSel = {};
 /* 每個玩家每天各自的 6 件，每件只有一種顏色：由後端 fit_daily 決定（item.c）。
@@ -161,9 +213,11 @@ syCard.addEventListener('click', async e => {
   if (a === 'list' || a === 'talk') {
     syStage = a;
     if (a === 'list' && syKind === 'fit') await loadFitToday();
+    if (a === 'list' && syKind === 'hair') await loadLookToday();
     if (a === 'list' && syKind === 'furn') { if (!house) { try { await enqueue(() => loadHouse()); } catch (err) { toast(errText(err)); } } await loadFurnToday(); }
     renderSty(); return;
   }
+  if (a === 'stab') { ssTab = b.dataset.c; renderSty(); return; }
   if (a === 'ytab') { fyTab = b.dataset.c; renderSty(); return; }
   if (a === 'ybuy' || a === 'ystyle') {
     syBusy = true; renderSty();
@@ -201,15 +255,16 @@ syCard.addEventListener('click', async e => {
     refreshHud();
     return;
   }
+  const kk = b.dataset.k || S.k, ii = b.dataset.i != null ? +b.dataset.i : i, cc = b.dataset.i != null ? +b.dataset.c : 0, ck_ = LOOK_COLKEY[kk];
   syBusy = true; renderSty();
   try {
     if (a === 'buy') {
-      const r_ = await enqueue(() => rpc('buy_look', { p_kind: S.k, p_idx: i }));
+      const r_ = await enqueue(() => rpc('buy_look', { p_kind: kk, p_idx: ii, p_col: cc }));
       if (r_.inv) Object.assign(inv, r_.inv);
       if (typeof r_.coins === 'number') me.coins = r_.coins;
     }
     const look = {}; const cur = myChar(); for (const k in LIMIT) look[k] = cur[k];
-    look[S.k] = i;
+    look[kk] = ii; look[ck_] = cc;
     await enqueue(() => rpc('set_look', { p_name: me.name, p_look: look }));
     me.look = look; toast(a === 'buy' ? '買下並穿上了' : '換好了', 2200);
   } catch (err) { toast(errText(err)); await resync(); }
@@ -225,7 +280,7 @@ for (let y = 0; y < SRH; y++) for (let x = 0; x < SRW; x++) if (y < 3 || y === S
 srkind[SRH - 1][4] = BX; srkind[SRH - 1][5] = BX;
 [3, 4, 5].forEach(x => { srkind[4][x] = SYC; });
 srkind[3][4] = SYK;
-srkind[5][1] = DEC; srkind[5][8] = DEC;   // 試衣模特兒／理髮椅
+srkind[5][1] = DEC; srkind[5][8] = DEC;   // 試衣模特兒／試戴模特兒
 /* 牧場小屋室內（展示欄型）：左邊雞牛小欄、右邊櫃檯，小茉站在 (7,3) */
 const rrkind = Array.from({ length: SRH }, () => Array(SRW).fill(G));
 for (let y = 0; y < SRH; y++) for (let x = 0; x < SRW; x++) if (y < 3 || y === SRH - 1 || x === 0 || x === SRW - 1) rrkind[y][x] = BWL;
@@ -243,7 +298,7 @@ function enterStylist(kind) {
   if (scene !== 'town' || !ready || !me || paused()) return;
   styRoom = kind; pose = null; scene = 'stylist'; K = kind === 'ranch' ? rrkind : kind === 'work' ? wkkind : srkind; W = SRW; H = SRH;
   pl.x = pl.sx = 4; pl.y = pl.sy = SRH - 2; pl.prog = 1; pl.face = 'up'; pressed.length = 0;
-  view.snap = true; fitView(); toast(kind === 'ranch' ? '歡迎光臨牧場小屋' : kind === 'fit' ? '歡迎光臨裁縫鋪' : kind === 'furn' ? '歡迎光臨家具店' : kind === 'work' ? '歡迎光臨園藝工坊' : '歡迎光臨理髮店');
+  view.snap = true; fitView(); toast(kind === 'ranch' ? '歡迎光臨牧場小屋' : kind === 'fit' ? '歡迎光臨裁縫鋪' : kind === 'furn' ? '歡迎光臨家具店' : kind === 'work' ? '歡迎光臨園藝工坊' : '歡迎光臨造型店');
 }
 function leaveStylist(silent) {
   if (scene !== 'stylist') return;
@@ -259,7 +314,7 @@ function stylistAct(x, y) {
   const k = K[y][x];
   if (k === BX) leaveStylist();
   else if (k === SYK || k === SYC) { if (styRoom === 'ranch') openRanch(); else if (styRoom === 'work') openShop('work'); else openSty(styRoom); }
-  else if (k === DEC) pop(x, y, styRoom === 'ranch' ? (x === 8 ? '堆得高高的乾草' : '雞和牛的小欄，隔著欄杆看看牠們') : styRoom === 'fit' ? '試衣用的模特兒' : styRoom === 'furn' ? '店裡展示用的家具' : styRoom === 'work' ? (x === 1 ? '鐵砧，鋤頭和水壺都是在這裡敲出來的' : '庭院燈的樣品，晚上會亮') : '舒服的理髮椅', '#fff3b0');
+  else if (k === DEC) pop(x, y, styRoom === 'ranch' ? (x === 8 ? '堆得高高的乾草' : '雞和牛的小欄，隔著欄杆看看牠們') : styRoom === 'fit' ? '試衣用的模特兒' : styRoom === 'furn' ? '店裡展示用的家具' : styRoom === 'work' ? (x === 1 ? '鐵砧，鋤頭和水壺都是在這裡敲出來的' : '庭院燈的樣品，晚上會亮') : '試戴用的模特兒，戴著店裡的新帽子和眼鏡', '#fff3b0');
 }
 function drawRanchRoom(now) {
   const bob = Math.floor(now / 600) % 2;
@@ -287,6 +342,7 @@ function drawStylistRoom(now) {
   const wall = (furn || ranch || work) ? '#d9a56c' : fit ? '#ffe3ec' : '#e3f6ec', wallD = (furn || ranch || work) ? '#a8764a' : fit ? '#f3b8cb' : '#a9d9c0', fa = (furn || ranch || work) ? '#e8c79a' : fit ? '#f6dcc0' : '#e8e3d6', fb = (furn || ranch || work) ? '#dfb98a' : fit ? '#efd2b4' : '#ddd7c8';
   ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#3b2a1e'; ctx.fillRect(0, 0, cv.width, cv.height); ctx.restore();
   r('#3b2a1e', 0, 0, W * T, H * T);
+  if (styRoom === 'hair') { drawStyleRoom(now); return; }
   for (let ty = 0; ty < H; ty++) for (let tx = 0; tx < W; tx++) {
     const px = tx * T, py = ty * T;
     if (ty < 3) { r(wall, px, py, T, T); if (ty === 2) { r(wallD, px, py + T - 2, T, 2); } }

@@ -4,7 +4,7 @@
 const mk = $('maker'), optsEl = $('opts'), pctx = $('pv').getContext('2d');
 let draft = null, pvTimer = 0, pvFace = 0, pvPhase = 0;
 const FACES = ['down', 'right', 'up', 'left'];
-const LIMIT = { gender: GENDERS.length, skin: SKINS.length, hair: HAIRS.length, style: STYLES.length, hat: HATS.length, hatc: HATCOL.length, outfit: OUTFITS.length, fits: FITS.length };
+const LIMIT = { gender: GENDERS.length, skin: SKINS.length, hair: HAIRS.length, style: STYLES.length, hat: HATS.length, hatc: HATCOL.length, glass: GLASSES.length, glassc: GLASSCOL.length, outfit: OUTFITS.length, fits: FITS.length };
 function toChar(name, look) {
   const c = { ...DEF_CHAR, name: clean(name, 8) || DEF_CHAR.name };
   for (const k in LIMIT) { const v = look && look[k]; if (Number.isInteger(v) && v >= 0 && v < LIMIT[k]) c[k] = v; }
@@ -13,16 +13,19 @@ function toChar(name, look) {
 const myChar = () => toChar(me && me.name, me && me.look);
 /* 衣櫥側欄：左邊分類、右邊縮圖；沒買到的款式與顏色完全不顯示 */
 const MK_TABS = [
-  { id: 'style', ic: '💇', n: '髮型' }, { id: 'hair', ic: '🎨', n: '髮色' }, { id: 'hat', ic: '🎩', n: '帽子' },
+  { id: 'style', ic: '💇', n: '髮型' }, { id: 'hair', ic: '🎨', n: '髮色' }, { id: 'hat', ic: '🎩', n: '帽子' }, { id: 'glass', ic: '👓', n: '眼鏡' },
   { id: 'fits', ic: '👕', n: '衣服' }, { id: 'body', ic: '🧑', n: '身體' }
 ];
 let mkTab = 'fits';
 const mkSplit = $('mk-split');
 const ownedStyles = () => STYLES.map((_, i) => i).filter(i => styOwned('style', i));
+const ownedHats = () => HATS.map((_, i) => i).filter(i => lookOwned('hat', i));
+const ownedGlass = () => GLASSES.map((_, i) => i).filter(i => lookOwned('glass', i));
+const mkIsNone = (k, i) => (k === 'hat' && i === 3) || (k === 'glass' && i === 0);
 const ownedFits = () => FITS.map((_, i) => i).filter(i => i < FREE_N.fits || fitAny(i));
 const ownedCols = f => OUTFITS.map((_, c) => c).filter(c => f < FREE_N.fits || fcHave(f, c));
 const mkCell = (k, i, name, on) => '<button type="button" class="mk-cell" data-k="' + k + '" data-i="' + i + '" aria-pressed="' + on + '">' +
-  (k === 'hat' && i === 3 ? '<div class="mk-none">✕</div>' : '<canvas width="16" height="22" data-k="' + k + '" data-i="' + i + '"></canvas>') +
+  (mkIsNone(k, i) ? '<div class="mk-none">✕</div>' : '<canvas width="16" height="22" data-k="' + k + '" data-i="' + i + '"></canvas>') +
   '<span>' + esc(name) + '</span></button>';
 const mkSw = (k, cols, idxs, label) => idxs.map(i => '<button type="button" class="sw" data-k="' + k + '" data-i="' + i + '" style="--c:' + cols[i] + '" aria-pressed="' + (draft[k] === i) + '" aria-label="' + label + ' ' + (i + 1) + '"></button>').join('');
 function renderMakerPanel() {
@@ -32,10 +35,15 @@ function renderMakerPanel() {
   if (mkTab === 'style') {
     h = '<div class="mk-grid">' + ownedStyles().map(i => mkCell('style', i, STYLES[i], draft.style === i)).join('') + '</div>';
   } else if (mkTab === 'hair') {
-    h = '<div class="mk-sec"><span class="optlabel">髮色</span><div class="sws">' + mkSw('hair', HAIRS, HAIRS.map((_, i) => i), '髮色') + '</div></div>';
+    h = '<div class="mk-sec"><span class="optlabel">髮色</span><div class="sws">' + mkSw('hair', HAIRS, lookCols('style', draft.style | 0), '髮色') + '</div></div>';
   } else if (mkTab === 'hat') {
-    h = '<div class="mk-grid">' + HATS.map((n, i) => mkCell('hat', i, n, draft.hat === i)).join('') + '</div>';
-    if (draft.hat !== 3) h += '<div class="mk-sec"><span class="optlabel">帽子顏色</span><div class="sws">' + mkSw('hatc', HATCOL, HATCOL.map((_, i) => i), '帽子顏色') + '</div></div>';
+    h = '<div class="mk-grid">' + ownedHats().map(i => mkCell('hat', i, HATS[i], draft.hat === i)).join('') + '</div>';
+    if (draft.hat !== 3) h += '<div class="mk-sec"><span class="optlabel">帽子顏色</span><div class="sws">' + mkSw('hatc', HATCOL, lookCols('hat', draft.hat | 0), '帽子顏色') + '</div></div>';
+    h += '<div class="mk-hint">更多帽子在小村的造型店，每天上架不同的</div>';
+  } else if (mkTab === 'glass') {
+    h = '<div class="mk-grid">' + ownedGlass().map(i => mkCell('glass', i, GLASSES[i], draft.glass === i)).join('') + '</div>' +
+      (draft.glass ? '<div class="mk-sec"><span class="optlabel">眼鏡顏色</span><div class="sws">' + mkSw('glassc', GLASSCOL, lookCols('glass', draft.glass | 0), '眼鏡顏色') + '</div></div>' : '') +
+      '<div class="mk-hint">眼鏡在小村的造型店買，每天上架不同的</div>';
   } else if (mkTab === 'fits') {
     const f = draft.fits | 0, cols = ownedCols(f), paid = f >= FREE_N.fits;
     h = '<div class="mk-grid">' + ownedFits().map(i => mkCell('fits', i, FITS[i], f === i)).join('') + '</div>';
@@ -78,6 +86,14 @@ function fitFix() {
 function syncMaker() {
   fitFix();
   if ((draft.style | 0) >= FREE_N.style && !styOwned('style', draft.style | 0)) draft.style = 0;
+  if (!lookOwned('hat', draft.hat | 0)) draft.hat = 3;
+  if (!lookOwned('glass', draft.glass | 0)) draft.glass = 0;
+  [['style', 'hair'], ['hat', 'hatc'], ['glass', 'glassc']].forEach(([k, ck]) => {
+    if (k === 'glass' && !draft.glass) return;
+    if (k === 'hat' && draft.hat === 3) return;
+    const cols = lookCols(k, draft[k] | 0);
+    if (cols.length && !cols.includes(draft[ck] | 0)) draft[ck] = cols[0];
+  });
   renderMakerPanel();
   drawPreview();
 }

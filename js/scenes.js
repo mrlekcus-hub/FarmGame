@@ -141,6 +141,7 @@ function drawBldg(b, now, lit) {
   const ox = b.x * T, oy = b.y * T, w = b.w * T, h = b.h * T, P_ = BLD_PAL[b.t], dx = ox + (w >> 1);
   r('rgba(107,72,72,.16)', ox + 2, oy + h - 2, w - 4, 3);
   if (b.t === 'furn') { drawFurnBldg(ox, oy, lit); return; }
+  if (b.t === 'salon') { drawStyleBldg(ox, oy, lit); return; }
   if (b.t === 'mine') {
     ob(P_.roof, P_.ro, ox, oy + 4, w, h - 4);
     for (let i = 0; i < 9; i++) r(P_.dot, ox + 6 + (i * 9) % (w - 12), oy + 8 + (i * 7) % (h - 24), 3, 2);

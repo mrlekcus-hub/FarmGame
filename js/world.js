@@ -67,7 +67,7 @@ const fromServer = j => ({ crop: j.crop || null, grown: +j.grown || 0, tick: +j.
 /* 農場右邊多一道村莊大門，通往公共廣場 */
 const GT = 7, FR = 8, BN = 9, TS = 10, BD = 11, BR = 12, RK = 13, NP = 14, HB = 15, FG = 16, WL = 17, TG = 18;   // HB 建築 FG 小村通往農場的門 WL 水井 TG 農場通往小村的門
 const SB = 60;   // 廣場左上角的蛇梯棋棋盤（js/snakes.js），佔 (1,1)～(6,6)，走不進去，面向它按動作鍵開始
-const CS = 29, BS = 30, FS = 31, RS = 32, WK = 33;   // WK 村長家（園藝工坊）的門   // RS 牧場小屋的門（室內場景 'stylist' 的 ranch 房間）   // CS 裁縫鋪的門  BS 理髮店的門  FS 家具店的門（走進去是室內場景 'stylist'）
+const CS = 29, BS = 30, FS = 31, RS = 32, WK = 33;   // WK 村長家（園藝工坊）的門   // RS 牧場小屋的門（室內場景 'stylist' 的 ranch 房間）   // CS 裁縫鋪的門  BS 造型店的門  FS 家具店的門（走進去是室內場景 'stylist'）
 const FW = 40, FE = 41, CV = 42, CW = 43, CX = 44;   // CW 山洞岩壁  CX 山洞出口   // FW 小村通往西邊森林的門  FE 森林回小村的門  CV 森林北邊的山洞入口
    // BD：委託布告欄（農場）   // TS：塔羅小攤（3×2 格，不能走進去，面向它按動作鍵占卜）
 for (let x = 15; x <= 18; x++) kind[5][x] = P;
@@ -98,7 +98,7 @@ const TOWN_BLD = [
   { x: 3, y: 3, w: 5, h: 3, t: 'cottage', sign: 'cloth' },    // 桂花婆婆的家，門在 (5,5)
   { x: 11, y: 2, w: 5, h: 4, t: 'chief' },     // 村長家，門在 (13,5)
   { x: 18, y: 3, w: 5, h: 3, t: 'ranch' },     // 牧場小屋，門在 (20,5)
-  { x: 19, y: 12, w: 5, h: 3, t: 'salon' },     // 理髮店，門在 (21,14)，站在 (21,15) 面向上
+  { x: 19, y: 12, w: 5, h: 3, t: 'salon' },     // 造型店（髮型、帽子、眼鏡），門在 (21,14)，站在 (21,15) 面向上
   { x: 25, y: 3, w: 5, h: 3, t: 'furn' }        // 家具店（森林木屋），門在 (27,5)，站在 (27,6) 面向上
 ];
 TOWN_BLD.forEach(b => { for (let y = b.y; y < b.y + b.h; y++) for (let x = b.x; x < b.x + b.w; x++) tkind[y][x] = HB; });

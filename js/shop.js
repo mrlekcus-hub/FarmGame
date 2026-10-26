@@ -42,7 +42,7 @@ function shopItems(cat) {
       out.push({ id: 'c:' + k, a: 'sell', c: k, name: c.n, price: pr, stock: have('c:' + k), dot: c.c, sub: '每個 ' + pr + ' G' + seasonTag(k) });
     });
     Object.keys(inv).filter(k => /^(q1|q2|a|g|m):/.test(k) && inv[k] > 0 && miscPrice(k) > 0 && k !== 'a:hay').sort().forEach(k => {
-      out.push({ id: k, a: 'sellm', c: k, name: itemName(k), price: miscPrice(k), stock: inv[k], misc: k, sub: '每個 ' + miscPrice(k) + ' G' });
+      out.push({ id: k, a: 'sellm', c: k, name: itemName(k), price: miscPrice(k), stock: inv[k], misc: k, sat: /^g:/.test(k) ? k : undefined, sub: '每個 ' + miscPrice(k) + ' G' });   // 採集物（g:）和魚、蟲一樣有每日收購飽和，要和 SQL sell_item 一致
     });
     fishCat.filter(f => have('fish:' + f.key) > 0).forEach(f => {
       out.push({ id: 'fish:' + f.key, a: 'sellfish', c: f.key, name: f.name, price: f.price, stock: have('fish:' + f.key), fish: f.key, sat: 'fish:' + f.key,
@@ -91,16 +91,16 @@ function renderShop() {
   const cur = list.find(x => x.id === shopSel) || null;
   if (cur) { const mx = shopMax(cur, coins); shopQ[cur.id] = Math.max(1, Math.min(mx, shopQ[cur.id] | 0 || 1)); shopView = { it: cur, max: mx, coins }; } else shopView = null;
   let sellKinds = 0, grand = 0;
-  { const sl = shopCat === 'sell' ? list : shopItems('sell'); sellKinds = sl.length; sl.forEach(it => { grand += shopTotal(it, it.stock); }); }
+  { const sl = shopCat === 'sell' ? list : shopItems('sell'); sellKinds = sl.length; sl.forEach(it => { if (it.a === 'sell' || it.a === 'sellfish' || it.a === 'sellbug') grand += shopTotal(it, it.stock); }); }   // 「全部賣出」（SQL sell_all）只賣作物、魚、蟲，金額也只算這三種
   const rail = shopCats().map(c => '<button type="button" class="shri" data-cat="' + c[0] + '" aria-pressed="' + (c[0] === shopCat) + '"><b>' + c[1] + '</b>' + c[2] + (c[0] === 'sell' && sellKinds ? '<span class="shn">' + sellKinds + '</span>' : '') + '</button>').join('');
   let main = '';
   if (shopCat === 'up') main = '<h3>釣竿</h3>' + rodRow + '<h3>鋤頭與水壺</h3>' + toolRows;
   else {
-    if (shopCat === 'sell') main += list.length ? '<div class="shbar"><span>背包可賣 ' + list.length + ' 種 · 共 ' + grand + ' G</span><button type="button" class="btn small" data-a="sellall"' + dis + '>全部賣出</button></div>' : '<p class="empty">背包裡沒有可以賣的東西。收成作物、釣魚、抓蟲蝶之後再來。</p>';
+    if (shopCat === 'sell') main += list.length ? '<div class="shbar"><span>背包可賣 ' + list.length + ' 種 · 全部賣出（作物、魚、蟲）共 ' + grand + ' G</span><button type="button" class="btn small" data-a="sellall"' + dis + '>全部賣出</button></div>' : '<p class="empty">背包裡沒有可以賣的東西。收成作物、釣魚、抓蟲蝶之後再來。</p>';
     main += list.map(it => '<div class="row shr' + (it.id === shopSel ? ' sel' : '') + (it.lock ? ' lk' : '') + '" data-sel="' + esc(it.id) + '">' + shopIcon(it) +
       '<div class="meta"><b>' + esc(it.name) + (it.stock ? ' ×' + it.stock : '') + '</b><small>' + (it.lock ? esc(it.lock) : esc(it.sub)) + '</small></div><b class="shp">' + (it.buy ? it.price + ' G' : '') + '</b></div>').join('');
     if (shopCat !== 'sell' && list.length) main += '<small class="empty">每種東西最多持有 ' + INV_CAP + ' 個。</small>';
-    if (shopCat === 'sell' && list.some(x => x.sat)) main += '<small class="empty">收購飽和：每種魚、蟲每天前 5 隻原價，第 6～10 隻 6 折，之後 3 折（凌晨 0 點重置）。</small>';
+    if (shopCat === 'sell' && list.some(x => x.sat)) main += '<small class="empty">收購飽和：每種魚、蟲、採集物每天前 5 個原價，第 6～10 個 6 折，之後 3 折（凌晨 0 點重置）。</small>';
   }
   let sheet = '';
   if (shopCat !== 'up' && cur) {
