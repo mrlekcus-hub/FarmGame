@@ -7,10 +7,10 @@
    相連的門合併成一個大門口，整組一律用最左邊（橫牆）或最上面（直牆）那一格的款式。 */
 const DOORS = [
   { key: 'door_0', name: '布簾門口', price: 0,   blurb: '初始款：木框、小布簾、踏墊' },
-  { key: 'door_1', name: '木板門',   price: 600, blurb: '鐵鉸鏈木板門，兩端各一扇門扇' },
-  { key: 'door_2', name: '珠簾',     price: 700, blurb: '竹框掛彩色珠串，腳邊粉紅小地毯' },
-  { key: 'door_3', name: '花藤拱門', price: 800, blurb: '木格架爬滿藤蔓和小花，腳邊踏石' },
-  { key: 'door_4', name: '雷克斯骨拱', price: 900, blurb: '恐龍骨頭門框，橫樑掛牙齒，踏墊是腳印' }
+  { key: 'door_1', name: '木板門',   price: 1000, blurb: '鐵鉸鏈木板門，兩端各一扇門扇' },
+  { key: 'door_2', name: '珠簾',     price: 1200, blurb: '竹框掛彩色珠串，腳邊粉紅小地毯' },
+  { key: 'door_3', name: '花藤拱門', price: 1800, blurb: '木格架爬滿藤蔓和小花，腳邊踏石' },
+  { key: 'door_4', name: '雷克斯骨拱', price: 2000, blurb: '恐龍骨頭門框，橫樑掛牙齒，踏墊是腳印' }
 ];
 const DOOR_BY_KEY = {};
 DOORS.forEach((d, i) => { d.layer = 'door_style'; d.w = 1; d.h = 1; d.idx = i; DOOR_BY_KEY[d.key] = d; });
