@@ -15,7 +15,7 @@ function hoeOne(x, y, mode, loud) {
     if (!farmable(x, y)) { if (loud) pop(x, y, '這裡不能耕種', '#ffb3a8'); return false; }
     if (plots.size >= plotCap()) { if (loud) pop(x, y, '田地到上限了（玩家升級會增加）', '#ffb3a8'); return false; }
     plots.set(key, { crop: null, grown: 0, tick: srvNow(), wet: null }); dust(x, y);
-    act2('till', { p_x: x, p_y: y }); tutEvent('till'); return true;
+    act2('till', { p_x: x, p_y: y }); return true;
   }
   if (mode === 'untill' && p && !p.crop) { plots.delete(key); dust(x, y); act2('untill', { p_x: x, p_y: y }); return true; }
   return false;
@@ -25,7 +25,7 @@ function canOne(x, y) {
   const p = plots.get(pk(x, y));
   if (!p || isWet(p)) return false;
   settleLocal(p); p.wet = srvNow() + cfg.wet_s * 1000; drops(x, y);
-  act2('water', { p_x: x, p_y: y }); tutEvent('water'); qAdd('water'); return true;
+  act2('water', { p_x: x, p_y: y }); qAdd('water'); return true;
 }
 function act() {
   if (fpOpen()) { closeFriendPop(); return; }   // 互動浮窗開著時再按動作鍵＝收起來
@@ -73,7 +73,7 @@ function act() {
   const k = K[y][x], key = pk(x, y), p = plots.get(key), t = curTool();
   if (k === GT) { openVMenu(); return; }
   if (k === DR) { enterHouse(); return; }
-  if (k === SH) { openShop(); tutEvent('shop'); return; }
+  if (k === SH) { openShop(); return; }
   if (k === BD) { openBoard(); return; }
   if (k === TG) { if (!featLocked('town', x, y)) enterTown(); return; }
   if (k === BR) { enterBarn(); return; }
@@ -114,7 +114,7 @@ function act() {
     }
   } else if (t.id === 'can') {
     if (!p) pop(x, y, '先用鋤頭翻土', '#ffffff');
-    else if (world().wet) { pop(x, y, world().snow ? '下雪天不用澆水' : '下雨天不用澆水', '#cfe8f7'); tutEvent('water'); }
+    else if (world().wet) { pop(x, y, world().snow ? '下雪天不用澆水' : '下雨天不用澆水', '#cfe8f7'); }
     else if (isWet(p)) pop(x, y, '土還是濕的', '#cfe8f7');
     else lineTiles(x, y, toolN(toolLv.can)).forEach(([tx, ty]) => canOne(tx, ty));
   } else {
@@ -127,7 +127,7 @@ function act() {
       inv['s:' + kk] = have('s:' + kk) - 1;
       p.crop = kk; p.grown = 0; p.tick = srvNow(); p.fert = 0;
       dust(x, y); pop(x, y, '種下' + CROPS[kk].n, '#c9f0a8');
-      act2('plant', { p_x: x, p_y: y, p_crop: kk }); tutEvent('plant'); qAdd('plant'); loadLevelSoon();
+      act2('plant', { p_x: x, p_y: y, p_crop: kk }); qAdd('plant'); loadLevelSoon();
     }
   }
   refreshHud();

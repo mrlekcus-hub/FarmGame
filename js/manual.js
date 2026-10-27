@@ -6,7 +6,7 @@
 const MN = [
   { id: 'farm', ic: '🌱', n: '種田與澆水', c: '#e6f6ec', e: '#bfe5cb',
     d: '作物依真實時間成長（蘿蔔約 30 分鐘），關掉遊戲也會繼續長。晴天要澆水；下雨和下雪會自動澆水。成熟後面向作物按「動作」收成。',
-    shots: [{ img: 'farm', marks: [{ x: 52, y: 21, t: '粉紅角框是你面向的那一格，動作鍵就作用在這一格' }, { x: 56, y: 71, t: '目前拿著的工具：這裡是鋤頭（1 號格）。面向草地按動作就能翻土' }, { x: 24, y: 70, t: '搖桿：走動（電腦用方向鍵或 WASD）' }, { x: 81, y: 73, t: '動作鍵：翻土、播種、澆水、收成都按它' }] },
+    shots: [{ img: 'farm', marks: [{ x: 52, y: 21, t: '粉紅角框是你面向的那一格，動作鍵就作用在這一格' }, { x: 56, y: 71, t: '目前拿著的工具：這裡是鋤頭（1 號格）。面向草地按動作就能翻土' }, { x: 24, y: 70, t: '浮動搖桿：手按在左半邊畫面任何地方就會出現，拖著走動（電腦用方向鍵或 WASD）' }, { x: 81, y: 73, t: '動作鍵：翻土、播種、澆水、收成都按它' }] },
     { img: 'farm2', marks: [{ x: 56, y: 80, t: '換成種子：左上角數字是快捷列格子，×84 是持有數量' }, { x: 50, y: 29, t: '面向田，按動作播種；成熟後同樣面向它按動作收成' }, { x: 58, y: 94, t: '選單上的數字，是好友、信箱、任務的通知加總' }] }] },
   { id: 'fish', ic: '🎣', n: '釣魚', c: '#e4f1fb', e: '#b9dcf2',
     d: '選「釣竿」，面向池塘按「動作」拋竿；看到紅色驚嘆號時馬上再按一次拉竿，太早或太慢魚會跑掉。釣到的魚會記進圖鑑。',
@@ -58,7 +58,7 @@ function renderManual() {
       '<div class="mn-grid">' + MN.map((c, i) =>
         '<button type="button" class="mn-tile" data-a="open" data-i="' + i + '" style="background:' + c.c + ';border-color:' + c.e + '">' +
         '<span class="mn-th"><img src="img/manual/' + c.shots[0].img + '.jpg" alt="" loading="lazy"><b>' + c.ic + '</b></span><span class="mn-tn">' + esc(c.n) + '</span></button>').join('') + '</div>' +
-      '<div class="mn-foot"><button type="button" class="btn small" data-a="tut">重玩新手引導</button><button type="button" class="btn ghost" data-a="close">關閉</button></div>';
+      '<div class="mn-foot"><button type="button" class="btn ghost" data-a="close">關閉</button></div>';
   } else {
     const c = MN[mnCh];
     const shots = c.shots.map(sh => {
@@ -95,6 +95,5 @@ mnCard.addEventListener('click', e => {
   else if (a === 'back') { mnCh = -1; renderManual(); }
   else if (a === 'prev') { mnCh = Math.max(0, mnCh - 1); renderManual(); }
   else if (a === 'next') { mnCh = Math.min(MN.length - 1, mnCh + 1); renderManual(); }
-  else if (a === 'tut') { closeManual(); tutStart(0); }
 });
 mnEl.addEventListener('click', e => { if (e.target === mnEl) closeManual(); });

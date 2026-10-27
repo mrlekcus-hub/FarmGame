@@ -64,10 +64,11 @@ window.addEventListener('blur', () => { pressed.length = 0; actHeld = false; });
    推得越遠走得越快（格子制移動，所以「類比」體現在速度上）。多指可同時按動作鈕。 */
 const dpadEl = document.querySelector('.dpad'), knobEl = $('knob'), DIRS4 = ['up', 'down', 'left', 'right'];
 let dpId = null, stickMag = 0, stickDir = null, fOrg = null;
-/* 操作方式設定：浮動搖桿（手按哪裡搖桿就出現在哪裡）、點地面走過去。手機預設開，電腦預設關，設定裡可以改 */
+/* 操作方式設定：浮動搖桿（手按哪裡搖桿就出現在哪裡）、點地面走過去。點地面走過去手機預設開，電腦預設關，設定裡可以改（浮動搖桿一律開啟） */
 const coarseMain = !!(window.matchMedia && matchMedia('(pointer:coarse)').matches);
 const loadFlag = (key, def) => { try { const v = localStorage.getItem(key); if (v === '1') return true; if (v === '0') return false; } catch (e) { /* 略過 */ } return def; };
-let floatOn = loadFlag('dw_float', coarseMain), tapOn = loadFlag('dw_tap', coarseMain);
+const floatOn = true;   // 固定搖桿已關閉，一律使用浮動搖桿
+let tapOn = loadFlag('dw_tap', coarseMain);
 function applyCtl() { document.body.classList.toggle('fl', floatOn); }
 applyCtl();
 /* 浮動搖桿的外觀：只有按下去才出現，位置就是手指按下的地方 */

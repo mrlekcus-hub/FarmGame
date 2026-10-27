@@ -129,13 +129,13 @@ $('mk-ok').addEventListener('click', async () => {
   try {
     if (firstTime) {
       applyState(await withTimeout(rpc('claim_profile', { p_username: authUser, p_name: name, p_look: look, p_invite: invite }), 20000));
-      pendingInvite = ''; afterReady(); tutStart(0);
+      pendingInvite = ''; afterReady();
     } else {
       await withTimeout(enqueue(() => rpc('set_look', { p_name: name, p_look: look })), 20000);
       me.name = name; me.look = look;
     }
     closeMaker(); refreshHud();
-    toast(firstTime ? '歡迎，' + name + '！跟著左下角的新手教學一步步開始吧。' : '換好新造型了', firstTime ? 5000 : 2800);
+    toast(firstTime ? '歡迎，' + name + '！有不懂的地方，可以點「手冊」查看喔。' : '換好新造型了', firstTime ? 5000 : 2800);
   } catch (e) { mkMsg(errText(e)); }
   btn.disabled = false; btn.textContent = label;
   mkBusy = false;

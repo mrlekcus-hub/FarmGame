@@ -368,26 +368,6 @@ kbd{font:600 12px/1 var(--f-display);color:var(--ink);background:var(--panel);pa
 @media (prefers-reduced-motion:reduce){.fade{transition:none}}
 
 
-/* ---- 新手教學卡 ---- */
-.tut{position:absolute;left:8px;bottom:8px;z-index:3;width:min(320px,calc(100% - 78px));line-height:1.5;
-  background:rgba(255,250,240,.96);border:3px solid var(--pink);border-radius:16px;box-shadow:0 3px 0 var(--pink-deep);padding:8px 12px 9px;color:var(--ink);font-size:13px}
-.tut p{margin:2px 0 6px;font-size:13px}
-.tut-h{display:flex;align-items:center;justify-content:space-between;gap:8px;font:600 11px/1 var(--f-display);color:var(--muted)}
-.tut-t{font:800 16px/1.3 var(--f-display);color:var(--pink-deep);letter-spacing:.06em;margin-top:2px}
-.tut-b{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.tut-a{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}
-.tut-wait{font-size:11px;color:var(--muted)}
-.tutx{font:600 11px/1 var(--f-display);color:var(--muted);background:none;border:0;padding:4px 0 4px 8px;cursor:pointer;text-decoration:underline}
-@media (max-width:520px){.tut{left:5px;bottom:5px;width:calc(100% - 62px);padding:6px 10px 7px}.tut p{font-size:12px}.tut-t{font-size:14px}}
-@media (orientation:landscape) and (max-height:560px){.tut{width:min(290px,calc(100% - 90px));padding:5px 9px 6px}.tut p{font-size:11px;margin:1px 0 4px}.tut-t{font-size:13px}}
-/* ---- 新手教學視覺指引：工具格子閃爍＋提示氣泡 ---- */
-@keyframes tutpulse{0%,100%{outline-color:rgba(245,166,35,1);outline-offset:2px}50%{outline-color:rgba(245,166,35,.25);outline-offset:5px}}
-.slot.tuthint,.hotbar.tuthint{outline:3px solid #f5a623;outline-offset:2px;animation:tutpulse 1.1s ease-in-out infinite}
-.slot.tuthint{background:#fff6dd}
-.slot.tuthint::after,.hotbar.tuthint::before{content:attr(data-tip);position:absolute;bottom:calc(100% + 9px);left:50%;transform:translateX(-50%);z-index:8;white-space:nowrap;pointer-events:none;
-  font:700 11px/1 var(--f-display);color:#7a4a00;background:#fff3b0;border:2px solid #e8a23a;border-radius:8px;padding:4px 7px}
-.hotbar>.slot:first-child.tuthint::after{left:0;transform:none}
-@media (prefers-reduced-motion:reduce){.slot.tuthint,.hotbar.tuthint{animation:none;outline-offset:3px}}
 /* ---- 佈置模式：家具上方的浮動按鈕條（旋轉／翻轉／收回／賣出，附文字） ---- */
 .hbar{position:absolute;z-index:6;display:flex;align-items:stretch;gap:2px;padding:4px;line-height:1;background:rgba(255,250,240,.97);border:3px solid var(--pink);border-radius:16px;box-shadow:0 3px 0 var(--pink-deep)}
 .hbar[hidden]{display:none}
@@ -965,3 +945,5 @@ body.fl canvas#game{touch-action:none;-webkit-touch-callout:none;-webkit-user-se
 .pgrid.pat{grid-template-columns:repeat(5,minmax(44px,1fr))}
 .pgrid.pat button{background:#fff8ea;color:#4a3030;min-height:64px}
 .pgrid.pat canvas{display:block;width:32px;height:32px;margin:0 auto 2px;image-rendering:pixelated;border-radius:4px}
+/* 固定搖桿已關閉：一律用浮動搖桿（見 js/input.js）。寬高歸零，各版面的動作鈕位置不受影響 */
+.dpad,body.imm .dpad{--sz:0px!important;width:0!important;height:0!important;min-width:0;visibility:hidden!important;pointer-events:none!important;opacity:0}

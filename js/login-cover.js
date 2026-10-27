@@ -119,7 +119,6 @@ window.addEventListener('pagehide', coverSave);
 document.addEventListener('visibilitychange', () => { if (document.hidden) coverSave(); });
 function showAuth() {
   coverSave();
-  tutI = -1; tutEl.hidden = true;
   leaveLekcus(true); leaveVillage(true); leaveHouse(true); leaveStylist(true); leaveCave(true); leaveForest(true); leaveTown(true); leaveBarn(true); stopPresence(); closeFriends(); fr = { friends: [], incoming: [], outgoing: [], max: 50 }; house = null; ready = false; authOpen = true; closeMaker(); closeShop(); closeVMenu(); closeGM(); closeFShop(); closeDex(); closeBag();
   bootEl.hidden = true; authEl.hidden = false; me = null; refreshHud(); drawCover(); coverStart();
   closeBoard(); closeKitchen(); closeRanch(); closeMerchant(); closeDlg();
@@ -137,7 +136,7 @@ async function enter(u, uid) {
     pl.x = pl.sx = 4; pl.y = pl.sy = 4; pl.prog = 1; pl.face = 'down';
     refreshHud();
     if (!me) openMaker(true);
-    else { toast('歡迎回來，' + me.name + '！', 2500); afterReady(); tutResume(); }
+    else { toast('歡迎回來，' + me.name + '！', 2500); afterReady(); }
   } catch (err) {
     showAuth(); $('au-msg').textContent = errText(err);
   }

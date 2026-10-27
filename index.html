@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>雷克斯農場</title>
-<meta name="build" content="709a532350">
+<meta name="build" content="1c7135aa4c">
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="manifest" href="app/manifest.webmanifest">
@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chiron+GoRound+TC:wght@400;600;800&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap">
-<link rel="stylesheet" href="css/style.css?v=21d717a0">
+<link rel="stylesheet" href="css/style.css?v=532c4f49">
 </head><body>
 
 
@@ -36,7 +36,6 @@
     <div class="toast" id="toast" hidden></div>
     <div class="buffbar" id="buff" hidden></div>
     <button type="button" class="cheer" id="cheer" hidden>👏 喝采</button>
-    <div class="tut" id="tut" hidden></div>
     <div class="hbar" id="hbar" hidden></div>
     <div class="empop" id="emm" hidden role="dialog" aria-label="表情與動作"><div id="emcard" tabindex="-1"></div></div>
     <div id="cfeed" hidden aria-live="polite"></div>
@@ -184,8 +183,6 @@
   <div class="strow"><b>音樂</b><button type="button" class="btn ghost small" id="music" aria-pressed="true">音樂：開</button></div>
   <div class="strow"><b>音量</b><input type="range" id="vol" min="0" max="100" value="50" aria-label="音量" style="flex:1;min-width:0;accent-color:var(--pink)"></div>
   <div class="strow" id="st-fs-row"><b>全螢幕</b><button type="button" class="btn ghost small" id="fs" hidden>全螢幕</button></div>
-  <div class="strow"><b>浮動搖桿</b><button type="button" class="btn ghost small" id="st-float" aria-pressed="true">開</button></div>
-  <p class="strow-hint">手按在左半邊畫面任何地方，搖桿就出現在拇指下。</p>
   <div class="strow"><b>點地面走過去</b><button type="button" class="btn ghost small" id="st-tap" aria-pressed="true">開</button></div>
   <p class="strow-hint">點一下地面，自動走過去；點到門、NPC、椅子會走到旁邊面向它。</p>
   <div class="strow"><b>門鈴通知</b><button type="button" class="btn ghost small" id="st-bell" aria-pressed="true">開</button></div>
@@ -242,12 +239,12 @@
 <script src="js/art/tiles.js?v=eebff733"></script>
 <script src="js/art/character.js?v=89d0c526"></script>
 <script src="js/art/style-shop.js?v=471d814d"></script>
-<script src="js/art/icons.js?v=44cf3975"></script>
+<script src="js/art/icons.js?v=3f81479d"></script>
 <script src="js/state.js?v=5a8253d4"></script>
 <script src="js/art/village-tiles.js?v=d87a6633"></script>
-<script src="js/world.js?v=f1a11158"></script>
+<script src="js/world.js?v=59574cb5"></script>
 <script src="js/net.js?v=1022cd61"></script>
-<script src="js/actions.js?v=f4948b89"></script>
+<script src="js/actions.js?v=5ec9e5e0"></script>
 <script src="js/shop.js?v=86fb5d2d"></script>
 <script src="js/scenes.js?v=c848ad01"></script>
 <script src="js/npc.js?v=66a1c86b"></script>
@@ -263,20 +260,19 @@
 <script src="js/dex.js?v=592be67c"></script>
 <script src="js/progress.js?v=e1f35775"></script>
 <script src="js/card.js?v=c35b87e5"></script>
-<script src="js/tutorial.js?v=68192820"></script>
-<script src="js/manual.js?v=d71f114c"></script>
-<script src="js/hotbar.js?v=2d9e9808"></script>
+<script src="js/manual.js?v=f73c8227"></script>
+<script src="js/hotbar.js?v=de8dac48"></script>
 <script src="js/ui.js?v=a39fd06b"></script>
-<script src="js/fishing.js?v=59715ccb"></script>
-<script src="js/input.js?v=7a6b4e0a"></script>
+<script src="js/fishing.js?v=65ad4c52"></script>
+<script src="js/input.js?v=05c56c4c"></script>
 <script src="js/pwa.js?v=4b7d5452"></script>
-<script src="js/settings.js?v=fa9fccdc"></script>
+<script src="js/settings.js?v=20949763"></script>
 <script src="js/tv.js?v=68d46f9c"></script>
 <script src="js/piano.js?v=8996a55c"></script>
 <script src="js/tarot.js?v=e0f226d1"></script>
-<script src="js/look.js?v=5e02a697"></script>
+<script src="js/look.js?v=a5ec1ac5"></script>
 <script src="js/auth.js?v=15a3fb48"></script>
-<script src="js/login-cover.js?v=9e3d5d87"></script>
+<script src="js/login-cover.js?v=2a30f744"></script>
 <script src="js/village.js?v=f09b8329"></script>
 <script src="js/chat.js?v=e054a3ef"></script>
 <script src="js/friends.js?v=8292535f"></script>
@@ -286,7 +282,7 @@
 <script src="js/plaza-light.js?v=98b46c80"></script>
 <script src="js/gm.js?v=f8a16524"></script>
 <script src="js/bgm.js?v=428caee0"></script>
-<script src="js/house.js?v=75817548"></script>
+<script src="js/house.js?v=c9cadc11"></script>
 <script src="js/doors.js?v=d8fa98c7"></script>
 <script src="js/social.js?v=5f8c2620"></script>
 <script src="js/hw-cook.js?v=461a2691"></script>
@@ -296,9 +292,9 @@
 <script src="js/bath.js?v=9b50f0b1"></script>
 <script src="js/stores.js?v=83d99cae"></script>
 <script src="js/render.js?v=9b528878"></script>
-<script src="js/sky.js?v=0dece3f3"></script>
-<script src="js/immersive.js?v=da6fffe9"></script>
-<script src="js/update.js?v=fc21903b"></script>
+<script src="js/sky.js?v=08517a11"></script>
+<script src="js/immersive.js?v=a14952a4"></script>
+<script src="js/update.js?v=195e4c72"></script>
 <script src="js/furniture-fx.js?v=7304670c"></script>
 <script src="js/main.js?v=8be1c52f"></script>
 </body></html>

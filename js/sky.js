@@ -371,7 +371,6 @@ function draw(now) {
     ctx.globalAlpha = 1;
   }
 
-  tutDrawHint(now);
 
   ctx.font = '800 7px "Chiron GoRound TC", "Noto Sans TC", sans-serif';
   ctx.textAlign = 'center'; ctx.lineJoin = 'round';

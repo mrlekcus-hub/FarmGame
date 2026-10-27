@@ -12,7 +12,7 @@ function dockAct(k) {
   else if (k === 'lv') openLevels();
   else if (k === 'card') openCard(null);
   else if (k === 'set') openSettings();
-  else if (k === 'tut') { if (tutI >= 0) tutDone(true); openManual(); }
+  else if (k === 'tut') openManual();
 }
 $('dock').addEventListener('click', e => { const b = e.target.closest('button[data-k]'); if (b) dockAct(b.dataset.k); });
 $('dock').addEventListener('pointerdown', e => e.stopPropagation());

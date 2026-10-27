@@ -96,7 +96,7 @@ function swingNet(x, y) {
 }
 function startFish(x, y) {
   if (Date.now() < fishCool) return;
-  const id = ++fishSeq; tutEvent('fish');
+  const id = ++fishSeq;
   fishing = { id, x, y, scene, phase: 'cast', t0: Date.now(), bite: 0, win: 1600 };
   rpc('fish_cast', { p_scene: sceneKey() }).then(r => {
     if (!fishing || fishing.id !== id) return;

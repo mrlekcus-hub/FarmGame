@@ -1,7 +1,7 @@
 'use strict';
 /* 偵測新版本 —— 雷克斯農場。所有檔案共用同一個全域範圍，載入順序見 index.html。 */
 /* 玩家登入時、開啟頁面時、從別的分頁／視窗切回來時，各檢查一次 index.html 裡的 <meta name="build">；
-   跟自己載入時的不一樣，就出現「有新版本」的按鈕，點一下重新整理。不會自動重新整理，也不會定時輪詢。
+   跟自己載入時的不一樣，就出現「有新版本」的按鈕，點一下重新整理。不會自動重新整理。App 開著不關時，每 5 分鐘在畫面可見的情況下再檢查一次（HTTP 304 幾乎不耗流量）。
    版本號由 tools/stamp.py 在上傳前自動寫進 index.html（見 README），不用手動改。 */
 const UPD_GAP = 60000, UPD_GAP_FORCE = 15000;   // 一般檢查最少隔 60 秒；登入／開頁面最少隔 15 秒，避免狂抓
 let updLast = 0, updBusy = false, updShown = false;
@@ -14,10 +14,10 @@ async function updCheck(force) {
   updBusy = true; updLast = now;
   try {
     const r = await fetch(location.pathname + '?_=' + now, { cache: 'no-store' });
-    if (!r.ok) return;
+    if (!r.ok) { updLast = 0; return; }
     const m = /<meta\s+name="build"\s+content="([^"]*)"/.exec(await r.text());
     if (m && m[1] && m[1] !== mine) updShow();
-  } catch (e) { /* 離線或讀不到就略過，下次再檢查 */ }
+  } catch (e) { updLast = 0; setTimeout(() => updCheck(false), 4000); }   // 剛從背景回來網路常常還沒通：不要吃掉間隔，4 秒後再試一次
   finally { updBusy = false; }
 }
 function updShow() {
@@ -28,11 +28,16 @@ function updShow() {
   b.textContent = '🔄 有新版本了，點一下更新';
   b.style.cssText = 'position:fixed;z-index:96;left:50%;transform:translateX(-50%);top:calc(48px + env(safe-area-inset-top,0px));' +
     'font:700 13px/1.4 var(--f-display,sans-serif);color:#fff;background:var(--pink,#f08aa8);border:3px solid var(--pink-deep,#d9648a);' +
-    'border-radius:999px;padding:7px 16px;box-shadow:0 3px 0 var(--pink-deep,#d9648a);cursor:pointer;max-width:92vw;white-space:nowrap';
-  b.addEventListener('click', () => location.reload());
+    'border-radius:999px;padding:9px 18px;animation:updpulse 1.2s ease-in-out infinite;box-shadow:0 3px 0 var(--pink-deep,#d9648a);cursor:pointer;max-width:92vw;white-space:nowrap';
+  b.addEventListener('click', () => { location.replace(location.pathname + '?r=' + Date.now()); });
+  const st = document.createElement('style');
+  st.textContent = '@keyframes updpulse{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.08)}}';
+  document.head.appendChild(st);
   document.body.appendChild(b);
+  if (typeof toast === 'function') toast('🔄 有新版本了！點上方按鈕更新', 4000);
 }
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') updCheck(false); });
 window.addEventListener('focus', () => updCheck(false));
 window.addEventListener('pageshow', e => { if (e.persisted) updCheck(true); });   // 從上一頁／快取回來
+setInterval(() => { if (document.visibilityState === 'visible') updCheck(false); }, 5 * 60 * 1000);
 updCheck(true);   // 開啟頁面時先檢查一次（登入時 enter() 會再檢查）

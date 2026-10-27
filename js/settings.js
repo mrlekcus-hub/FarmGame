@@ -34,10 +34,9 @@ $('st-orient').addEventListener('click', e => {
   applyOrient(true);
 });
 function syncCtlUI() {
-  [['st-float', floatOn], ['st-tap', tapOn]].forEach(([id, on]) => { const b = $(id); b.setAttribute('aria-pressed', on ? 'true' : 'false'); b.textContent = on ? '開' : '關'; });
+  [['st-tap', tapOn]].forEach(([id, on]) => { const b = $(id); b.setAttribute('aria-pressed', on ? 'true' : 'false'); b.textContent = on ? '開' : '關'; });
 }
 function setCtl(key, on) { try { localStorage.setItem(key, on ? '1' : '0'); } catch (e) { /* 略過 */ } }
-$('st-float').addEventListener('click', () => { floatOn = !floatOn; setCtl('dw_float', floatOn); applyCtl(); syncCtlUI(); });
 $('st-tap').addEventListener('click', () => { tapOn = !tapOn; setCtl('dw_tap', tapOn); if (!tapOn) autoPath = null; syncCtlUI(); });
 $('logout').addEventListener('click', closeSettings);
 

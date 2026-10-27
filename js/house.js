@@ -410,7 +410,6 @@ async function enterHouse() {
   catch (e) { enterBusy = false; toast('進不了屋子：' + errText(e) + '（再按一次動作鍵可重試）', 7000); return; }
   enterBusy = false;
   if (scene !== 'farm') return;
-  tutEvent('house');
   applyHouseSize(house.w, house.h);
   scene = 'house'; K = hkind; W = houseMapW(); H = houseMapH();
   pl.x = pl.sx = RX + 6; pl.y = pl.sy = RY + RH - 1; pl.prog = 1; pl.face = 'up'; pressed.length = 0;

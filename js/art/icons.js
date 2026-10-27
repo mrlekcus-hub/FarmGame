@@ -191,48 +191,6 @@ function drawBug(c2d, key, dim) {
   g = ctx;
 }
 
-/* ====== 自動更新：每隔一段時間抓一次線上的 index.html，和目前執行中的程式比對；不一樣就倒數後自動重新整理 ====== */
-(function () {
-  const isHttp = location.protocol === 'http:' || location.protocol === 'https:';
-  if (!isHttp) return;                                   // 本機直接開檔案時不檢查
-  const sig = (doc) => Array.from(doc.querySelectorAll('script:not([src]), style')).map(e => e.tagName + e.textContent).join('\u0000');
-  let counting = false;
-  async function checkUpdate() {
-    if (counting || document.hidden) return;             // 分頁在背景時不檢查，切回來才檢查
-    try {
-      const r = await fetch(location.pathname, { cache: 'no-cache' });   // 帶 ETag 詢問：檔案沒變時伺服器只回 304，幾乎不耗流量
-      if (!r.ok) return;
-      const remote = new DOMParser().parseFromString(await r.text(), 'text/html');
-      if (!remote.querySelector('script:not([src])')) return;      // 抓到怪東西（例如錯誤頁）就不動作
-      if (sig(remote) !== sig(document)) startUpdate();
-    } catch (e) { /* 離線或暫時失敗，下次再檢查 */ }
-  }
-  function startUpdate() {
-    try {                                                // 防呆：剛重新整理過還是不一樣，就不要無限重整
-      const last = +sessionStorage.getItem('autoUpdateAt') || 0;
-      if (Date.now() - last < 120000) return;
-    } catch (e) {}
-    counting = true;
-    const d = document.createElement('div');
-    d.style.cssText = 'position:fixed;left:50%;top:max(12px,env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:2147483647;background:#fffaf0;border:2px solid #f3c3a6;border-radius:14px;padding:10px 16px;box-shadow:0 4px 16px rgba(0,0,0,.25);color:#6b4848;font:600 14px/1.3 system-ui,sans-serif;max-width:92vw;text-align:center';
-    document.body.appendChild(d);
-    let n = 5;
-    const tick = () => {
-      d.textContent = '🎉 有新版本了！' + n + ' 秒後自動更新…';
-      if (n-- <= 0) {
-        try { sessionStorage.setItem('autoUpdateAt', String(Date.now())); } catch (e) {}
-        location.replace(location.pathname + '?v=' + Date.now());
-        return;
-      }
-      setTimeout(tick, 1000);
-    };
-    tick();
-  }
-  setTimeout(checkUpdate, 3000);
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) checkUpdate(); });
-  setInterval(checkUpdate, 5 * 60 * 1000);
-})();
-
 /* ====== 設定：換成你自己的 Supabase 專案 ====== */
 const SUPABASE_URL = 'https://pzvbqerczorxfqxeohys.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_AXpCghngjhaldiWbFyNvmw_5tl2xZSX';

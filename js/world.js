@@ -187,7 +187,7 @@ function tryMove(dir) {
   const d = DIRS[dir];
   pl.face = dir;
   const nx = pl.x + d[0], ny = pl.y + d[1];
-  if (walkable(nx, ny)) { pl.sx = pl.x; pl.sy = pl.y; pl.x = nx; pl.y = ny; pl.prog = 0; pl.step++; tutEvent('move'); }
+  if (walkable(nx, ny)) { pl.sx = pl.x; pl.sy = pl.y; pl.x = nx; pl.y = ny; pl.prog = 0; pl.step++; }
 }
 /* 點地面走過去：用廣度優先搜尋找最短路徑。點到走不進去的格子（門、NPC、家具、水邊），就走到旁邊並面向它，再按動作鍵 */
 let autoPath = null;
