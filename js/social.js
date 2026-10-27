@@ -340,8 +340,19 @@ let pose = null;                                // { type: 'sit' | 'lie', id, ix
 function takeSeat(it, x, y) {
   const d = dimsOf(it.k, it.r | 0); if (!d || pose) return;
   if ((it.r | 0) !== 0 && SEAT[it.k] !== 'lie') { toast('轉過方向的椅子／沙發不能坐，轉回原位就可以了', 2200); return; }   // 床轉過方向也能躺
-  if (it.k !== 'sofa' && seatTaken(it)) { toast(it.k === 'bed' ? '床上已經有人了' : '這個位子已經有人坐了', 1400); return; }   // 沙發可以兩個人並排坐，其他家具一次一人
-  pose = { type: SEAT[it.k], id: it.id, ix: it.x, iy: it.y, ox: pl.x, oy: pl.y, face0: pl.face, tile: x - (RX + it.x), sort: RY + it.y + d.h - 1 + 0.02, t: 0 };
+  let slot = 0;
+  if (SEAT[it.k] === 'lie') {
+    const sp = BEDS[it.k] || BEDS.bed, taken = bedTaken(it);
+    if (sp.n === 1) { if (taken[0]) { toast(BEDS[it.k] ? '床上已經有人了' : '這裡已經有人了', 1400); return; } }
+    else {   // 雙人床：點哪一邊就躺哪一邊；那邊有人就換另一邊；兩邊都有人才不能躺
+      const [lx, ly] = bedLocal(it, x, y);
+      slot = lx >= 2 ? 1 : 0;
+      if (taken[slot]) slot = 1 - slot;
+      if (taken[slot]) { toast('床上已經有人了', 1400); return; }
+      [x, y] = bedWorld(it, slot ? 2 : 0, ly);   // 躺下時站到那一邊的格子，別人才看得出你躺在哪個位子
+    }
+  } else if (it.k !== 'sofa' && seatTaken(it)) { toast('這個位子已經有人坐了', 1400); return; }   // 沙發可以兩個人並排坐，其他家具一次一人
+  pose = { type: SEAT[it.k], id: it.id, ix: it.x, iy: it.y, ox: pl.x, oy: pl.y, face0: pl.face, tile: x - (RX + it.x), slot, sort: RY + it.y + d.h - 1 + 0.02, t: 0 };
   pl.x = pl.sx = x; pl.y = pl.sy = y; pl.prog = 1; pl.face = 'down'; pressed.length = 0;
   if (pose.type === 'lie') pop(x, y - 0.6, 'Zzz', '#cfe8f7');
   lastPosKey = ''; posAcc = 999; trackSelf();   // 讓同一間屋子裡的人看到我坐著／躺著
@@ -355,6 +366,14 @@ function seatItemAt(x, y, code) {
     const g_ = itemRect(it);
     return g_ && lx >= g_.x && lx < g_.x + g_.w && ly >= g_.y && ly < g_.y + g_.h;
   }) || null;
+}
+/* 床的每個位子現在有沒有別人躺著（陣列，依位子編號） */
+function bedTaken(it) {
+  const out = [false, false];
+  remotes.forEach(rp => {
+    if (rp.fs === 4 && hereRp(rp)) { const f = seatItemAt(rp.tx, rp.ty, rp.fs); if (f && f.id === it.id) out[bedSlotAt(it, rp.tx, rp.ty)] = true; }
+  });
+  return out;
 }
 function seatTaken(it) {
   let hit = false;
@@ -408,23 +427,24 @@ function bedPt(it, lx, ly) {
   const dx = lx - d.w * T / 2, dy = ly - d.h * T / 2;
   return [bx + rw * T / 2 + dx * co - dy * si, by + rh * T / 2 + dx * si + dy * co];
 }
-function drawLying(it, ch) {
-  const d0 = defOf(it.k), rt = (it.r | 0) & 3, turned = !!(rt && d0);
+function drawLying(it, ch, slot) {
+  const d0 = defOf(it.k), rt = (it.r | 0) & 3, turned = !!(rt && d0), sp = BEDS[it.k] || BEDS.bed;
+  slot = Math.min(slot | 0, sp.n - 1);
   let bx = (RX + it.x) * T, by = (RY + it.y) * T;
   if (turned) {   // 和 drawFurn 一樣：以轉過之後的佔格中心為軸旋轉，人和床一起轉
     const rw = rt & 1 ? d0.h : d0.w, rh = rt & 1 ? d0.w : d0.h;
     g.save(); g.translate(bx + rw * T / 2, by + rh * T / 2); g.rotate(rt * Math.PI / 2); g.translate(-d0.w * T / 2, -d0.h * T / 2);
     bx = 0; by = 0;
   }
-  const hx = bx + 11;   // 枕頭在正中間，翻轉也一樣
+  const hx = bx + sp.hx[slot];   // 枕頭在每個位子的正中間，翻轉也一樣
   const skin = SKINS[ch.skin] || SKINS[0], hair = HAIRS[ch.hair] || HAIRS[0];
   ob(skin, shade(skin, 0.82), hx + 1, by + 4, 8, 7);
   r(hair, hx + 1, by + 4, 8, 3); r(hair, hx + 1, by + 5, 1, 3); r(hair, hx + 8, by + 5, 1, 3);
   r('#4a2c2c', hx + 3, by + 8, 2, 1); r('#4a2c2c', hx + 6, by + 8, 2, 1);
   r('#ffa0b0', hx + 2, by + 9, 1, 1); r('#ffa0b0', hx + 8, by + 9, 1, 1);
-  ob('#ff9bb3', '#d4688a', bx + 8, by + 12, 16, 18);
-  r('#ffc2d2', bx + 8, by + 15, 16, 2);
-  r('#fffaf0', bx + 15, by + 21, 2, 2); r('#fffaf0', bx + 14, by + 20, 4, 1); r('#fffaf0', bx + 13, by + 21, 1, 1); r('#fffaf0', bx + 18, by + 21, 1, 1);
+  /* 把這個位子的被子蓋回去：只重畫床下半部（頭以下），身體就被蓋住了；另一個位子不受影響 */
+  const f = FURN[it.k], cl = sp.clip[slot];
+  if (f) { g.save(); g.beginPath(); g.rect(bx + cl[0], by + 12, cl[1] - cl[0], 20); g.clip(); f(bx, by, 0); g.restore(); }
   if (turned) g.restore();
 }
 let visiting = null, ownHouse = null;

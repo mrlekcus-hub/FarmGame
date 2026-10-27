@@ -206,8 +206,8 @@ drawSeated = function (px, py, it, ch, tile) {
   else { ob('#8fc8f4', '#4a8fc4', px + 3, py + 10, 10, 3); r('#4a8fc4', px + 4, py + 13, 2, 2); r('#4a8fc4', px + 10, py + 13, 2, 2); }
 };
 const _drawLying0 = drawLying;
-drawLying = function (it, ch) {
-  if (it.k !== 'bathtub' && it.k !== 'ofuro') return _drawLying0(it, ch);
+drawLying = function (it, ch, slot) {
+  if (it.k !== 'bathtub' && it.k !== 'ofuro') return _drawLying0(it, ch, slot);
   const d0 = defOf(it.k), rt = (it.r | 0) & 3, turned = !!(rt && d0);
   let bx = (RX + it.x) * T, by = (RY + it.y) * T;
   if (turned) {
