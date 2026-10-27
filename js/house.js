@@ -230,7 +230,7 @@ FURN.vase = (px, py, now) => {                     // 青花瓶
   r('#4a6fb8', px + 5, py + 8, 6, 1); r('#4a6fb8', px + 6, py + 10, 4, 1); r('#4a6fb8', px + 7, py + 12, 2, 1);
 };
 const SEAT = { chair: 'sit', sofa: 'sit', bed: 'lie' };   // 可以坐／躺的家具
-const STYLER = { wardrobe: 1, mirror: 1 };   // 在自己家按動作鍵就能換造型
+const STYLER = { wardrobe: 1, mirror: 1 };   // 按動作鍵換造型；衣櫥只能在自己家用，鏡子拜訪朋友家時也能用（換的是自己的造型）
 const DISP = { aquarium: { n: 4, kind: 'fish' }, specimen: { n: 6, kind: 'bug' } };   // 要和 SQL 的 _display_slots / _display_kind 一致
 const dispOf = it => (house && house.disp && house.disp[it.id]) || [];
 /* 展示品（疊在家具上面；不跟著翻轉，所以魚永遠朝游動方向） */
@@ -299,8 +299,11 @@ function drawFurn(it, px, py, now) {
     g.translate(px + rw * T / 2, py + rh * T / 2); g.rotate(rt * Math.PI / 2); g.translate(-d.w * T / 2, -d.h * T / 2);
     ox = 0; oy = 0;
   }
-  if (!it.f) f(ox, oy, now);
-  else { g.save(); g.translate(2 * ox + d.w * T, 0); g.scale(-1, 1); f(ox, oy, now); g.restore(); }
+  FXIT = it.id != null ? it : null;   // 讓有狀態的家具（檯燈、壁爐、盆栽、地球儀）知道現在畫的是哪一件
+  try {
+    if (!it.f) f(ox, oy, now);
+    else { g.save(); g.translate(2 * ox + d.w * T, 0); g.scale(-1, 1); f(ox, oy, now); g.restore(); }
+  } finally { FXIT = null; }
   if (it.id != null && DCONT[it.k]) DCONT[it.k](it, ox, oy, now);
   g.restore();
 }

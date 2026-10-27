@@ -56,9 +56,10 @@ function act() {
     else if (hit && hit.k === 'tv' && !edit.on) openTv(hit);
     else if (hit && DISP[hit.k]) { if (visiting) visitShowList(hit); else openDisplay(hit.id); }
     else if (hit && hit.k === 'kitchen' && !edit.on) { ckAnchor = { id: hit.id, fx: x, fy: y, at: visiting ? visiting.uid : null }; openKitchen(); }
-    else if (hit && STYLER[hit.k] && !edit.on && !visiting) openMaker(false);
+    else if (hit && STYLER[hit.k] && !edit.on && (!visiting || hit.k === 'mirror')) openMaker(false);
     else if (hit && hit.k === 'piano' && !edit.on) openPiano();
     else if (hit && BATH_ACT[hit.k] && !edit.on) bathAct(hit, x, y);
+    else if (hit && FX_ACT[hit.k] && !edit.on) fxAct(hit, x, y);
     else if (hit && SEAT[hit.k] && !edit.on) takeSeat(hit, x, y);
     else if (hit) pop(x, y, (defOf(hit.k) || {}).name || '', '#fff3b0');
     return;

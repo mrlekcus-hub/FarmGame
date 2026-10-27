@@ -236,8 +236,8 @@ function draw(now) {
       ents.push({ y: pose.sort, draw: () => {
         const px = Math.round(pl.x * T), py = Math.round(pl.y * T);
         if (pose.type === 'lie') {
-          drawLying(pit, ch);
-          { const q = bedPt(pit, 16, 1); nameTag(ch.name, q[0], q[1], '#ffffff'); }
+          drawLying(pit, ch, pose.slot);
+          { const q = bedTag(pit, pose.slot); nameTag(ch.name, q[0], q[1], '#ffffff'); }
         } else {
           drawSeated(px, py, pit, ch);
           nameTag(ch.name, px + 8, py - (pit.k === 'shower' ? 19 : pit.k === 'scale' ? 29 : 7), '#ffffff');
@@ -278,7 +278,7 @@ function draw(now) {
     const seated = rp.sit && !mv, gs = rp.gsit && !mv;
     const fit = rp.fs && !mv ? seatItemAt(rp.tx, rp.ty, rp.fs) : null;
     if (fit) {
-      if (rp.fs === 4) { drawLying(fit, rp.char); const q = bedPt(fit, 16, 1); nameTag(rp.name, q[0], q[1], '#fff3b0'); }
+      if (rp.fs === 4) { const sl = bedSlotAt(fit, rp.tx, rp.ty); drawLying(fit, rp.char, sl); const q = bedTag(fit, sl); nameTag(rp.name, q[0], q[1], '#fff3b0'); }
       else { drawSeated(px, py, fit, rp.char, Math.round(rp.x) - (RX + fit.x)); nameTag(rp.name, px + 8, py - (fit.k === 'shower' ? 19 : fit.k === 'scale' ? 29 : 7), '#fff3b0'); }
       return;
     }
@@ -327,6 +327,7 @@ function draw(now) {
   else if (!indoors && SEA === 'winter') r('rgba(215,232,255,.07)', 0, 0, W * T, H * T);
   if (warm > 0) r('rgba(255,150,130,' + warm.toFixed(3) + ')', 0, 0, W * T, H * T);
   if (dark > 0 && !indoors) r('rgba(70,50,130,' + (dark * 0.45).toFixed(3) + ')', 0, 0, W * T, H * T);
+  if (scene === 'house') drawHouseLight(now, w, dark);   // 室內夜色與檯燈、壁爐的光暈（js/furniture-fx.js）
   if (!indoors && dark > 0.15) nightGlows(dark);   // 夜晚窗戶光暈：畫在夜色濾鏡之後才不會被壓暗
   if (scene === 'plaza') drawPlazaLight(now, w, dark);
   if (ready && me) drawHwBuffFx(now, dark, rx, ry, indoors);   // 萬聖節 buff：夜行的鬼火、提燈的暖光   // 廣場早晚光影（方案 B）：霧、斜光、路燈與南瓜燈光暈、蝙蝠、螢火蟲

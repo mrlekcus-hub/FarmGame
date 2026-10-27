@@ -113,7 +113,7 @@ function updateTip() {
     if (x >= 0 && y >= 0 && x < W && y < H) {
       const lx = x - RX, ly = y - RY, hit = house && lx >= 0 && lx < RW && ly >= -2 && ly < RH ? itemAtLocal(lx, ly) : null;
       if (K[y][x] === GT) s = '門口：按動作鍵回農場。';
-      else if (hit) s = ((defOf(hit.k) || {}).name || '') + (DISP[hit.k] ? '：按動作鍵' + (visiting ? '看展示品' : '換展示品') : hit.k === 'kitchen' && !edit.on ? '：按動作鍵做料理' : STYLER[hit.k] && !visiting && !edit.on ? '：按動作鍵換造型' : hit.k === 'tv' && !edit.on ? '：按動作鍵換頻道、看今日情報' : hit.k === 'piano' && !edit.on ? '：按動作鍵彈琴' : BATH_ACT[hit.k] && !edit.on ? '：按動作鍵' + BATH_ACT[hit.k].hint : SEAT[hit.k] && !edit.on ? '：按動作鍵' + (SEAT[hit.k] === 'lie' ? '躺下' : '坐下') : '');
+      else if (hit) s = ((defOf(hit.k) || {}).name || '') + (DISP[hit.k] ? '：按動作鍵' + (visiting ? '看展示品' : '換展示品') : hit.k === 'kitchen' && !edit.on ? '：按動作鍵做料理' : STYLER[hit.k] && !edit.on && (!visiting || hit.k === 'mirror') ? '：按動作鍵換造型' : hit.k === 'tv' && !edit.on ? '：按動作鍵換頻道、看今日情報' : hit.k === 'piano' && !edit.on ? '：按動作鍵彈琴' : BATH_ACT[hit.k] && !edit.on ? '：按動作鍵' + BATH_ACT[hit.k].hint : SEAT[hit.k] && !edit.on ? '：按動作鍵' + (SEAT[hit.k] === 'lie' ? '躺下' : '坐下') : fxHint(hit));
     }
   } else if (scene === 'plaza') {
     s = '和朋友聊聊天吧，下方可以打字。';
