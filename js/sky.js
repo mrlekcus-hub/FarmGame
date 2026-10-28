@@ -161,14 +161,16 @@ function draw(now) {
   syncCanvasRows();
   SEA = seasonAt(srvNow());
   {
-    const s = imm ? view.s : S, vw = cv.width / s, vh = cv.height / s, e0 = pl.prog;
-    const cx = (pl.sx + (pl.x - pl.sx) * e0) * T + 8, cy = (pl.sy + (pl.y - pl.sy) * e0) * T + 8;
+    const s = curS(), vw = cv.width / s, vh = cv.height / s, e0 = pl.prog;
+    const free = camFree();   // 佈置模式：鏡頭由手指控制（decor.js 的 cam），不跟角色
+    if (free) camClamp();
+    const cx = free ? cam.x : (pl.sx + (pl.x - pl.sx) * e0) * T + 8, cy = free ? cam.y : (pl.sy + (pl.y - pl.sy) * e0) * T + 8;
     const sk = skyTop();
     const tx = vw >= W * T ? (W * T - vw) / 2 : clamp(cx - vw / 2, 0, W * T - vw);
     const ty = vh >= H * T + sk ? (H * T - sk - vh) / 2 : clamp(cy - vh / 2, -sk, H * T - vh);
     if (view.snap || view.scene !== scene) { view.x = tx; view.y = ty; view.snap = false; view.scene = scene; }
     else {   // 鏡頭追角色：用經過的時間算，不管 30 還是 60 幀，追的速度都一樣
-      const fk = 1 - Math.pow(0.8, clamp((now - (view.t || now)) / 16.667, 0.25, 4));
+      const fk = camLive() ? 1 : 1 - Math.pow(0.8, clamp((now - (view.t || now)) / 16.667, 0.25, 4));
       view.x += (tx - view.x) * fk; view.y += (ty - view.y) * fk;
     }
     view.t = now;

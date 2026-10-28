@@ -232,7 +232,7 @@ function anchorFor(k, lx, ly, rot) {
 }
 function tileFromEvent(ev) {
   const rc = $('game').getBoundingClientRect();
-  const k = cv.width / rc.width, s = imm ? view.s : S;
+  const k = cv.width / rc.width, s = curS();
   return [Math.floor(((ev.clientX - rc.left) * k + Math.round(view.x * s)) / s / T), Math.floor(((ev.clientY - rc.top) * k + Math.round(view.y * s)) / s / T)];
 }
 function houseTap(tx, ty) {
@@ -251,6 +251,107 @@ function houseTap(tx, ty) {
   edit.sel = it ? it.id : null;
   renderHousePanel();
 }
+/* ---------- 佈置模式的手機鏡頭：雙指拖曳平移、拖家具到邊緣自動捲動、縮放／全屋、小地圖 ---------- */
+/* 只在手機沉浸模式、自己的房間、佈置模式開著時啟用；一關掉佈置模式，鏡頭就由 sky.js 慢慢滑回角色身上 */
+const cam = { on: false, x: 0, y: 0, s: 0, pan: false, mm: false, last: null, pts: new Map(), px: 0, py: 0, pend: null };
+const camFree = () => imm && scene === 'house' && edit.on && !visiting && !!house;
+const camLive = () => camFree() && (cam.pan || cam.mm || edit.drag);   // 手指正在帶著鏡頭走：不要做緩動，才跟手
+const curS = () => imm ? (camFree() && cam.s ? cam.s : view.s) : S;
+function camClamp() {
+  const s = curS(), vw = cv.width / s, vh = cv.height / s;
+  cam.x = vw >= W * T ? W * T / 2 : clamp(cam.x, vw / 2, W * T - vw / 2);
+  cam.y = vh >= H * T ? H * T / 2 : clamp(cam.y, vh / 2, H * T - vh / 2);
+}
+const camUi = $('camui'), camMapCv = $('cammap');
+function camMapDraw() {
+  const g2 = camMapCv.getContext('2d'), mw = camMapCv.width, mh = camMapCv.height, sx = mw / (W * T), sy = mh / (H * T);
+  g2.clearRect(0, 0, mw, mh);
+  g2.fillStyle = '#8fd08a'; g2.fillRect(0, 0, mw, mh);
+  g2.fillStyle = '#fff1d6'; g2.fillRect(RX * T * sx, (RY - 2) * T * sy, RW * T * sx, 2 * T * sy);
+  g2.fillStyle = '#f0d4a8'; g2.fillRect(RX * T * sx, RY * T * sy, RW * T * sx, RH * T * sy);
+  g2.fillStyle = '#c98f62'; g2.strokeStyle = '#8a5a3a'; g2.lineWidth = 1;
+  (house ? house.items : []).forEach(it => {
+    const d = itemRect(it); if (!d) return;
+    const x = (RX + d.x) * T * sx, y = (RY + d.y) * T * sy, w = Math.max(2, d.w * T * sx), h = Math.max(2, d.h * T * sy);
+    g2.fillRect(x, y, w, h); g2.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+    if (it.id === edit.sel) { g2.fillStyle = '#ff7a9b'; g2.fillRect(x, y, w, h); g2.fillStyle = '#c98f62'; }
+  });
+  const s = curS(), vw = cv.width / s, vh = cv.height / s;
+  g2.strokeStyle = '#ff4f7b'; g2.lineWidth = 2;
+  g2.strokeRect(view.x * sx + 1, view.y * sy + 1, Math.max(4, vw * sx - 2), Math.max(4, vh * sy - 2));
+}
+function camTick(dt) {
+  const on = camFree();
+  if (on !== cam.on) {
+    cam.on = on; cam.s = 0; cam.pan = false; cam.mm = false; cam.pts.clear(); cam.pend = null;
+    if (on) { const s0 = curS(); cam.x = view.x + cv.width / s0 / 2; cam.y = view.y + cv.height / s0 / 2; }   // 從目前畫面中心開始，不跳動
+    camUi.hidden = !on;
+  }
+  if (!on) return;
+  if (edit.drag && edit.drag0 && !cam.pan) {   // 拖著家具靠近畫面邊緣：鏡頭自己往那邊走
+    const rc = cv.getBoundingClientRect();
+    if (rc.width) {
+      const Z = 0.16, fx = (cam.px - rc.left) / rc.width, fy = (cam.py - rc.top) / rc.height;
+      const ax = fx < Z ? -(Z - fx) / Z : fx > 1 - Z ? (fx - (1 - Z)) / Z : 0;
+      const ay = fy < Z ? -(Z - fy) / Z : fy > 1 - Z ? (fy - (1 - Z)) / Z : 0;
+      if (ax || ay) {
+        cam.x += clamp(ax, -1, 1) * 0.1 * dt; cam.y += clamp(ay, -1, 1) * 0.1 * dt; camClamp();
+        const [tx, ty] = tileFromEvent({ clientX: cam.px, clientY: cam.py });   // 手指沒動、畫面動了：預覽位置要跟著重算
+        edit.hover = [tx - RX - edit.drag0.ox, ty - RY - edit.drag0.oy];
+      }
+    }
+  }
+  camMapDraw();
+}
+const camMid = () => { const a = [...cam.pts.values()]; return { x: (a[0].x + a[1].x) / 2, y: (a[0].y + a[1].y) / 2 }; };
+function camPtrDown(ev) {   // 回傳 true＝這一下是鏡頭手勢的一部分，不要當成選家具／放家具
+  if (!camFree() || ev.pointerType !== 'touch') return false;
+  cam.pts.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+  if (cam.pts.size < 2) return false;
+  if (!cam.pan) {
+    cam.pan = true; cam.pend = null;
+    if (edit.drag0) houseDragEnd(true);   // 第一指已經在拖家具：取消，家具放回原位
+    if (typeof paint !== 'undefined') paint.drag = null;
+    cam.last = camMid();
+  }
+  return true;
+}
+function camPtrMove(ev) {   // 回傳 true＝雙指平移中，其他拖曳邏輯先別動
+  cam.px = ev.clientX; cam.py = ev.clientY;
+  if (!cam.pts.has(ev.pointerId)) return false;
+  cam.pts.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+  if (!cam.pan) return false;
+  if (cam.pts.size >= 2) {
+    const m = camMid(), rc = cv.getBoundingClientRect(), k = cv.width / rc.width, s = curS();
+    cam.x -= (m.x - cam.last.x) * k / s; cam.y -= (m.y - cam.last.y) * k / s; cam.last = m; camClamp();
+  }
+  return true;
+}
+function camPtrUp(ev) {
+  cam.pts.delete(ev.pointerId);
+  if (cam.pan && cam.pts.size < 2) cam.pan = false;
+  const p = cam.pend;
+  if (p && p.pid === ev.pointerId) { cam.pend = null; if (ev.type === 'pointerup') { const [tx, ty] = tileFromEvent(ev); houseTap(tx, ty); } }
+}
+$('game').addEventListener('pointerup', camPtrUp);
+$('game').addEventListener('pointercancel', camPtrUp);
+camUi.addEventListener('pointerdown', e => e.stopPropagation());
+camUi.addEventListener('click', e => {
+  const b = e.target.closest('button[data-z]');
+  if (!b || !camFree()) return;
+  const base = view.s, cur = cam.s || base, fit = Math.max(1, Math.floor(Math.min(cv.width / (W * T), cv.height / (H * T)))), z = b.dataset.z;
+  const n = z === 'in' ? Math.min(base + 3, cur + 1) : z === 'out' ? Math.max(1, cur - 1) : (cur === fit ? base : fit);   // 全屋：再按一次回到原本大小
+  cam.s = n === base ? 0 : n; camClamp(); view.snap = true;
+});
+function camMapGo(ev) {
+  const rc = camMapCv.getBoundingClientRect();
+  if (!rc.width) return;
+  cam.x = clamp((ev.clientX - rc.left) / rc.width, 0, 1) * W * T; cam.y = clamp((ev.clientY - rc.top) / rc.height, 0, 1) * H * T; camClamp();
+}
+camMapCv.addEventListener('pointerdown', e => { e.stopPropagation(); e.preventDefault(); cam.mm = true; try { camMapCv.setPointerCapture(e.pointerId); } catch (_) {} camMapGo(e); });
+camMapCv.addEventListener('pointermove', e => { if (cam.mm) camMapGo(e); });
+['pointerup', 'pointercancel'].forEach(t => camMapCv.addEventListener(t, () => { cam.mm = false; }));
+
 /* 佈置模式：按住家具直接拖著移動；選到家具後，旋轉／翻轉／收回／賣出的按鈕浮在家具上方（#hbar） */
 edit.drag = false; edit.drag0 = null;
 const DRAG_PX = 8;
@@ -271,6 +372,7 @@ function houseDragEnd(cancel) {
 }
 $('game').addEventListener('pointerdown', ev => {
   if (ev.sideTap) return;   // 這一下是用來收抽屜的（input.js），不要同時放家具或選家具
+  if (camPtrDown(ev)) return;   // 第二根手指落下：雙指平移鏡頭
   if (paintOn()) { paintDown(ev); return; }   // 油漆分頁：交給 paint.js
   const [tx, ty] = tileFromEvent(ev);
   if (scene === 'house' && edit.on && house && !visiting && !edit.hold) {
@@ -282,9 +384,11 @@ $('game').addEventListener('pointerdown', ev => {
       renderHousePanel(); return;
     }
   }
+  if (camFree() && ev.pointerType === 'touch' && edit.hold && !edit.hold.fromId) { cam.pend = { pid: ev.pointerId }; return; }   // 從背包拿著家具要放：等手指放開才放，這樣第二根手指落下時可以改成移鏡頭
   houseTap(tx, ty);
 });
 $('game').addEventListener('pointermove', ev => {
+  if (camFree() && camPtrMove(ev)) return;
   if (scene !== 'house' || !edit.on) return;
   const d0 = edit.drag0;
   if (d0 && d0.pid === ev.pointerId) {
@@ -339,7 +443,7 @@ function houseBarSync() {
   hbarEl.hidden = false;
   const rc = cv.getBoundingClientRect(), st = stageEl.getBoundingClientRect();
   if (!rc.width) return;
-  const k = cv.width / rc.width, s_ = imm ? view.s : S;
+  const k = cv.width / rc.width, s_ = curS();
   const ox = rc.left - st.left - stageEl.clientLeft, oy = rc.top - st.top - stageEl.clientTop;
   const X0 = (RX + g_.x) * T, Y0 = (RY + g_.y) * T, X1 = X0 + g_.w * T, Y1 = Y0 + g_.h * T;
   const px = wx => (wx * s_ - Math.round(view.x * s_)) / k + ox, py = wy => (wy * s_ - Math.round(view.y * s_)) / k + oy;

@@ -72,6 +72,7 @@ function frame(now) {
   const dt = Math.min(60, now - last);
   last = now;
   update(dt);
+  camTick(dt);
   draw(now);
   houseBarSync();
   requestAnimationFrame(frame);

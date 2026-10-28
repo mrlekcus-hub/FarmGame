@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>雷克斯農場</title>
-<meta name="build" content="09ae0a8146">
+<meta name="build" content="20d9ce704e">
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="manifest" href="app/manifest.webmanifest">
@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chiron+GoRound+TC:wght@400;600;800&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap">
-<link rel="stylesheet" href="css/style.css?v=aafe5078">
+<link rel="stylesheet" href="css/style.css?v=d87165d7">
 </head><body>
 
 
@@ -37,6 +37,10 @@
     <div class="buffbar" id="buff" hidden></div>
     <button type="button" class="cheer" id="cheer" hidden>👏 喝采</button>
     <div class="hbar" id="hbar" hidden></div>
+    <div class="camui" id="camui" hidden>
+      <canvas id="cammap" width="96" height="68" aria-label="房間小地圖，點一下或拖曳可以移動鏡頭"></canvas>
+      <div class="camz"><button type="button" data-z="in" aria-label="放大">＋</button><button type="button" data-z="out" aria-label="縮小">－</button><button type="button" data-z="all">全屋</button></div>
+    </div>
     <div class="empop" id="emm" hidden role="dialog" aria-label="表情與動作"><div id="emcard" tabindex="-1"></div></div>
     <div id="cfeed" hidden aria-live="polite"></div>
     <div class="cbar" id="cbar" hidden role="dialog" aria-label="聊天">
@@ -97,6 +101,7 @@
       <button type="button" class="btn small ghost" id="h-look">換造型</button>
     </div>
     <div id="h-edit-box" hidden>
+      <p class="camhint" id="h-cam">雙指拖曳移動鏡頭 · 拖家具到畫面邊緣會自動捲動 · 右上角可縮放</p>
       <div class="v-quick" id="h-tabs"></div>
       <div id="h-find"><input type="search" id="h-q" class="hsearch" placeholder="搜尋家具…" autocomplete="off" aria-label="搜尋家具"><div class="hcats" id="h-cats"></div></div>
       <div class="v-list furngrid" id="h-inv"></div>
@@ -288,15 +293,15 @@
 <script src="js/doors.js?v=d8fa98c7"></script>
 <script src="js/social.js?v=5f8c2620"></script>
 <script src="js/hw-cook.js?v=461a2691"></script>
-<script src="js/decor.js?v=b0559f7f"></script>
+<script src="js/decor.js?v=516260de"></script>
 <script src="js/paint.js?v=ae58ce01"></script>
 <script src="js/beds.js?v=f64e3549"></script>
 <script src="js/bath.js?v=9b50f0b1"></script>
 <script src="js/toilets.js?v=3b675ac4"></script>
 <script src="js/stores.js?v=83d99cae"></script>
 <script src="js/render.js?v=9b528878"></script>
-<script src="js/sky.js?v=08517a11"></script>
-<script src="js/immersive.js?v=a14952a4"></script>
+<script src="js/sky.js?v=728274f2"></script>
+<script src="js/immersive.js?v=f1657c14"></script>
 <script src="js/update.js?v=ab556e5d"></script>
 <script src="js/furniture-fx.js?v=7304670c"></script>
 <script src="js/main.js?v=8be1c52f"></script>

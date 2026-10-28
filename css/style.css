@@ -996,3 +996,14 @@ body.imm.hedit .fcard canvas{height:44px}
   body.imm.hedit #h-inv.furngrid{grid-template-columns:repeat(3,minmax(0,1fr))}
   body.imm.hs-on .hstrip{left:auto;right:max(10px,env(safe-area-inset-right,0px));width:min(430px,70vw)}
 }
+
+/* 佈置模式的手機鏡頭：小地圖、縮放按鈕、提示文字（只在手機沉浸模式出現） */
+.camui{display:none}
+body.imm .camui:not([hidden]){display:flex;flex-direction:column;align-items:flex-end;gap:6px;position:absolute;z-index:5;right:max(10px,env(safe-area-inset-right,0px));top:max(12px,env(safe-area-inset-top,0px));line-height:1}
+.camui canvas{width:96px;height:68px;display:block;touch-action:none;background:rgba(255,250,240,.97);border:3px solid var(--pink);border-radius:12px;box-shadow:0 3px 0 var(--pink-deep);image-rendering:pixelated}
+.camz{display:flex;gap:4px}
+.camz button{min-width:44px;min-height:40px;padding:0 8px;font:800 14px/1 var(--f-display);color:var(--ink);background:rgba(255,250,240,.97);border:2px solid var(--pink);border-radius:12px;box-shadow:0 2px 0 var(--pink-deep);cursor:pointer;touch-action:manipulation}
+.camz button:active{background:#fde9c9;transform:translateY(1px)}
+.camz button[data-z=all]{font-size:12px}
+.camhint{display:none;margin:0 0 4px;font:600 11px/1.4 var(--f-display);color:var(--muted)}
+body.imm .camhint{display:block}
