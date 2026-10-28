@@ -980,7 +980,7 @@ body.imm .hstrip:not([hidden]){display:flex;align-items:center;gap:6px;position:
 .hstrip button{flex:none;min-height:40px;padding:0 11px;font:700 12px/1 var(--f-display);color:var(--ink);background:#fff;border:2px solid var(--edge);border-radius:999px;cursor:pointer}
 .hstrip button:active{background:#fde9c9}
 .hstrip .hs-swap{background:var(--sun,#ffc83d);border-color:var(--sun-deep,#e8a317)}
-body.imm.hstrip .dpad,body.imm.hstrip .act,body.imm.hstrip .sidebtns,body.imm.hstrip .hotbar{visibility:hidden;pointer-events:none}
+body.imm.hs-on .dpad,body.imm.hs-on .act,body.imm.hs-on .sidebtns,body.imm.hs-on .hotbar{visibility:hidden;pointer-events:none}
 /* 抽屜：只留布置面板（選單圖示、說明文字先藏起來），格子才排得下 */
 body.imm.hedit .immgrid,body.imm.hedit .tip,body.imm.hedit .foot,body.imm.hedit #h-hint,body.imm.hedit #h-look{display:none!important}
 body.imm.hedit .side{gap:6px}
@@ -994,5 +994,5 @@ body.imm.hedit .fcard canvas{height:44px}
 @media (orientation:landscape){
   body.imm.hedit .side{width:min(300px,46vw)}
   body.imm.hedit #h-inv.furngrid{grid-template-columns:repeat(3,minmax(0,1fr))}
-  body.imm.hstrip .hstrip{left:auto;right:max(10px,env(safe-area-inset-right,0px));width:min(430px,70vw)}
+  body.imm.hs-on .hstrip{left:auto;right:max(10px,env(safe-area-inset-right,0px));width:min(430px,70vw)}
 }

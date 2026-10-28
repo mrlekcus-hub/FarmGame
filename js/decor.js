@@ -97,13 +97,13 @@ function stripSync() {
   const hold = edit.hold, show = !!(imm && inHouse && hold && !hold.fromId);
   const he = !!(imm && inHouse), bc = document.body.classList;
   if (he !== bc.contains('hedit')) bc.toggle('hedit', he);
-  if (show !== bc.contains('hstrip')) bc.toggle('hstrip', show);
+  if (show !== bc.contains('hs-on')) bc.toggle('hs-on', show);
   if (!show) { if (!hsEl.hidden) { hsEl.hidden = true; hsKey = ''; } return; }
   const left = have('f:' + hold.k), key = hold.k + '|' + left;
   if (key !== hsKey) {
     hsKey = key;
     const nm = esc((defOf(hold.k) || {}).name || '');
-    hsEl.innerHTML = '<canvas class="hs-ic"></canvas><div class="hs-t"><b>' + nm + '</b><small>點格子放下 · 還有 ×' + left + '</small></div>' +
+    hsEl.innerHTML = '<canvas class="hs-ic"></canvas><div class="hs-t"><b>' + nm + '</b><small>點房間放下 · ×' + left + '</small></div>' +
       '<button type="button" data-s="flip-hold">翻轉</button><button type="button" data-s="rot-hold">旋轉</button><button type="button" data-s="cancel" aria-label="取消">✕</button><button type="button" class="hs-swap" data-s="swap">▲ 換一件</button>';
     paintFurnIcon(hsEl.querySelector('canvas'), hold.k);
   }
