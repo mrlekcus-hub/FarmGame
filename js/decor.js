@@ -49,6 +49,69 @@ dsCard.addEventListener('change', e => {
 dsCard.addEventListener('click', e => { if (e.target.closest('button[data-a=close]')) closeDisplay(); });
 dsEl.addEventListener('click', e => { if (e.target === dsEl) closeDisplay(); });
 
+/* ---------- 家具面板：圖卡、分類、搜尋；手機版選好家具後抽屜收成底部小條 ---------- */
+const furnUi = { cat: 'all', q: '', sig: '' };
+const FCATS = [['all', '全部'], ['sleep', '睡覺'], ['living', '客廳'], ['bath', '浴室'], ['kitchen', '廚房'], ['wall', '牆面'], ['rug', '地毯'], ['deco', '擺飾']];
+/* 伺服器目錄沒有分類欄位，這裡用 key 名稱和 layer 分；認不得的一律歸「擺飾」 */
+function furnCat(c) {
+  const k = c.key;
+  if (c.layer === 'wall') return 'wall';
+  if (c.layer === 'flat') return 'rug';
+  if (/^(bed|dbed)(_|$)|^wardrobe/.test(k)) return 'sleep';
+  if (/toilet|bath|tub|sink|shower|basin/.test(k) || (typeof BATH_FURN !== 'undefined' && BATH_FURN[k]) || (typeof TOILET_FURN !== 'undefined' && TOILET_FURN[k])) return 'bath';
+  if (/^(kitchen|fridge|stove|counter|oven)/.test(k)) return 'kitchen';
+  if (/^(sofa|table|chair|shelf|tv|piano|cat|fireplace|lamp|dtable|armchair)/.test(k)) return 'living';
+  return 'deco';
+}
+function paintFurnIcon(cv, key) {
+  const d = defOf(key) || {};
+  cv.width = Math.min(8, Math.max(1, d.w | 0 || 2)) * 16; cv.height = Math.min(8, Math.max(1, d.h | 0 || 2)) * 16;
+  try { furnIcon(cv, key); } catch (e) { /* 略過 */ }
+}
+function renderFurnGrid(pt_) {
+  $('h-find').hidden = pt_;
+  if (pt_) { furnUi.sig = ''; return; }
+  const hold = edit.hold, held = hold && !hold.fromId ? hold.k : '';
+  const all = house.list.filter(c => ['floor', 'flat', 'wall'].includes(c.layer) && have('f:' + c.key) > 0);
+  const total = all.reduce((n, c) => n + have('f:' + c.key), 0);
+  const cnt = {}; all.forEach(c => { const t = furnCat(c); cnt[t] = (cnt[t] || 0) + 1; });
+  if (furnUi.cat !== 'all' && !cnt[furnUi.cat]) furnUi.cat = 'all';
+  const shown = all.filter(c => (furnUi.cat === 'all' || furnCat(c) === furnUi.cat) && (!furnUi.q || String(c.name).toLowerCase().includes(furnUi.q)));
+  const sig = furnUi.cat + '|' + furnUi.q + '|' + held + '|' + all.map(c => c.key + ':' + have('f:' + c.key)).join(',');
+  const t0 = $('h-tabs').querySelector('[data-tab=furn]');
+  if (t0) t0.textContent = '家具 ' + total;
+  if (sig === furnUi.sig) return;   // 沒變就不重畫，捲動位置才不會跳回去
+  furnUi.sig = sig;
+  $('h-cats').innerHTML = FCATS.filter(([k]) => k === 'all' || cnt[k]).map(([k, n]) => '<button type="button" class="chipbtn" data-c="' + k + '" aria-pressed="' + (furnUi.cat === k) + '">' + n + '</button>').join('');
+  const box = $('h-inv');
+  if (!all.length) { box.innerHTML = '<span class="empty">背包裡沒有家具，去小村右上角的家具店買吧。</span>'; return; }
+  if (!shown.length) { box.innerHTML = '<span class="empty">這個分類（或搜尋）沒有家具。</span>'; return; }
+  box.innerHTML = shown.map(c => '<button type="button" class="fcard" data-f="' + esc(c.key) + '" aria-pressed="' + (held === c.key) + '" title="' + c.w + '×' + c.h + ' 格"><canvas data-fi="' + esc(c.key) + '"></canvas><b>' + esc(c.name) + '</b><i class="fq">×' + have('f:' + c.key) + '</i></button>').join('');
+  box.querySelectorAll('canvas[data-fi]').forEach(cv => paintFurnIcon(cv, cv.dataset.fi));
+}
+/* 手機：選好家具後，底部小條放翻轉／旋轉／取消／換一件；每個影格呼叫一次，只在變動時改 DOM */
+const hsEl = $('hstrip');
+let hsKey = '';
+function stripSync() {
+  const inHouse = scene === 'house' && !!house && !visiting && edit.on && edit.tab === 'furn';
+  const hold = edit.hold, show = !!(imm && inHouse && hold && !hold.fromId);
+  const he = !!(imm && inHouse), bc = document.body.classList;
+  if (he !== bc.contains('hedit')) bc.toggle('hedit', he);
+  if (show !== bc.contains('hstrip')) bc.toggle('hstrip', show);
+  if (!show) { if (!hsEl.hidden) { hsEl.hidden = true; hsKey = ''; } return; }
+  const left = have('f:' + hold.k), key = hold.k + '|' + left;
+  if (key !== hsKey) {
+    hsKey = key;
+    const nm = esc((defOf(hold.k) || {}).name || '');
+    hsEl.innerHTML = '<canvas class="hs-ic"></canvas><div class="hs-t"><b>' + nm + '</b><small>點格子放下 · 還有 ×' + left + '</small></div>' +
+      '<button type="button" data-s="flip-hold">翻轉</button><button type="button" data-s="rot-hold">旋轉</button><button type="button" data-s="cancel" aria-label="取消">✕</button><button type="button" class="hs-swap" data-s="swap">▲ 換一件</button>';
+    paintFurnIcon(hsEl.querySelector('canvas'), hold.k);
+  }
+  hsEl.hidden = false;
+}
+hsEl.addEventListener('pointerdown', e => e.stopPropagation());
+hsEl.addEventListener('click', e => { const b = e.target.closest('button[data-s]'); if (b) selAct(b.dataset.s); });
+
 function renderHousePanel() {
   if (!house) return;
   const vis = !!visiting;
@@ -67,10 +130,7 @@ function renderHousePanel() {
   $('h-inv').hidden = pt_;
   $('h-hint').textContent = !edit.on ? '走到門口按動作鍵回農場' : hold ? '點房間的格子放下 ' + (defOf(hold.k) || {}).name : '點家具選取，按住可以直接拖著移動，按鈕會浮在家具上方；從背包選家具來擺';
   if (pt_) $('h-hint').textContent = '選顏色，在房間格子上點一下或拖曳來上色；有鎖頭的顏色可以先試色，鬆手時再決定要不要買';
-  const have_ = house.list.filter(c => ['floor', 'flat', 'wall'].includes(c.layer) && have('f:' + c.key) > 0);
-  $('h-inv').innerHTML = have_.length
-    ? have_.map(c => '<button type="button" class="chipbtn" data-f="' + esc(c.key) + '" aria-pressed="' + (hold && !hold.fromId && hold.k === c.key ? 'true' : 'false') + '">' + esc(c.name) + ' ×' + have('f:' + c.key) + '</button>').join('')
-    : '<span class="empty">背包裡沒有家具，去小村右上角的家具店買吧。</span>';
+  renderFurnGrid(pt_);
   const sb_ = $('h-sel');
   if (selIt) {
     sb_.hidden = true; sb_.innerHTML = '';   // 選到的家具，按鈕改放在家具上方的浮動條（#hbar）
@@ -92,12 +152,22 @@ $('h-inv').addEventListener('click', e => {
   const k = b.dataset.f;
   edit.sel = null;
   edit.hold = (edit.hold && !edit.hold.fromId && edit.hold.k === k) ? null : { k };
+  if (edit.hold && imm) setSide(false);   // 手機：選好家具就收起抽屜，房間整個露出來
   renderHousePanel();
 });
+$('h-cats').addEventListener('click', e => {
+  const b = e.target.closest('button[data-c]');
+  if (!b) return;
+  furnUi.cat = b.dataset.c; renderHousePanel();
+});
+$('h-q').addEventListener('input', e => { furnUi.q = e.target.value.trim().toLowerCase(); renderHousePanel(); });
 $('h-sel').addEventListener('click', e => {
   const b = e.target.closest('button[data-s]');
-  if (!b) return;
-  const it = house.items.find(i => i.id === edit.sel), a = b.dataset.s;
+  if (b) selAct(b.dataset.s);
+});
+function selAct(a) {
+  const it = house.items.find(i => i.id === edit.sel);
+  if (a === 'swap') { setSide(true); return; }
   if (a === 'cancel') { edit.sel = null; edit.hold = null; }
   else if (a === 'move' && it) { edit.hold = { k: it.k, fromId: it.id, f: it.f, r: it.r | 0 }; edit.sel = null; }
   else if (a === 'pick' && it) { doPickup(it); edit.sel = null; }
@@ -109,7 +179,7 @@ $('h-sel').addEventListener('click', e => {
   else if (a === 'sell' && it) { doSell(it); edit.sel = null; }
   else if (a === 'sell-bag' && edit.hold && !edit.hold.fromId) { doSellBag(edit.hold.k); if (have('f:' + edit.hold.k) <= 0) edit.hold = null; }
   renderHousePanel(); refreshHud();
-});
+}
 function doPlace(k, x, y, f, rot) {
   inv['f:' + k] = have('f:' + k) - 1;
   const it = { id: 't' + (++tmpSeq), k, x, y, f: !!f, r: (rot | 0) & 3 };
@@ -200,6 +270,7 @@ function houseDragEnd(cancel) {
   edit.hover = null; renderHousePanel();
 }
 $('game').addEventListener('pointerdown', ev => {
+  if (ev.sideTap) return;   // 這一下是用來收抽屜的（input.js），不要同時放家具或選家具
   if (paintOn()) { paintDown(ev); return; }   // 油漆分頁：交給 paint.js
   const [tx, ty] = tileFromEvent(ev);
   if (scene === 'house' && edit.on && house && !visiting && !edit.hold) {
@@ -252,6 +323,7 @@ hbarEl.addEventListener('click', e => {
   renderHousePanel(); refreshHud();
 });
 function houseBarSync() {
+  stripSync();
   if (!edit.hold && edit.drag) edit.drag = false;
   if (!edit.on) edit.drag0 = null;
   const selIt = house && edit.on && scene === 'house' && !visiting && !edit.hold && !paused() ? house.items.find(i => i.id === edit.sel) : null;

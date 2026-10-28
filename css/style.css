@@ -947,3 +947,52 @@ body.fl canvas#game{touch-action:none;-webkit-touch-callout:none;-webkit-user-se
 .pgrid.pat canvas{display:block;width:32px;height:32px;margin:0 auto 2px;image-rendering:pixelated;border-radius:4px}
 /* 固定搖桿已關閉：一律用浮動搖桿（見 js/input.js）。寬高歸零，各版面的動作鈕位置不受影響 */
 .dpad,body.imm .dpad{--sz:0px!important;width:0!important;height:0!important;min-width:0;visibility:hidden!important;pointer-events:none!important;opacity:0}
+
+/* ---- 布置：家具圖卡面板（電腦／平板側欄；手機見下方 body.imm） ---- */
+#h-tabs{display:flex;gap:0;background:#fff;border:2px solid var(--edge);border-radius:999px;padding:3px}
+#h-tabs .chipbtn{flex:1;border:0;background:transparent;padding:9px 6px;text-align:center}
+#h-tabs .chipbtn[aria-pressed=true]{background:var(--pink);color:#fff}
+#h-find{display:flex;flex-direction:column;gap:8px}
+#h-find[hidden]{display:none}
+.hsearch{width:100%;box-sizing:border-box;font:600 14px/1 var(--f-display);color:var(--ink);background:#fff;border:2px solid var(--edge);border-radius:999px;padding:10px 14px;outline:0}
+.hsearch:focus{border-color:var(--pink)}
+.hcats{display:flex;gap:6px;overflow-x:auto;padding-bottom:3px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.hcats::-webkit-scrollbar{display:none}
+.hcats .chipbtn{flex:none;white-space:nowrap;padding:7px 12px}
+#h-inv.furngrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;max-height:46vh;overflow-y:auto;padding:6px 4px 4px 0;line-height:1.2}
+#h-inv.furngrid .empty{grid-column:1/-1}
+.fcard{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;min-width:0;padding:8px 4px 6px;background:#fff8ea;border:3px solid var(--edge);border-radius:14px;box-shadow:0 3px 0 var(--edge);cursor:pointer;font:700 12px/1.15 var(--f-display);color:var(--ink)}
+.fcard:active{transform:translateY(2px);box-shadow:0 1px 0 var(--edge)}
+.fcard canvas{display:block;width:100%;height:52px;object-fit:contain;image-rendering:pixelated}
+.fcard b{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}
+.fcard .fq{position:absolute;right:-4px;top:-6px;font:800 11px/1 var(--f-display);font-style:normal;color:#fff;background:var(--sun-deep,#e8a317);border:2px solid #fff;border-radius:999px;padding:3px 6px}
+.fcard[aria-pressed=true]{background:#ffe3ea;border-color:var(--pink-deep);box-shadow:0 3px 0 var(--pink-deep)}
+@media (max-width:1100px) and (min-width:701px){#h-inv.furngrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+#h-sel:not([hidden]){border:2px dashed var(--pink);border-radius:14px;padding:8px;align-items:center}
+
+/* ---- 手機沉浸模式：挑家具時抽屜縮小、放下時收成底部小條 ---- */
+.hstrip{display:none}
+body.imm .hstrip:not([hidden]){display:flex;align-items:center;gap:6px;position:fixed;z-index:24;left:max(10px,env(safe-area-inset-left,0px));right:max(10px,env(safe-area-inset-right,0px));bottom:max(10px,env(safe-area-inset-bottom,0px));box-sizing:border-box;padding:6px 8px;background:var(--panel);border:3px solid var(--pink);border-radius:20px;box-shadow:0 3px 0 var(--pink-deep);line-height:1.2}
+.hstrip .hs-ic{flex:none;width:44px;height:36px;object-fit:contain;image-rendering:pixelated;background:#fff8ea;border-radius:10px;padding:3px;box-sizing:content-box}
+.hstrip .hs-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.hstrip .hs-t b{font:800 13px/1.1 var(--f-display);color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hstrip .hs-t small{font:600 11px/1.1 var(--f-display);color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hstrip button{flex:none;min-height:40px;padding:0 11px;font:700 12px/1 var(--f-display);color:var(--ink);background:#fff;border:2px solid var(--edge);border-radius:999px;cursor:pointer}
+.hstrip button:active{background:#fde9c9}
+.hstrip .hs-swap{background:var(--sun,#ffc83d);border-color:var(--sun-deep,#e8a317)}
+body.imm.hstrip .dpad,body.imm.hstrip .act,body.imm.hstrip .sidebtns,body.imm.hstrip .hotbar{visibility:hidden;pointer-events:none}
+/* 抽屜：只留布置面板（選單圖示、說明文字先藏起來），格子才排得下 */
+body.imm.hedit .immgrid,body.imm.hedit .tip,body.imm.hedit .foot,body.imm.hedit #h-hint,body.imm.hedit #h-look{display:none!important}
+body.imm.hedit .side{gap:6px}
+body.imm.hedit #hpanel{padding:8px 10px;gap:8px;border-width:2px;box-shadow:none}
+body.imm.hedit .hsearch{display:none}   /* 手機不放搜尋框：鍵盤會把抽屜蓋掉，分類就夠用 */
+body.imm.hedit #h-inv.furngrid{max-height:none;overflow:visible;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+body.imm.hedit .fcard canvas{height:44px}
+@media (orientation:portrait){
+  body.imm.hedit .side{max-height:40dvh}
+}
+@media (orientation:landscape){
+  body.imm.hedit .side{width:min(300px,46vw)}
+  body.imm.hedit #h-inv.furngrid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  body.imm.hstrip .hstrip{left:auto;right:max(10px,env(safe-area-inset-right,0px));width:min(430px,70vw)}
+}

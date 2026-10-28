@@ -187,7 +187,7 @@ const sideEl = $('side'), menuBtn = $('menubtn');
 function setSide(on) { if (on) hbEl.classList.remove('open'); sideEl.classList.toggle('open', on); sheetOpen = on; document.body.classList.toggle('sheet', on && imm); menuBtn.setAttribute('aria-expanded', on ? 'true' : 'false'); if (on) pressed.length = 0; }
 menuBtn.addEventListener('click', () => setSide(!sideEl.classList.contains('open')));
 $('sideclose').addEventListener('click', () => setSide(false));
-$('game').addEventListener('pointerdown', () => { if (sideEl.classList.contains('open')) setSide(false); });
+$('game').addEventListener('pointerdown', ev => { if (sideEl.classList.contains('open')) { setSide(false); ev.sideTap = true; } });   // sideTap：這一下只是用來收抽屜，布置（decor.js）不要當成放家具
 const fsBtn = $('fs'), docEl = document.documentElement;
 if (docEl.requestFullscreen && document.fullscreenEnabled) {
   fsBtn.hidden = false;

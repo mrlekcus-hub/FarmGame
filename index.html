@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>雷克斯農場</title>
-<meta name="build" content="65b8f6f9d4">
+<meta name="build" content="09ae0a8146">
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="manifest" href="app/manifest.webmanifest">
@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chiron+GoRound+TC:wght@400;600;800&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap">
-<link rel="stylesheet" href="css/style.css?v=532c4f49">
+<link rel="stylesheet" href="css/style.css?v=aafe5078">
 </head><body>
 
 
@@ -64,6 +64,7 @@
     <div class="fade" id="fade"></div>
   </div>
 
+  <div class="hstrip" id="hstrip" hidden></div>
   <div class="hotbar" id="hotbar"></div>
   <div class="sidebtns"><button type="button" class="menubtn" id="bagbtn">背包</button><button type="button" class="menubtn" id="menubtn" aria-expanded="false">☰ 選單<i class="dbadge" id="menubadge" hidden></i></button></div>
 
@@ -97,7 +98,8 @@
     </div>
     <div id="h-edit-box" hidden>
       <div class="v-quick" id="h-tabs"></div>
-      <div class="v-list" id="h-inv"></div>
+      <div id="h-find"><input type="search" id="h-q" class="hsearch" placeholder="搜尋家具…" autocomplete="off" aria-label="搜尋家具"><div class="hcats" id="h-cats"></div></div>
+      <div class="v-list furngrid" id="h-inv"></div>
       <div class="v-quick" id="h-sel" hidden></div>
       <div id="h-paint" hidden></div>
     </div>
@@ -264,7 +266,7 @@
 <script src="js/hotbar.js?v=de8dac48"></script>
 <script src="js/ui.js?v=a39fd06b"></script>
 <script src="js/fishing.js?v=65ad4c52"></script>
-<script src="js/input.js?v=05c56c4c"></script>
+<script src="js/input.js?v=f819183b"></script>
 <script src="js/pwa.js?v=4b7d5452"></script>
 <script src="js/settings.js?v=20949763"></script>
 <script src="js/tv.js?v=68d46f9c"></script>
@@ -286,7 +288,7 @@
 <script src="js/doors.js?v=d8fa98c7"></script>
 <script src="js/social.js?v=5f8c2620"></script>
 <script src="js/hw-cook.js?v=461a2691"></script>
-<script src="js/decor.js?v=bbabefaa"></script>
+<script src="js/decor.js?v=b0559f7f"></script>
 <script src="js/paint.js?v=ae58ce01"></script>
 <script src="js/beds.js?v=f64e3549"></script>
 <script src="js/bath.js?v=9b50f0b1"></script>
@@ -295,7 +297,7 @@
 <script src="js/render.js?v=9b528878"></script>
 <script src="js/sky.js?v=08517a11"></script>
 <script src="js/immersive.js?v=a14952a4"></script>
-<script src="js/update.js?v=195e4c72"></script>
+<script src="js/update.js?v=ab556e5d"></script>
 <script src="js/furniture-fx.js?v=7304670c"></script>
 <script src="js/main.js?v=8be1c52f"></script>
 </body></html>
