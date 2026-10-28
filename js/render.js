@@ -11,9 +11,10 @@ function drawRoom(now) {
   for (let ty = RY; ty < RY + RH; ty++) for (let tx = RX; tx < RX + RW; tx++) drawFloorTile(tx * T, ty * T, tx, ty, fs);
   drawFloorPaint();
   r('rgba(90,60,40,.18)', RX * T, RY * T, RW * T, 2);
-  ob('#ff8fa8', '#d4688a', (RX + 5) * T + 2, (RY + RH) * T + 3, 2 * T - 4, 9); r('#ffd1e0', (RX + 5) * T + 6, (RY + RH) * T + 6, 2 * T - 12, 3);
+  ob('#ff8fa8', '#d4688a', (RX + DX) * T + 2, (RY + RH) * T + 3, 2 * T - 4, 9); r('#ffd1e0', (RX + DX) * T + 6, (RY + RH) * T + 6, 2 * T - 12, 3);
   if (!house) return;
   drawDoorFrames();
+  if (edit.door && edit.on && !visiting) { for (let x = 0; x <= RW - 2; x++) if (x !== DX && doorSpotOk(x)) r('rgba(255,143,168,.28)', (RX + x) * T, (RY + RH) * T + 2, T, 12); }
   const draw1 = it => drawFurn(it, it.x * T + RX * T, it.y * T + RY * T, now);
   house.items.filter(it => (defOf(it.k) || {}).layer === 'flat').forEach(draw1);
   house.items.filter(it => (defOf(it.k) || {}).layer === 'wall').forEach(draw1);

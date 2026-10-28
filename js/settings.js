@@ -43,12 +43,13 @@ $('logout').addEventListener('click', closeSettings);
 
 /* ---------- 拜訪設定：門鈴、謝絕訪客、禁止拜訪名單 ---------- */
 let bellOn = true, visitClosed = false, visitBlocks = [], dtId = null;
+function isBlocked(uid) { return visitBlocks.some(b => b.uid === uid); }
 try { bellOn = localStorage.getItem('dw_bell') !== '0'; } catch (e) { /* 略過 */ }
 const lastBell = new Map();
 function syncVisitUI() {
   $('st-bell').textContent = bellOn ? '開' : '關'; $('st-bell').setAttribute('aria-pressed', String(bellOn));
   $('st-closed').textContent = visitClosed ? '開' : '關'; $('st-closed').setAttribute('aria-pressed', String(visitClosed));
-  $('st-blk').innerHTML = visitBlocks.length ? visitBlocks.map(b => '<div class="strow"><span>' + esc(b.name) + '</span><button type="button" class="btn ghost small" data-u="' + esc(b.uid) + '">解除</button></div>').join('') : '<small class="empty">名單是空的。到好友名片可以加入。</small>';
+  $('st-blk').innerHTML = visitBlocks.length ? visitBlocks.map(b => '<div class="strow"><span>' + esc(b.name) + '</span><button type="button" class="btn ghost small" data-u="' + esc(b.uid) + '">解除</button></div>').join('') : '<small class="empty">名單是空的。到「好友」列表按某位好友的「禁止拜訪」就會加入。</small>';
 }
 async function loadVisitCfg() { try { const d = await rpc('visit_get'); visitClosed = !!d.closed; visitBlocks = d.blocks || []; syncVisitUI(); } catch (e) { /* 伺服器還沒裝就略過 */ } }
 $('st-bell').addEventListener('click', () => { bellOn = !bellOn; try { localStorage.setItem('dw_bell', bellOn ? '1' : '0'); } catch (e) { /* 略過 */ } syncVisitUI(); if (bellOn) chime([79, 72], 0.14); });

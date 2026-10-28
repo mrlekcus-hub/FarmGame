@@ -118,7 +118,7 @@ function renderHousePanel() {
   $('h-title').textContent = vis ? visiting.name + ' 的家' : '我的家';
   $('h-quick').hidden = vis;
   if (vis) {
-    $('h-edit-box').hidden = true; $('h-sel').hidden = true;
+    $('h-edit-box').hidden = true; $('h-sel').hidden = true; $('h-door').hidden = true;
     $('h-hint').textContent = '走到門口按動作鍵離開；面向魚缸、標本架可以看展示品';
     return;
   }
@@ -126,6 +126,7 @@ function renderHousePanel() {
   $('h-edit').textContent = '布置模式：' + (edit.on ? '開' : '關');
   $('h-edit').setAttribute('aria-pressed', edit.on ? 'true' : 'false');
   $('h-edit-box').hidden = !edit.on;
+  $('h-door').hidden = !edit.on; $('h-door').textContent = edit.door ? '🚪 點下方的格子放門（再按取消）' : '🚪 移動門口';
   const pt_ = edit.on && edit.tab === 'paint';
   $('h-inv').hidden = pt_;
   $('h-hint').textContent = !edit.on ? '走到門口按動作鍵回農場' : hold ? '點房間的格子放下 ' + (defOf(hold.k) || {}).name : '點家具選取，按住可以直接拖著移動，按鈕會浮在家具上方；從背包選家具來擺';
@@ -142,8 +143,26 @@ function renderHousePanel() {
   } else { sb_.hidden = true; sb_.innerHTML = ''; }
   renderPaintPanel();
 }
+/* 移動門口：門是兩格寬，貼在房間最下面一排；入口那兩格（門前一排）不能有牆、門或落地家具 */
+edit.door = false;
+const doorSpotOk = x => {
+  if (x < 0 || x > RW - 2 || !house) return false;
+  for (let xx = x; xx <= x + 1; xx++) {
+    if (partAt(xx, RH - 1)) return false;
+    if (house.items.some(it => { const g = itemRect(it); return g && g.layer === 'floor' && xx >= g.x && xx < g.x + g.w && RH - 1 >= g.y && RH - 1 < g.y + g.h; })) return false;
+  }
+  return true;
+};
+function setDoor(x) {
+  if (x === DX) { edit.door = false; renderHousePanel(); return; }
+  if (!doorSpotOk(x)) { toast('這裡放不了門：門前那一排要空著（沒有牆或家具）', 2400); return; }
+  const old = DX;
+  house.door = x; syncHouseSize(); edit.door = false; renderHousePanel();
+  enqueue(() => rpc('house_door_set', { p_x: x })).then(() => toast('門口搬好了', 1500)).catch(e => { house.door = old; syncHouseSize(); toast(errText(e)); });
+}
+$('h-door').addEventListener('click', () => { edit.door = !edit.door; edit.hold = null; edit.sel = null; renderHousePanel(); });
 $('h-edit').addEventListener('click', () => {
-  edit.on = !edit.on; edit.hold = null; edit.sel = null;
+  edit.on = !edit.on; edit.hold = null; edit.sel = null; edit.door = false;
   $('game').classList.toggle('editing', edit.on); renderHousePanel();
 });
 $('h-inv').addEventListener('click', e => {
@@ -375,6 +394,7 @@ $('game').addEventListener('pointerdown', ev => {
   if (camPtrDown(ev)) return;   // 第二根手指落下：雙指平移鏡頭
   if (paintOn()) { paintDown(ev); return; }   // 油漆分頁：交給 paint.js
   const [tx, ty] = tileFromEvent(ev);
+  if (scene === 'house' && edit.on && house && !visiting && edit.door) { setDoor(clamp(tx - RX - (tx - RX === RW - 1 ? 1 : 0), 0, RW - 2)); return; }   // 移動門口模式：點哪格，門的左邊格就放在那；點到最右邊一格就往左靠
   if (scene === 'house' && edit.on && house && !visiting && !edit.hold) {
     const lx = tx - RX, ly = ty - RY, it = lx >= 0 && lx < RW && ly >= -2 && ly < RH ? itemAtLocal(lx, ly) : null;
     if (it) {

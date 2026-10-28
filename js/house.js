@@ -2,6 +2,7 @@
 /* 屋子：室內、家具、布置、進出 —— 雷克斯農場。所有檔案共用同一個全域範圍，載入順序見 index.html。 */
 /* ---------- 屋子：室內房間、家具、布置 ---------- */
 const RX = 4, RY = 5;                             // 地板左上角（地圖格），擴建往右、往下長，所以固定不變
+let DX = 5;                                       // 前門（兩格寬）的左邊格，房間內相對座標 0~RW-2，預設 5；可在布置模式移動
 let RW = 12, RH = 7;                              // 目前房間大小（依階段，applyHouseSize 更新）
 const houseMapW = () => RX * 2 + RW, houseMapH = () => RY + RH + 2;   // 室內場景的地圖格數（階段 0 剛好是 20×14）
 let hkind = [];
@@ -10,7 +11,8 @@ function applyHouseSize(w, h) {
   const mw = houseMapW(), mh = houseMapH();
   hkind = Array.from({ length: mh }, () => Array(mw).fill(TR));
   for (let y = RY; y < RY + RH; y++) for (let x = RX; x < RX + RW; x++) hkind[y][x] = G;
-  hkind[RY + RH][RX + 5] = GT; hkind[RY + RH][RX + 6] = GT;   // 前門：兩格寬（跟門口踏墊一樣大），房間內相對座標 (5~6, RH)；出生點 (6, RH-1)
+  DX = Math.max(0, Math.min(DX, RW - 2));
+  hkind[RY + RH][RX + DX] = GT; hkind[RY + RH][RX + DX + 1] = GT;   // 前門：兩格寬（跟門口踏墊一樣大），房間內相對座標 (DX~DX+1, RH)；出生點 (DX+1, RH-1)
 }
 applyHouseSize(12, 7);
 let house = null;                                // { style, items, cat }
@@ -388,17 +390,24 @@ function applyHouse(d) {
   const sz = d.size || {};
   const walls = typeof d.walls === 'string' && d.walls.length === 1024 ? d.walls : BLANK_WALLS, pt = d.paint || {};
   house = { walls, wl: wallList(walls), paint: { floor: typeof pt.floor === 'string' && pt.floor.length === 1024 ? pt.floor : BLANK_FLOOR, wallpaper: typeof pt.wallpaper === 'string' && pt.wallpaper.length === 128 ? pt.wallpaper : BLANK_WPAPER }, w: sz.w | 0 || 12, h: sz.h | 0 || 7, tier: d.tier | 0, paints: Array.isArray(d.paints) ? d.paints.map(x => ({ idx: x.idx | 0, tier: String(x.tier || 'basic'), coins: +x.coins || 0 })) : [], tiers: Array.isArray(d.tiers) ? d.tiers : [], by, style: d.style || { wall: 0, floor: 0 }, items: (d.items || []).map(i => ({ id: +i.id, k: i.k, x: i.x | 0, y: i.y | 0, f: !!i.f, r: (i.r | 0) & 3 })), cat, list, disp };
+  house.door = Math.max(0, Math.min(d.door !== undefined && d.door !== null && Number.isFinite(+d.door) ? +d.door | 0 : 5, house.w - 2));   // 伺服器還沒裝門口位置功能時維持 5
   syncHouseSize();
 }
 /* applyHouse 之後呼叫：把房間大小套到地圖；人在屋子裡時（例如剛擴建）連場景大小一起更新 */
 function syncHouseSize() {
   if (!house) return;
+  DX = house.door | 0;
   applyHouseSize(house.w, house.h);
   if (scene === 'house') { W = houseMapW(); H = houseMapH(); K = hkind; view.snap = true; fitView(); }
 }
-async function loadHouse() { applyHouse(await rpc('house_get')); }
+/* 門口位置存在獨立的小表，用 house_door_get 另外取；伺服器還沒裝就維持預設 5 */
+async function houseDoorOf(d, uid) {
+  if (d && d.door === undefined) { try { const x = await rpc('house_door_get', uid ? { p_uid: uid } : {}); d.door = x === null || x === undefined ? 5 : +x; } catch (e) { d.door = 5; } }
+  return d;
+}
+async function loadHouse() { applyHouse(await houseDoorOf(await rpc('house_get'))); }
 function reloadHouse() {
-  enqueue(async () => { const [st, hs] = await Promise.all([rpc('get_state'), rpc('house_get')]); applyState(st); applyHouse(hs); refreshHud(); renderHousePanel(); }).catch(e => toast(errText(e)));
+  enqueue(async () => { const [st, hs] = await Promise.all([rpc('get_state'), rpc('house_get').then(houseDoorOf)]); applyState(st); applyHouse(hs); refreshHud(); renderHousePanel(); }).catch(e => toast(errText(e)));
 }
 
 /* ---------- 進出屋子 ---------- */
@@ -410,10 +419,10 @@ async function enterHouse() {
   catch (e) { enterBusy = false; toast('進不了屋子：' + errText(e) + '（再按一次動作鍵可重試）', 7000); return; }
   enterBusy = false;
   if (scene !== 'farm') return;
-  applyHouseSize(house.w, house.h);
+  syncHouseSize();
   scene = 'house'; K = hkind; W = houseMapW(); H = houseMapH();
-  pl.x = pl.sx = RX + 6; pl.y = pl.sy = RY + RH - 1; pl.prog = 1; pl.face = 'up'; pressed.length = 0;
-  edit.on = false; edit.hold = null; edit.sel = null; myShow = null;
+  pl.x = pl.sx = RX + DX + 1; pl.y = pl.sy = RY + RH - 1; pl.prog = 1; pl.face = 'up'; pressed.length = 0;
+  edit.on = false; edit.door = false; edit.hold = null; edit.sel = null; myShow = null;
   $('hpanel').hidden = false; $('game').classList.remove('editing');
   view.snap = true; fitView();
   renderHousePanel();

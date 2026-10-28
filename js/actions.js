@@ -52,6 +52,8 @@ function act() {
     const rpH = remoteAt(x, y);
     if (rpH) { openFriendPop(rpH); return; }
     const lx = x - RX, ly = y - RY, hit = house && lx >= 0 && lx < RW && ly >= -2 && ly < RH ? itemAtLocal(lx, ly) : null;
+    /* 在朋友家碰到任何家具都記給屋主（坐、躺、洗澡、彈琴、照鏡子另外有更詳細的記錄，這裡就不重複） */
+    if (visiting && hit && !edit.on && hit.k !== 'piano' && hit.k !== 'mirror' && !BATH_ACT[hit.k] && !(SEAT[hit.k] && !FX_ACT[hit.k])) visitLog('touch', vlName(hit.k) || '家具');
     if (hit && hit.k === 'dtable') openDishTable(hit);
     else if (hit && hit.k === 'tv' && !edit.on) openTv(hit);
     else if (hit && DISP[hit.k]) { if (visiting) visitShowList(hit); else openDisplay(hit.id); }

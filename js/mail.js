@@ -203,7 +203,12 @@ frCard.addEventListener('click', async e => {
   if (a === 'mail') { closeFriends(); openMail(u); return; }
   if (a === 'pact') { closeFriends(); pactInvite(u, b.dataset.p); return; }
   if (a === 'block') {
-    try { const d = await rpc('visit_block', { p_uid: u, p_on: true }); visitBlocks = d.blocks || []; kickGuest(u); toast('已禁止拜訪，可到設定解除'); } catch (er) { toast(errText(er)); }
+    const was = isBlocked(u);
+    try {
+      const d = await rpc('visit_block', { p_uid: u, p_on: !was }); visitBlocks = d.blocks || [];
+      if (was) toast('已解除禁止拜訪'); else { kickGuest(u); toast('已禁止拜訪，可再按一次或到設定解除'); }
+    } catch (er) { toast(errText(er)); }
+    if (frOpen) renderFriends(); syncVisitUI();
     return;
   }
   if (a === 'visit') {

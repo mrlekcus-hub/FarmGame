@@ -120,7 +120,7 @@ async function loadGifts() {
     if (gs.length) { toast('🎁 收到 ' + gs.map(x => clean(x.from, 8) + ' 送的' + itemName(String(x.item))).slice(0, 3).join('、') + (gs.length > 3 ? ' 等 ' + gs.length + ' 份禮物' : '')); chime([76, 81], 0.12); refreshHud(); }
   } catch (e) { /* 伺服器還沒裝送禮功能就略過 */ }
 }
-function afterReady() { loadVisitCfg(); touchSeen(); loadFriends(); loadBonds(); mailLoad(true); startPresence(); loadQuests(); loadLevel(); rpc('story_get').then(d => { stData = d; }).catch(() => {}); }
+function afterReady() { loadVisitCfg(); if (typeof vlCheck === 'function') vlCheck(); touchSeen(); loadFriends(); loadBonds(); mailLoad(true); startPresence(); loadQuests(); loadLevel(); rpc('story_get').then(d => { stData = d; }).catch(() => {}); }
 function notifyFriend(uid) {
   if (!pres || !pres.ok || !uid) return;
   try { pres.ch.send({ type: 'broadcast', event: 'fr', payload: { to: uid } }); } catch (e) { /* 略過 */ }
@@ -131,7 +131,7 @@ function renderFriends() {
   if (frTarget) {
     const t = frTarget;
     let act;
-    if (isFriend(t.id)) act = pactPanel(t.id) + '<p class="empty">你們已經是好友了。</p><button type="button" class="btn wide ghost" data-a="card" data-u="' + esc(t.id) + '">看 ' + esc(t.name) + ' 的名片</button><button type="button" class="btn wide" data-a="visit" data-u="' + esc(t.id) + '">拜訪 ' + esc(t.name) + ' 的家</button><button type="button" class="btn wide ghost" data-a="block" data-u="' + esc(t.id) + '">禁止 ' + esc(t.name) + ' 拜訪</button>';
+    if (isFriend(t.id)) act = pactPanel(t.id) + '<p class="empty">你們已經是好友了。</p><button type="button" class="btn wide ghost" data-a="card" data-u="' + esc(t.id) + '">看 ' + esc(t.name) + ' 的名片</button><button type="button" class="btn wide" data-a="visit" data-u="' + esc(t.id) + '">拜訪 ' + esc(t.name) + ' 的家</button><button type="button" class="btn wide ghost" data-a="block" data-u="' + esc(t.id) + '">' + (isBlocked(t.id) ? '解除 ' + esc(t.name) + ' 的禁止拜訪' : '禁止 ' + esc(t.name) + ' 拜訪') + '</button>';
     else if (fr.incoming.some(f => f.uid === t.id)) act = '<button type="button" class="btn wide" data-a="accept" data-u="' + esc(t.id) + '">接受 ' + esc(t.name) + ' 的好友申請</button>';
     else if (fr.outgoing.some(f => f.uid === t.id)) act = '<p class="empty">已送出申請，等對方同意。</p>';
     else act = '<button type="button" class="btn wide" data-a="reqid" data-u="' + esc(t.id) + '">加 ' + esc(t.name) + ' 為好友</button>';
@@ -152,6 +152,7 @@ function renderFriends() {
         '<button type="button" class="btn small ghost" data-a="card" data-u="' + esc(f.uid) + '">名片</button>' +
         '<button type="button" class="btn small ghost" data-a="mail" data-u="' + esc(f.uid) + '">寄信</button>' +
         '<button type="button" class="btn small" data-a="visit" data-u="' + esc(f.uid) + '">拜訪</button>' +
+        '<button type="button" class="btn small ghost" data-a="block" data-u="' + esc(f.uid) + '">' + (isBlocked(f.uid) ? '解除禁訪' : '禁止拜訪') + '</button>' +
         (frConfirm === f.uid ? '<button type="button" class="btn small" data-a="remove" data-u="' + esc(f.uid) + '">確定刪除</button>'
                              : '<button type="button" class="btn small ghost" data-a="rmask" data-u="' + esc(f.uid) + '">刪除</button>') + '</div></div>';
     }).join('');

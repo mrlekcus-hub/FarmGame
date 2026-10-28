@@ -452,7 +452,7 @@ async function visitHouse(uid, name) {
   if (!ready || !me || enterBusy || dsOpen) return;
   enterBusy = true;
   try {
-    const d = await withTimeout(rpc('house_visit', { p_uid: uid }), 12000);
+    const d = await withTimeout(rpc('house_visit', { p_uid: uid }).then(x => houseDoorOf(x, uid)), 12000);
     /* 從任何場景拜訪都要先回到農場：小村、森林、山洞、穀倉、造型屋的地圖大小各不相同，不先離開的話，離開朋友家後地圖尺寸會停在錯的值，農場畫面就壞掉 */
     if (scene === 'plaza' || scene === 'tarot') leaveVillage(true);
     if (scene === 'house') leaveHouse(true);
@@ -466,14 +466,15 @@ async function visitHouse(uid, name) {
     pose = null; ownHouse = house; applyHouse(d);
     visiting = { uid, name: clean(d.owner && d.owner.name, 8) || name || '朋友' };
     scene = 'house'; K = hkind; W = houseMapW(); H = houseMapH();
-    pl.x = pl.sx = RX + 6; pl.y = pl.sy = RY + RH - 1; pl.prog = 1; pl.face = 'up'; pressed.length = 0;
-    edit.on = false; edit.hold = null; edit.sel = null; myShow = null;
+    pl.x = pl.sx = RX + DX + 1; pl.y = pl.sy = RY + RH - 1; pl.prog = 1; pl.face = 'up'; pressed.length = 0;
+    edit.on = false; edit.door = false; edit.hold = null; edit.sel = null; myShow = null;
     $('hpanel').hidden = false; $('game').classList.remove('editing');
     view.snap = true; fitView();
     renderHousePanel();
     joinHouseRoom(uid);          // 連上這間屋子的頻道：屋主和其他訪客會即時看到彼此
     ringBell(uid);
     toast('來到 ' + visiting.name + ' 的家了', 2200);
+    visitLog('enter');
   } catch (e) { toast(errText(e)); }
   enterBusy = false;
 }
@@ -497,7 +498,7 @@ function leaveHouse(silent) {
   pose = null;
   sayBye(); stopNet(); remotes.clear(); myBubble = null; vPanel.hidden = true;
   scene = 'farm'; K = kind; W = BW; H = BH;
-  if (visiting) { house = ownHouse; ownHouse = null; visiting = null; syncHouseSize(); } edit.on = false; edit.hold = null; edit.sel = null; myShow = null;
+  if (visiting) { visitLog('leave'); house = ownHouse; ownHouse = null; visiting = null; syncHouseSize(); } edit.on = false; edit.door = false; edit.hold = null; edit.sel = null; myShow = null;
   $('hpanel').hidden = true; $('game').classList.remove('editing');
   pl.x = pl.sx = 4; pl.y = pl.sy = 4; pl.prog = 1; pl.face = 'down'; pressed.length = 0;
   view.snap = true; fitView();

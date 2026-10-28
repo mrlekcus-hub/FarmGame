@@ -35,7 +35,7 @@ function paintBuild(a, b) {
   } else { which = L; rpcName = 'house_paint_rect'; args = { p_kind: L, ...box, p_key: key }; }
   let ok = true;
   if (L === 'wall' && !erase && !recolor) {
-    ok = !cells.some(([x, y]) => (paint.kind === 'wall' && x === 6 && y === RH - 1) ||
+    ok = !cells.some(([x, y]) => (paint.kind === 'wall' && x === DX + 1 && y === RH - 1) ||
       house.items.some(it => { const g = itemRect(it); return g && g.layer === 'floor' && x >= g.x && x < g.x + g.w && y >= g.y && y < g.y + g.h; }));
   }
   return { cells, which, rpc: rpcName, args, erase, recolor, ok };

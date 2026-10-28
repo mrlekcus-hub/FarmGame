@@ -121,11 +121,13 @@ dtCard.addEventListener('click', async e => {
       else if (dsOpen && dtId != null) renderDish();
       return;
     }
+    const k0 = a === 'put' ? b.dataset.k : (((house && house.disp[id]) || [])[s] || {}).k;
     const call = a === 'put' ? () => rpc('dish_table_put', { p_id: id, p_key: b.dataset.k, p_n: 1 })
       : a === 'take' ? () => rpc('dish_table_take', { p_id: id, p_slot: s }) : () => rpc('dish_table_eat', { p_id: id, p_slot: s });
     const r = await enqueue(call);
     if (!r || typeof r !== 'object') throw new Error('伺服器沒有回應內容');
     if (r.inv) Object.assign(inv, r.inv);
+    if (visiting && k0) visitLog(a === 'put' ? 'dish_put' : a === 'take' ? 'dish_take' : 'dish_eat', dishName(k0));   // 記給屋主看
     if (!Array.isArray(r.display)) { reloadHouse(); }
     const disp = []; (r.display || []).forEach(x => { disp[x.s | 0] = { t: 'dish', k: String(x.k), n: x.n | 0 }; });
     if (house) house.disp[id] = disp;

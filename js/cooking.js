@@ -128,6 +128,7 @@ async function cookFinish(ok) {
   }
   if (cooking === c) cooking = null;
   ckSend(made ? 'done' : 'fail', c);
+  if (made && c.host && visiting) visitLog('cook', rc.name);   // 在朋友家煮菜：記給屋主看
   if (made && !c.hw) loadLevel();   // 伺服器已加經驗，重新抓等級（升級彈窗也在裡面）
   const xp = srvXp ? ' · 烹飪經驗 +' + srvXp : '';
   dishIcon(catchCv.getContext('2d'), rc.key);
