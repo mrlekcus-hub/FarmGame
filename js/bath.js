@@ -8,6 +8,8 @@ const BATH_KEYS = ['toilet', 'bathtub', 'ofuro', 'shower', 'sink', 'stool', 'was
 
 /* 正在播放的效果：家具 id → { t0, dur }；畫面用 performance.now() 計時（和 requestAnimationFrame 的 now 同一條時間軸） */
 const bathFx = new Map();
+/* 這件家具上現在有沒有人（自己或同一間屋子裡的朋友）在坐／躺／站著用；體重計和健身器材靠它決定要不要亮、要不要動 */
+const seatOcc = it => !!(it && it.id != null && ((pose && pose.id === it.id) || seatTaken(it)));
 function bathStart(id, dur) { bathFx.set(id, { t0: performance.now(), dur }); }
 function bathOn(id, now) {   // 還在播放就回傳 0~1 的進度，結束了回傳 -1
   const f = bathFx.get(id); if (!f) return -1;
@@ -128,8 +130,10 @@ Object.assign(DCONT, {
     r('#ff5a5a', px + 3, py + 4, 3, 3);                // 運轉燈
     if (Math.floor(now / 90) % 2) r('#ffffff', px + 7, py + 9, 2, 1);
   },
-  scale(it, px, py, now) {                             // 站上去：螢幕數字亂跳，最後停在「輕」
-    const p = bathOn(it.id, now); if (p < 0) return;
+  scale(it, px, py, now) {                             // 有人站上去（自己或朋友）：螢幕數字亂跳，之後停在「輕」，人在上面就一直亮著，離開才熄
+    const bo = bathOn(it.id, now);                     // 轉過方向的體重計站不上去，只會播一下短短的亮燈
+    if (!seatOcc(it) && bo < 0) return;
+    const own = pose && pose.id === it.id, p = own ? Math.min(1, (performance.now() - pose.scale) / BATH_ACT.scale.ms) : bo >= 0 ? bo : 1;   // 別人站上去的時間我不知道，直接看停好的樣子
     r('#2f5a2f', px + 5, py + 4, 6, 3);
     if (p < 0.55) { const t = Math.floor(now / 70); for (let i = 0; i < 3; i++) if ((t + i) % 2) r('#bfe6c0', px + 6 + i * 2, py + 5, 1, 1); }
     else { r('#bfe6c0', px + 6, py + 5, 4, 1); r('#ff8fa8', px + 11, py + 3, 2, 2); }
@@ -251,7 +255,7 @@ const BATH_ACT = {
   shower: { hint: '進去淋浴', ms: 4500, say: '嘩啦啦～', col: '#8fd3f4', done: '洗得香香的！', toast: '洗好澡了，整個人清爽！' },
   sink:   { hint: '洗手', ms: 2600, say: '洗手手～', col: '#8fd3f4', done: '乾乾淨淨！', toast: null },
   washer: { hint: '洗衣服', ms: 6000, say: '嗡嗡嗡…', col: '#cfe8f7', done: '洗好了！', toast: null },
-  scale:  { hint: '站上去量體重', ms: 3200, say: '嗶…', col: '#bfe6c0', done: null, toast: null },
+  scale:  { hint: '站上去量體重', ms: 3200, say: '嗶…', col: '#bfe6c0', done: null, toast: null },   // ms：數字亂跳多久才停好（站上去之後是維持性的，沒有自動下來）
   towel:  { hint: '拿毛巾擦乾', ms: 1800, say: '擦擦擦～', col: '#ffb3c6', done: null, toast: '擦得乾乾爽爽，毛巾軟軟香香的' }
 };
 /* 淋浴間：走進去洗。轉過方向的淋浴間改回原本的「站在外面按一下出水」。 */
@@ -272,9 +276,7 @@ function scaleEnter(it, a) {
   const bx = RX + it.x, by = RY + it.y, tok = performance.now();
   pose = { type: 'sit', id: it.id, ix: it.x, iy: it.y, ox: pl.x, oy: pl.y, face0: pl.face, tile: 0, sort: by + 0.02, t: 0, scale: tok };
   pl.x = pl.sx = bx; pl.y = pl.sy = by; pl.prog = 1; pl.face = 'down'; pressed.length = 0;
-  bathStart(it.id, a.ms);                              // 螢幕數字亂跳，最後停在「輕」
-  lastPosKey = ''; posAcc = 999; trackSelf();
-  setTimeout(() => { if (pose && pose.scale === tok) standUp(); }, a.ms);
+  lastPosKey = ''; posAcc = 999; trackSelf();          // 螢幕數字亂跳 a.ms 毫秒後停在「輕」；維持到自己按方向鍵或動作鍵下來為止，不會自己結束
   return true;
 }
 function bathAct(it, x, y) {

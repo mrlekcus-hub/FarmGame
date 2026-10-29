@@ -187,7 +187,7 @@ function update(dt) {
     else if (furn && (!pit || pit.x !== pose.ix || pit.y !== pose.iy)) standUp();
     else {
       pose.t += dt;
-      if (pose.type === 'lie' && pose.t > 2400) { pose.t = 0; pop(pl.x, pl.y - 0.6, 'Zzz', '#cfe8f7'); }
+      if (pose.type === 'lie' && !pose.gym && pose.t > 2400) { pose.t = 0; pop(pl.x, pl.y - 0.6, 'Zzz', '#cfe8f7'); }
       if (pressed.length) standUp();
     }
   }

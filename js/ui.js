@@ -108,7 +108,7 @@ function updateTip() {
     s = fishing.phase === 'bite' ? '魚咬鉤了！快按動作鍵拉竿！' : fishing.phase === 'cast' ? '拋竿…' : fishing.phase === 'reel' ? '拉起來…' : '等魚上鉤…看到「!」立刻按動作鍵。太早拉會嚇跑魚。';
   } else if (scene === 'house') {
     s = visiting ? '這是 ' + visiting.name + ' 的家，隨意參觀吧。' : '這是你的家。按「布置模式」可以擺放家具。';
-    if (pose) s = pose.scale ? '站在體重計上…按方向鍵或動作鍵可以下來。' : pose.shower ? '淋浴中…按方向鍵或動作鍵可以提早出來。' : (pose.type === 'lie' ? '躺著休息中…' : '坐著休息中…') + '按方向鍵或動作鍵起身。';
+    if (pose) s = pose.gym ? '正在用' + ((GYM[pose.gym] || {}).name || '健身器材') + '…按方向鍵或動作鍵可以離開。' : pose.scale ? '站在體重計上…按方向鍵或動作鍵可以下來。' : pose.shower ? '淋浴中…按方向鍵或動作鍵可以提早出來。' : (pose.type === 'lie' ? '躺著休息中…' : '坐著休息中…') + '按方向鍵或動作鍵起身。';
     else
     if (x >= 0 && y >= 0 && x < W && y < H) {
       const lx = x - RX, ly = y - RY, hit = house && lx >= 0 && lx < RW && ly >= -2 && ly < RH ? itemAtLocal(lx, ly) : null;

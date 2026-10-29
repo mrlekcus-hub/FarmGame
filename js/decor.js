@@ -51,7 +51,7 @@ dsEl.addEventListener('click', e => { if (e.target === dsEl) closeDisplay(); });
 
 /* ---------- 家具面板：圖卡、分類、搜尋；手機版選好家具後抽屜收成底部小條 ---------- */
 const furnUi = { cat: 'all', q: '', sig: '' };
-const FCATS = [['all', '全部'], ['sleep', '睡覺'], ['living', '客廳'], ['bath', '浴室'], ['kitchen', '廚房'], ['wall', '牆面'], ['rug', '地毯'], ['deco', '擺飾']];
+const FCATS = [['all', '全部'], ['sleep', '睡覺'], ['living', '客廳'], ['bath', '浴室'], ['kitchen', '廚房'], ['gym', '健身'], ['wall', '牆面'], ['rug', '地毯'], ['deco', '擺飾']];
 /* 伺服器目錄沒有分類欄位，這裡用 key 名稱和 layer 分；認不得的一律歸「擺飾」 */
 function furnCat(c) {
   const k = c.key;
@@ -59,6 +59,7 @@ function furnCat(c) {
   if (c.layer === 'flat') return 'rug';
   if (/^(bed|dbed)(_|$)|^wardrobe/.test(k)) return 'sleep';
   if (/toilet|bath|tub|sink|shower|basin/.test(k) || (typeof BATH_FURN !== 'undefined' && BATH_FURN[k]) || (typeof TOILET_FURN !== 'undefined' && TOILET_FURN[k])) return 'bath';
+  if (typeof GYM !== 'undefined' && GYM[k]) return 'gym';
   if (/^(kitchen|fridge|stove|counter|oven)/.test(k)) return 'kitchen';
   if (/^(sofa|table|chair|shelf|tv|piano|cat|fireplace|lamp|dtable|armchair)/.test(k)) return 'living';
   return 'deco';

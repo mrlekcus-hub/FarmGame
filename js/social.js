@@ -200,7 +200,10 @@ function onPact(p) {
   const rp = remotes.get(p.i);
   if (!rp || !PACTS[p.a]) return;
   if (p.t === 'up') { if (pose && pose.pair === p.i) standUp(); return; }      // 坐在地上：對方起身，我也跟著起身
-  if (p.to !== myUid) return;
+  if (p.to !== myUid) {                        // 不是對我說的：旁觀。雙方一同意（ok），旁邊的人也播兩人的動畫
+    if (p.t === 'ok' && p.i !== myUid && typeof p.to === 'string') watchPact(p.a, rp, remotes.get(p.to));
+    return;
+  }
   if (p.t === 'req') {
     const P = PACTS[p.a];
     if (!isFriend(p.i) || bondOf(p.i).lv < P.need || fishing || pose || !syncScene() || !nearRemote(rp) || pIn) { sendPact(p.i, 'no', p.a); return; }
@@ -251,6 +254,20 @@ async function pactAccept() {
     if (r.first_photo) { bondPhoto = true; photoReward(); }
     if (frOpen) renderFriends();
   }
+}
+/* 旁觀別人的雙人動作：a 是按同意的人、b 是邀請的人，兩個都在這間房才播（坐在地上本來就靠位置同步，不用特別處理） */
+function watchPact(act, a, b) {
+  const P = PACTS[act], now = performance.now();
+  if (!P || !P.anim || !a || !b || !hereRp(a) || !hereRp(b)) return;
+  const dx = b.tx - a.tx, dy = b.ty - a.ty;
+  if (Math.abs(dx) + Math.abs(dy) > 2) return;   // 兩個人離太遠就不是在互動
+  const sx = Math.sign(dx), sy = Math.sign(dy), mx = (a.tx + b.tx) / 2, my = (a.ty + b.ty) / 2 - 0.6;
+  a.anim = { id: P.anim, t0: now, face: dirTo(dx, dy), sx, sy };
+  b.anim = { id: P.anim, t0: now, face: dirTo(-dx, -dy), sx: -sx, sy: -sy };
+  if (act === 'clap') pop(mx, my, '✋', '#ffffff');
+  else if (act === 'dance') { pop(mx, my, '♪', '#ffd34d'); setTimeout(() => pop(mx, my, '♫', '#ff8fa8'), 1400); }
+  else if (act === 'hug') { pop(mx, my, '❤️', '#ff8fa8'); setTimeout(() => pop(mx, my, '❤️', '#ff8fa8'), 900); }
+  else if (act === 'photo') setTimeout(() => pop(mx, my, '📸', '#ffffff'), 1000);
 }
 /* 兩邊同時開始動作：各自在自己的畫面上播自己和對方的動畫 */
 function startPact(act, rp) {

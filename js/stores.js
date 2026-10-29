@@ -44,6 +44,9 @@ const lookOwned = (k, i) => {
 /* 這個款式我可以穿的顏色（免費款、舊版買過的＝全部；新版買的＝只有買過的顏色） */
 const lookCols = (k, i) => LOOK_COLS[k].map((_, c) => c).filter(c => lookHave(k, i, c));
 let lookToday = null, ssTab = 'style';
+/* GM 帳號（me.gm）：所有商店直接列出全部商品，不受每日隨機上架限制（只是畫面；買不買得到看後端） */
+const isGmShop = () => !!(me && me.gm);
+const gmLookSel = {};
 /* 後端 look_daily 還沒更新時的後備：用「帳號＋日期」做種子，同一天同一個人永遠抽到一樣的 6 款＋顏色 */
 function lookPickLocal(day) {
   let s = 0; for (const ch of String(me && me.username || '')) s = (Math.imul(s, 31) + ch.codePointAt(0)) | 0;
@@ -60,6 +63,7 @@ const lookDailyOk = d => d && ['style', 'hat', 'glass'].every(k => Array.isArray
 async function loadLookToday() {
   const day = sellDayNow();
   if (lookToday && lookToday.day === day) return;
+  if (isGmShop()) { lookToday = lookPickLocal(day); return; }
   try {
     const d = await enqueue(() => rpc('look_daily'));
     if (lookDailyOk(d)) { lookToday = { day: d.day != null ? d.day : day, style: d.style, hat: d.hat, glass: d.glass }; return; }
@@ -68,11 +72,11 @@ async function loadLookToday() {
 }
 function renderStyleShop(head, cur, coins, S) {
   const tabs = Object.keys(LOOK_KIND).map(k => '<button type="button" class="cb" data-a="stab" data-c="' + k + '" aria-pressed="' + (ssTab === k) + '">' + LOOK_KIND[k].ic + ' ' + LOOK_KIND[k].n + '</button>').join('');
-  const k = ssTab, ck = LOOK_COLKEY[k], today = lookToday ? lookToday[k] : [];
+  const k = ssTab, ck = LOOK_COLKEY[k], gm = isGmShop(), today = gm ? LOOK_POOL[k].map(i => ({ i, c: gmLookSel[k + ':' + i] != null ? gmLookSel[k + ':' + i] : LOOK_COLPOOL[k][0] })) : (lookToday ? lookToday[k] : []);
   const rows = today.map(({ i, c }) => {
     const own = lookHave(k, i, c), now = cur[k] === i && cur[ck] === c, pr = LOOK_PRICE[k][i] || 0;
     return '<div class="row"><canvas width="16" height="22" data-k="' + k + '" data-i="' + i + '" data-c="' + c + '" style="width:48px;height:66px;image-rendering:pixelated;flex:none"></canvas>' +
-      '<div class="meta"><b>' + esc(LOOK_NAMES[k][i]) + ' <span class="sw" style="--c:' + LOOK_COLS[k][c] + ';display:inline-block;width:14px;height:14px;vertical-align:-2px;opacity:1;cursor:default;pointer-events:none" aria-label="今日顏色"></span></b><small>今日新品 · ' + (now ? '目前穿著' : own ? '已擁有' : pr + ' G') + '</small></div>' +
+      '<div class="meta"><b>' + esc(LOOK_NAMES[k][i]) + ' <span class="sw" style="--c:' + LOOK_COLS[k][c] + ';display:inline-block;width:14px;height:14px;vertical-align:-2px;opacity:1;cursor:default;pointer-events:none" aria-label="今日顏色"></span></b>' + (gm ? '<div class="sws" style="gap:4px;margin:4px 0;flex-wrap:wrap">' + LOOK_COLPOOL[k].map(cc => '<button type="button" class="sw" data-a="lpick" data-k="' + k + '" data-i="' + i + '" data-c="' + cc + '" aria-pressed="' + (cc === c) + '" style="--c:' + LOOK_COLS[k][cc] + ';width:20px;height:20px;border-width:2px"></button>').join('') + '</div>' : '') + '<small>' + (gm ? 'GM 全部款式 · ' : '今日新品 · ') + (now ? '目前穿著' : own ? '已擁有' : pr + ' G') + '</small></div>' +
       (now ? '' : '<button type="button" class="btn small" data-a="' + (own ? 'wear' : 'buy') + '" data-k="' + k + '" data-i="' + i + '" data-c="' + c + '"' + (syBusy || (!own && coins < pr) ? ' disabled' : '') + '>' + (own ? '穿上' : '買並穿上') + '</button>') + '</div>';
   }).join('');
   syCard.innerHTML = head + '<div class="tabs2">' + tabs + '</div>' +
@@ -112,6 +116,11 @@ const fitDayPick = {};
 async function loadFitToday() {
   try {
     fitToday = await enqueue(() => rpc('fit_daily'));
+    if (isGmShop()) {   // GM：列出所有要買的衣服（今天上架的沿用後端的顏色與價錢，其餘價錢由後端決定）
+      const by = {}; fitToday.items.forEach(x => { by[x.i] = x; });
+      const all = []; for (let i = FREE_N.fits; i < FITS.length; i++) all.push(by[i] || { i, c: 0, p: null });
+      fitToday = Object.assign({}, fitToday, { items: all, gm: true });
+    }
     fitToday.items.forEach(({ i, c }) => {
       const k = fitToday.day + ':' + i;
       if (fitDayPick[k] == null) fitDayPick[k] = Number.isInteger(c) ? c : 0;
@@ -128,12 +137,12 @@ function renderFitShop(head, cur, coins) {
     let n = 0; for (let c = 0; c < NC; c++) if (fcHave(i, c)) n++;
     const sel = fitSel[i] != null ? fitSel[i] : firstOwn(i), own = fcHave(i, sel), now = cur.fits === i && cur.outfit === sel;
     const sws = '<span class="sw fsw' + (fcHave(i, sel) ? ' own' : '') + '" style="--c:' + OUTFITS[sel] + ';opacity:1;cursor:default" aria-label="今日顏色"></span>';
-    const act = now ? '<small>目前穿著</small>' : '<button type="button" class="btn small" data-a="' + (own ? 'fwear' : 'fbuy') + '" data-i="' + i + '" data-c="' + sel + '"' + (syBusy || (!own && coins < p) ? ' disabled' : '') + '>' + (own ? '穿上' : '買並穿上 ' + p + ' G') + '</button>';
+    const act = now ? '<small>目前穿著</small>' : '<button type="button" class="btn small" data-a="' + (own ? 'fwear' : 'fbuy') + '" data-i="' + i + '" data-c="' + sel + '"' + (syBusy || (!own && coins < p) ? ' disabled' : '') + '>' + (own ? '穿上' : '買並穿上' + (p == null ? '' : ' ' + p + ' G')) + '</button>';
     return '<div class="row" style="align-items:flex-start"><canvas width="16" height="22" data-i="' + i + '" data-c="' + sel + '" style="width:48px;height:66px;image-rendering:pixelated;flex:none"></canvas>' +
-      '<div class="meta"><b>' + esc(FITS[i]) + '</b><small>今日顏色 ' + p + ' G · 已收集 ' + n + '/' + NC + (n >= NC ? ' ✅' : '') + '</small>' +
-      '<div class="sws" style="gap:5px;margin:6px 0">' + sws + '</div>' + act + '</div></div>';
+      '<div class="meta"><b>' + esc(FITS[i]) + '</b><small>' + (fitToday.gm ? '' : '今日顏色 ') + (p == null ? '' : p + ' G · ') + '已收集 ' + n + '/' + NC + (n >= NC ? ' ✅' : '') + '</small>' +
+      '<div class="sws" style="gap:5px;margin:6px 0;flex-wrap:wrap">' + (fitToday.gm ? OUTFITS.map((oc, ci) => '<button type="button" class="sw fsw' + (fcHave(i, ci) ? ' own' : '') + '" data-a="pick" data-i="' + i + '" data-c="' + ci + '" aria-pressed="' + (ci === sel) + '" style="--c:' + oc + ';width:22px;height:22px;border-width:2px"></button>').join('') : sws) + '</div>' + act + '</div></div>';
   }).join('');
-  syCard.innerHTML = head + '<p style="margin:0 0 6px;font-size:12px;opacity:.7">今天上架 ' + fitToday.items.length + ' 件，每件只有一種顏色，GMT+8 0 點換新。每天來看看，慢慢買齊同一件的 ' + NC + ' 種顏色會得到成就。</p>' + rows + tail;
+  syCard.innerHTML = head + '<p style="margin:0 0 6px;font-size:12px;opacity:.7">' + (fitToday.gm ? 'GM：全部 ' + fitToday.items.length + ' 件、所有顏色都列出來了。' : '今天上架 ' + fitToday.items.length + ' 件，每件只有一種顏色，GMT+8 0 點換新。每天來看看，慢慢買齊同一件的 ' + NC + ' 種顏色會得到成就。') + '</p>' + rows + tail;
   syCard.querySelectorAll('canvas[data-i]').forEach(cv => {
     const c2 = cv.getContext('2d'); c2.clearRect(0, 0, 16, 22); g = c2;
     try { drawPlayer(0, 6, 'down', false, 0, { ...cur, fits: +cv.dataset.i, outfit: +cv.dataset.c }); } catch (e) { /* 略過 */ }
@@ -143,8 +152,11 @@ function renderFitShop(head, cur, coins) {
 /* ---------- 家具店（小村右上角）：家具只在這裡買，每天隨機上架 6 件；牆面、地板常駐 ---------- */
 let fyTab = 'furn';
 let furnToday = null;   // 後端 furn_daily：今天上架的 6 件（每個玩家各自、GMT+8 換日）
-async function loadFurnToday() {
-  try { const d = await enqueue(() => rpc('furn_daily')); furnToday = { day: d.day, keys: d.items || [] }; }
+async function loadFurnToday(gmAll) {   // gmAll：家具店畫面用，GM 帳號直接列出目錄裡全部家具（電視情報照舊只報今日上架）
+  try {
+    const d = await enqueue(() => rpc('furn_daily')); furnToday = { day: d.day, keys: d.items || [] };
+    if (gmAll && isGmShop() && house) furnToday.keys = house.list.filter(c => ['floor', 'flat', 'wall'].includes(c.layer)).map(c => c.key);
+  }
   catch (e) { furnToday = null; toast(errText(e)); }
 }
 const furnDailyList = () => (furnToday ? furnToday.keys : []).map(k => house.cat[k]).filter(Boolean);
@@ -190,10 +202,11 @@ syCard.addEventListener('click', async e => {
     syStage = a;
     if (a === 'list' && syKind === 'fit') await loadFitToday();
     if (a === 'list' && syKind === 'hair') await loadLookToday();
-    if (a === 'list' && syKind === 'furn') { if (!house) { try { await enqueue(() => loadHouse()); } catch (err) { toast(errText(err)); } } await loadFurnToday(); }
+    if (a === 'list' && syKind === 'furn') { if (!house) { try { await enqueue(() => loadHouse()); } catch (err) { toast(errText(err)); } } await loadFurnToday(true); }
     renderSty(); return;
   }
   if (a === 'stab') { ssTab = b.dataset.c; renderSty(); return; }
+  if (a === 'lpick') { gmLookSel[b.dataset.k + ':' + b.dataset.i] = +b.dataset.c; renderSty(); return; }
   if (a === 'ytab') { fyTab = b.dataset.c; renderSty(); return; }
   if (a === 'ybuy' || a === 'ypat') {
     syBusy = true; renderSty();

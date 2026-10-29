@@ -242,7 +242,7 @@ function draw(now) {
           { const q = bedTag(pit, pose.slot); nameTag(ch.name, q[0], q[1], '#ffffff'); }
         } else {
           drawSeated(px, py, pit, ch);
-          nameTag(ch.name, px + 8, py - (pit.k === 'shower' ? 19 : pit.k === 'scale' ? 29 : 7), '#ffffff');
+          seatNameTag(ch.name, pit, px, py, '#ffffff');
         }
       } });
     } else if (pose && ((pose.bench && scene === 'plaza') || (pose.ground && syncScene()))) {
@@ -273,7 +273,7 @@ function draw(now) {
   if (syncScene()) remotes.forEach(rp => hereRp(rp) && ents.push({ y: (() => {
     /* 別人坐椅子／躺床：排序要跟自己一樣放在家具前面，不然會被家具蓋住看不清楚 */
     const f0 = rp.fs && Math.abs(rp.tx - rp.x) + Math.abs(rp.ty - rp.y) <= 0.05 ? seatItemAt(rp.tx, rp.ty, rp.fs) : null;
-    return f0 ? RY + f0.y + dimsOf(f0.k, 0).h - 1 + 0.02 : rp.y;
+    return f0 ? RY + f0.y + dimsOf(f0.k, f0.r | 0).h - 1 + 0.02 : rp.y;   // 床轉過方向時高度會變，要用轉過的尺寸，排序才會和自己躺床時一樣
   })(), draw: () => {
     const mv = Math.abs(rp.tx - rp.x) + Math.abs(rp.ty - rp.y) > 0.05;
     const px = Math.round(rp.x * T), py = Math.round(rp.y * T);
@@ -281,7 +281,7 @@ function draw(now) {
     const fit = rp.fs && !mv ? seatItemAt(rp.tx, rp.ty, rp.fs) : null;
     if (fit) {
       if (rp.fs === 4) { const sl = bedSlotAt(fit, rp.tx, rp.ty); drawLying(fit, rp.char, sl); const q = bedTag(fit, sl); nameTag(rp.name, q[0], q[1], '#fff3b0'); }
-      else { drawSeated(px, py, fit, rp.char, Math.round(rp.x) - (RX + fit.x)); nameTag(rp.name, px + 8, py - (fit.k === 'shower' ? 19 : fit.k === 'scale' ? 29 : 7), '#fff3b0'); }
+      else { drawSeated(px, py, fit, rp.char, Math.round(rp.x) - (RX + fit.x)); seatNameTag(rp.name, fit, px, py, '#fff3b0'); }
       return;
     }
     if (seated) drawBenchSeated(px, py, rp.char);

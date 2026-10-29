@@ -148,11 +148,11 @@ function renderFriends() {
     const list = fr.friends.slice().sort((a, b) => (onlineMap.has(b.uid) ? 1 : 0) - (onlineMap.has(a.uid) ? 1 : 0));
     h += list.map(f => {
       const w = onlineMap.get(f.uid);
-      return '<div class="frow"><div class="meta"><b><span class="fdot' + (w ? ' on' : '') + '"></span>' + esc(f.name) + ' <span class="bondtag" title="友情等級">❤️Lv.' + bondOf(f.uid).lv + '</span></b><small>@' + esc(f.username) + ' · ' + (w ? WHERE[w] : agoText(+seenMap[f.uid] || 0)) + '<br>' + bondLine(bondOf(f.uid)) + '</small></div><div class="acts">' +
+      return '<div class="frow fr2"><div class="meta"><b><span class="fdot' + (w ? ' on' : '') + '"></span>' + esc(f.name) + ' <span class="bondtag" title="友情等級">❤️Lv.' + bondOf(f.uid).lv + '</span></b><small>@' + esc(f.username) + ' · ' + (w ? WHERE[w] : agoText(+seenMap[f.uid] || 0)) + '<br>' + bondLine(bondOf(f.uid)) + '</small></div><div class="acts">' +
         '<button type="button" class="btn small ghost" data-a="card" data-u="' + esc(f.uid) + '">名片</button>' +
         '<button type="button" class="btn small ghost" data-a="mail" data-u="' + esc(f.uid) + '">寄信</button>' +
         '<button type="button" class="btn small" data-a="visit" data-u="' + esc(f.uid) + '">拜訪</button>' +
-        '<button type="button" class="btn small ghost" data-a="block" data-u="' + esc(f.uid) + '">' + (isBlocked(f.uid) ? '解除禁訪' : '禁止拜訪') + '</button>' +
+        '<button type="button" class="btn small ghost" data-a="block" data-u="' + esc(f.uid) + '">' + (isBlocked(f.uid) ? '解禁' : '禁訪') + '</button>' +
         (frConfirm === f.uid ? '<button type="button" class="btn small" data-a="remove" data-u="' + esc(f.uid) + '">確定刪除</button>'
                              : '<button type="button" class="btn small ghost" data-a="rmask" data-u="' + esc(f.uid) + '">刪除</button>') + '</div></div>';
     }).join('');
