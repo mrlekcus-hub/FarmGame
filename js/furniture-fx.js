@@ -122,6 +122,23 @@ FURN.paint2 = (px, py) => {                          // 午後草原：雲慢慢
   r('#8fe09a', px + 4, py + 9, 24, 3); r('#7fd08a', px + 8, py + 7, 8, 5);
   for (let i = 0; i < 6; i++) r('#7fd08a', px + 5 + i * 4 + (i % 2 ? sw : 1 - sw), py + 8, 1, 1);
 };
+FURN.boatmodel = (px, py) => {                       // 小船模型（碼頭貢獻榜限定，掛牆 2×1）：船上下搖、煙囪冒煙、旗子飄、海浪流動、雲飄過
+  const t = fxT(), bob = Math.floor(t / 700) % 2, wv = Math.floor(t / 350) % 4, fl = Math.floor(t / 300) % 3, sm = (t / 900) % 1, cx = Math.floor(t / 450) % 22;
+  ob('#e8b27a', '#9b6a44', px + 0, py + 1, 32, 15);
+  r('#9fdcff', px + 2, py + 3, 28, 9); r('#c9ecff', px + 2, py + 3, 28, 3);
+  r('#ffffff', px + 3 + cx, py + 4, 4, 1); r('#ffffff', px + 4 + cx, py + 3, 2, 1);
+  r('#ffe08a', px + 25, py + 4, 3, 3);
+  r('#4aa0e0', px + 2, py + 10, 28, 2);
+  const by = py + (bob ? 0 : 1);
+  ob('#e8453c', '#a82c26', px + 9, by + 4, 10, 2); ob('#ffffff', '#9fb3c8', px + 10, by + 6, 8, 3); r('#8fd3ff', px + 11, by + 7, 2, 1); r('#8fd3ff', px + 15, by + 7, 2, 1);
+  ob('#7a8590', '#4a5560', px + 12, by + 2, 3, 3); r('#e8453c', px + 12, by + 3, 3, 1);
+  if (sm < 0.9) { g.globalAlpha = 1 - sm; r('#ffffff', px + 13 + Math.round(sm * 3), by + 1 - Math.round(sm * 3), 2, 2); g.globalAlpha = 1; }
+  ob('#3f7fc4', '#243a66', px + 5, by + 9, 20, 3); r('#ffffff', px + 6, by + 9, 18, 1); r('#e8453c', px + 7, by + 10, 16, 1);
+  [8, 15, 21].forEach(bx => r('#ff8a3a', px + bx, by + 10, 2, 2));
+  r('#5e3a24', px + 20, by + 1, 1, 5); r('#ffd34d', px + 21, by + 1, 3 - (fl === 1 ? 1 : 0), 2);
+  for (let i = 0; i < 5; i++) r('#bfe6ff', px + 2 + (i * 7 + wv * 2) % 28 - ((i * 7 + wv * 2) % 28 > 25 ? 3 : 0), py + 12, 3, 1);
+  r('#3a8ac8', px + 2, py + 13, 28, 1);
+};
 FURN.wreath = (px, py) => {                          // 花圈：一圈小燈一直輪流閃（節慶換顏色），偶爾飄下一片花瓣
   const t = fxT(), fest = fxFest();
   rr('#7fd08a', px + 2, py + 2, 12, 3); rr('#7fd08a', px + 2, py + 11, 12, 3); rr('#7fd08a', px + 2, py + 2, 3, 12); rr('#7fd08a', px + 11, py + 2, 3, 12);
@@ -160,14 +177,14 @@ FURN.vase = (px, py, now) => {
 };
 
 /* ---------- 按動作鍵 ---------- */
-const FX_ACT = { lamp: 1, fireplace: 1, globe: 1, clock: 1, plant: 1, cat: 1, window: 1, lantern: 1, rug: 1, rug2: 1, paint1: 1, paint2: 1, wreath: 1, vase: 1 };
+const FX_ACT = { lamp: 1, fireplace: 1, globe: 1, clock: 1, plant: 1, cat: 1, window: 1, lantern: 1, rug: 1, rug2: 1, paint1: 1, paint2: 1, boatmodel: 1, wreath: 1, vase: 1 };
 function fxHint(hit) {
   if (edit.on || !FX_ACT[hit.k]) return '';
   if (hit.k === 'lamp' || hit.k === 'lantern') return '：按動作鍵' + (fxOn(hit, false) ? '關燈' : '開燈');
   if (hit.k === 'cat') return '：按動作鍵摸摸牠';
   if (hit.k === 'window') return '：按動作鍵看窗外';
   if (hit.k === 'rug' || hit.k === 'rug2') return '：按動作鍵坐在地毯上';
-  if (hit.k === 'paint1' || hit.k === 'paint2') return '：按動作鍵欣賞';
+  if (hit.k === 'paint1' || hit.k === 'paint2' || hit.k === 'boatmodel') return '：按動作鍵欣賞';
   if (hit.k === 'wreath') return '：按動作鍵看看';
   if (hit.k === 'fireplace') return '：按動作鍵' + (fxOn(hit, true) ? '熄火' : '生火');
   if (hit.k === 'globe') return '：按動作鍵轉地球儀';
@@ -220,6 +237,9 @@ function fxAct(hit, x, y) {
     pop(pl.x, pl.y - 0.6, '坐下', '#ffffff');
   } else if (k === 'paint1' || k === 'paint2') {
     toast(k === 'paint1' ? '《小愛心》：一顆粉粉的小愛心，掛著就覺得暖暖的。' : '《午後草原》：晴朗的天空、綠綠的草地，還有一顆小太陽。', 4200);
+  } else if (k === 'boatmodel') {
+    toast('小船模型：柴犬船長的漁船縮小版，是替出海碼頭出過力的人才有的紀念。', 4200);
+    sparkle(x, y, '#8fd3ff');
   } else if (k === 'wreath') {
     const f = fxFest();
     toast(f === 'hw' ? '萬聖節快樂！花圈的小燈換成了萬聖節的顏色。' : f === 'xmas' ? '聖誕快樂！花圈的小燈換成了聖誕的顏色。' : '一圈小小的花圈，小燈輪流閃著。', 3200);

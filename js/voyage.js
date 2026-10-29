@@ -516,7 +516,29 @@ function renderBuild() {
   const pc = $('voy-port'); if (pc) { boatSide(pc.getContext('2d'), performance.now(), { still: true }); g = ctx; }
   voyCard.querySelectorAll('canvas[data-bi]').forEach(c => { miscIcon(c.getContext('2d'), c.dataset.bi); });
 }
-setInterval(() => { if (scene === 'plaza' && !document.hidden && Date.now() - bldAt > 45000) loadBuild(); }, 5000);   // 在廣場時，每 45 秒更新一次全服建造進度
+/* 建造進度即時推送：伺服器有人捐獻／GM 操作就廣播 pier:build，收到後隔一小段隨機時間重新讀取（避免大家同時打伺服器）。
+   連線正常時 3 分鐘才補讀一次；連不上就維持每 45 秒輪詢。 */
+let bldCh = null, bldOk = false, bldTimer = 0;
+function bldOpenChannel() {
+  if (!sb || !myUid || bldCh) return;
+  netGate.then(() => {
+    if (bldCh || !sb) return;
+    const ch = sb.channel('pier:build', { config: { broadcast: { self: false, ack: false } } });
+    bldCh = ch; bldOk = false;
+    ch.on('broadcast', { event: 'progress' }, () => { clearTimeout(bldTimer); bldTimer = setTimeout(loadBuild, 200 + Math.random() * 800); })
+      .subscribe(st => {
+        if (bldCh !== ch) return;
+        if (st === 'SUBSCRIBED') { bldOk = true; loadBuild(); }
+        else if (st === 'CHANNEL_ERROR' || st === 'TIMED_OUT' || st === 'CLOSED') bldOk = false;
+      });
+  });
+}
+function bldCloseChannel() {
+  clearTimeout(bldTimer); bldOk = false;
+  if (!bldCh) return;
+  const c = bldCh; bldCh = null; netGate = netGate.then(() => dropChannel(c));
+}
+setInterval(() => { if (scene === 'plaza' && !document.hidden && Date.now() - bldAt > (bldOk ? 180000 : 45000)) loadBuild(); }, 5000);
 
 /* ---------- 柴犬船長面板（廣場）與結算畫面 ---------- */
 const CPT_LINES = ['出海嗎？船票不貴，魚可是很大一條！', '海上的風很舒服，來一趟吧！', '人多熱鬧，客人免費上船喔～', '今天的海，感覺會有大魚。', '汪！準備好就出發！'];
@@ -614,7 +636,7 @@ voySyncUI();
 /* ---------- 啟動與登出 ---------- */
 function voyageInit() {
   if (!sb || !myUid) return;
-  loadBuild();
+  loadBuild(); bldOpenChannel();
   voy.notes.clear(); voyRenderNotes();
   rpc('voyage_mine').then(v => {
     if (v && v.id && scene !== 'boat') enterBoat(v, v.me && v.me.back ? v.me.back : { scene: 'farm' });   // 重新整理、斷線後回到船上
@@ -623,7 +645,7 @@ function voyageInit() {
 }
 function voyageStop() {
   if (scene === 'boat') leaveBoat(true, true);
-  voyCloseChannel(); voy.cur = null; voy.notes.clear(); voyRenderNotes();
+  voyCloseChannel(); bldCloseChannel(); voy.cur = null; voy.notes.clear(); voyRenderNotes();
   voyHud.hidden = true; voyPanel.hidden = true; if (vyOpen) closeVoyModal();
 }
 
@@ -636,6 +658,7 @@ function voyAchSelf() {
   }
   const out = [], n = voyStat ? (voyStat.hosted | 0) + (voyStat.joined | 0) : 0;
   if (n >= 1) out.push('voy1'); if (n >= 10) out.push('voy10'); if (n >= 50) out.push('voy50');
+  if (bld && bld.mine && ((bld.mine.wood | 0) + (bld.mine.stone | 0) + (bld.mine.copper | 0)) > 0) out.push('pier');   // 捐過碼頭材料 = 碼頭建設者
   const sea = fishCat.filter(f => habitatOf(f) !== 'fresh');
   if (sea.length && sea.every(f => (fishLog[f.key] | 0) > 0)) out.push('sea_all');
   return out;

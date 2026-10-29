@@ -211,7 +211,7 @@ function updateTip() {
         const wnow = world();
         if (wnow.wet) s = nm + ' ' + pct + '%　' + (wnow.snow ? '下雪' : '下雨') + '中，不用澆水也會長，還要約 ' + fmtDur(need) + '。';
         else if (wl <= 0) s = nm + ' ' + pct + '%　土是乾的，要澆水才會繼續長（下雨下雪時免澆）。';
-        else if (wl >= need) s = nm + ' ' + pct + '%　還要約 ' + fmtDur(need) + '成熟。';
+        else if (wl + 8 >= need) s = nm + ' ' + pct + '%　還要約 ' + fmtDur(need) + '成熟。';
         else s = nm + ' ' + pct + '%　水撐不到成熟（還能長 ' + fmtDur(wl) + '），記得再澆水。';
       }
     } else if (p) s = curTool().id === 'seed'

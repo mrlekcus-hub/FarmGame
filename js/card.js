@@ -15,7 +15,8 @@ const ACH = [
   { id: 'friend3', ic: '🤝', n: '好人緣', d: '擁有 3 位好友' },
   { id: 'photo', ic: '📸', n: '命運之交', d: '和好友完成第一次合照' },
   { id: 'voy1', ic: '⛵', n: '初次出海', d: '完成 1 趟出海團' }, { id: 'voy10', ic: '🚢', n: '老水手', d: '完成 10 趟出海團' }, { id: 'voy50', ic: '⚓', n: '海上傳奇', d: '完成 50 趟出海團' },
-  { id: 'sea_all', ic: '🐙', n: '海釣圖鑑全收集', d: '海釣圖鑑全部集滿' }
+  { id: 'sea_all', ic: '🐙', n: '海釣圖鑑全收集', d: '海釣圖鑑全部集滿' },
+  { id: 'pier', ic: '🏗️', n: '碼頭建設者', d: '替全服的出海碼頭捐過材料' }
 ];
 FITS.forEach((nm, i) => { if (i >= FREE_N.fits) ACH.push({ id: 'fit' + i, ic: FIT_IC[i] || '👗', n: nm + '收藏家', d: '集齊「' + nm + '」的 ' + OUTFITS.length + ' 種顏色' }); });
 /* 成就分類：成長、技能、收集、生活、服裝（服裝成就 id 都是 fit 開頭） */
@@ -24,12 +25,12 @@ const ACH_CATS = [
   { k: 's', ic: '🌾', n: '技能', ids: ['farm5', 'farm10', 'fish5', 'bug5'] },
   { k: 'c', ic: '📚', n: '收集', ids: ['fish100', 'bug100', 'fish_half', 'fish_all', 'bug_half', 'bug_all'] },
   { k: 'l', ic: '🏡', n: '生活', ids: ['plots10', 'home15', 'friend3', 'photo'] },
-  { k: 'v', ic: '⛵', n: '出海', ids: ['voy1', 'voy10', 'voy50', 'sea_all'] },
+  { k: 'v', ic: '⛵', n: '出海', ids: ['voy1', 'voy10', 'voy50', 'sea_all', 'pier'] },
   { k: 'f', ic: '👗', n: '服裝', ids: ACH.filter(x => /^fit\d+$/.test(x.id)).map(x => x.id) }
 ];
 ACH_CATS.forEach(c => { c.a = c.ids.map(id => ACH.find(x => x.id === id)).filter(Boolean); });
 /* 商人專屬家具的中文名（伺服器家具目錄沒給時的備用，不然會顯示英文 key） */
-const MERCHANT_FURN_N = { lantern: '紙燈籠', globe: '地球儀', vase: '青花瓶' };
+const MERCHANT_FURN_N = { lantern: '紙燈籠', globe: '地球儀', vase: '青花瓶', boatmodel: '小船模型' };
 const itemName = k => {
   if (/^y:/.test(k)) { const yc = ycat.find(q => q.key === k.slice(2)); return yc ? yc.name : k.slice(2); }
   const [t, id] = [k.slice(0, k.indexOf(':')), k.slice(k.indexOf(':') + 1)];
