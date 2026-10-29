@@ -195,7 +195,7 @@ function draw(now) {
     else if (k === FR) drawRim(px, py, tx, ty);
     else {
       drawGrass(px, py, tx, ty);
-      if (k === BN) drawBench(px, py);
+      if (k === BN) drawBench(px, py, tx, ty);
       else if (k === BD) drawBoard(px, py);
       else if (k === NP) drawNpc(px, py, (npcAt(tx, ty) || NPCS[0]).k, now);
       else if (k === RK) drawRock(px, py, ROCKS.findIndex(q => q[0] === tx && q[1] === ty));
@@ -217,14 +217,18 @@ function draw(now) {
   else if (scene === 'town') TOWN_BLD.forEach(b => drawBldg(b, now, dark > 0.15));
   else if (scene === 'forest') FOREST_BLD.forEach(b => drawBldg(b, now, dark > 0.15));
   else {
+    if (scene === 'plaza') drawSnakeBoard(now);   // 蛇梯棋用新地圖座標
+    ctx.save(); ctx.translate(PXO * T, PYO * T);   // 塔羅攤、路燈、噴水池是舊廣場座標，位移後再畫
     drawTarotStall(now);
-    if (scene === 'plaza') drawSnakeBoard(now);
     if (scene === 'plaza') drawPlazaLamps(now);   // 廣場路燈（js/plaza-light.js）
-    if (scene === 'plaza') drawHalloween(now);   // 萬聖節佈置（只在活動日期內）
+    ctx.restore();
+    if (scene === 'plaza') drawHalloween(now);   // 萬聖節佈置（只在活動日期內；裡面自己處理位移）
+    ctx.save(); ctx.translate(PXO * T, PYO * T);
     for (let i = 0; i < 5; i++) {
       const a = now / 520 + i * 1.3, yy = 7 * T + 2 - Math.abs(Math.sin(a)) * 9;
       r('#bfe6ff', 10 * T + 4 + i * 2 + ((i % 2) ? 1 : 0), Math.round(yy), 1, 2);
     }
+    ctx.restore();
   }
   }
 

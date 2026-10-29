@@ -59,7 +59,17 @@ function drawBoard(px, py) {
   r('#fff6dc', px + 3, py + 3, 4, 4); r('#ffd1dc', px + 8, py + 3, 4, 3); r('#cfe8f7', px + 7, py + 7, 5, 3);
   r('#d4688a', px + 4, py + 3, 1, 1); r('#d4688a', px + 10, py + 3, 1, 1); r('#7aa8c8', px + 9, py + 8, 2, 1);
 }
-function drawBench(px, py) {
+function drawBench(px, py, tx, ty) {
+  const rowK = (typeof ty === 'number' && K[ty]) ? K[ty] : null;
+  if (rowK && rowK[tx + 1] === BN && rowK[tx - 1] !== BN) return;   // 兩格相連的雙人長椅：由右邊那格一次畫完
+  if (rowK && rowK[tx - 1] === BN) {
+    const x0 = px - T;
+    r('rgba(90,60,40,.18)', x0 + 1, py + 13, 30, 2);
+    ob('#e8b27a', '#9b6a44', x0 + 1, py + 4, 30, 4);
+    ob('#d9a066', '#9b6a44', x0 + 1, py + 9, 30, 3);
+    r('#9b6a44', x0 + 2, py + 12, 2, 3); r('#9b6a44', x0 + 15, py + 12, 2, 3); r('#9b6a44', x0 + 28, py + 12, 2, 3);
+    return;
+  }
   r('rgba(90,60,40,.18)', px + 1, py + 13, 14, 2);
   ob('#e8b27a', '#9b6a44', px + 1, py + 4, 14, 4);
   ob('#d9a066', '#9b6a44', px + 1, py + 9, 14, 3);

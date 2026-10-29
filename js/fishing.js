@@ -24,7 +24,8 @@ let critSlot = -1, netCool = 0, netSwing = null;
 const SLOT_MS = 300000, SLOT_N = 3;      // 要和 SQL 的 _slot_bug / bug_catch 一致：每 5 分鐘一輪，每輪 3 隻
 const phaseOf = m => m >= 300 && m < 480 ? 'dawn' : m >= 480 && m < 1020 ? 'day' : m >= 1020 && m < 1200 ? 'dusk' : 'night';
 /* 第 sl 輪第 i 隻是哪一種（和 SQL 的 _slot_bug 完全相同，所有玩家看到的一樣） */
-const sceneKey = () => scene === 'forest' ? 'forest' : 'farm';   // 傳給伺服器的場景（只有森林和農場能抓蟲釣魚）
+const sceneKey = () => scene === 'forest' ? 'forest' : 'farm';
+const fishKey = () => scene === 'forest' || scene === 'plaza' ? 'forest' : 'farm';   // 釣魚用：廣場的魚池和森林池塘一樣（釣森林的魚）；抓蟲仍用 sceneKey   // 傳給伺服器的場景（只有森林和農場能抓蟲釣魚）
 function slotBug(sl, i, sc) {
   const t0 = sl * SLOT_MS, min = (((t0 + 8 * 3600000) % 86400000) + 86400000) % 86400000 / 60000;
   const ph = phaseOf(min), rain = precipHour(Math.floor(t0 / 3600000)), sea = seasonAt(t0);
@@ -98,7 +99,7 @@ function startFish(x, y) {
   if (Date.now() < fishCool) return;
   const id = ++fishSeq;
   fishing = { id, x, y, scene, phase: 'cast', t0: Date.now(), bite: 0, win: 1600 };
-  rpc('fish_cast', { p_scene: sceneKey() }).then(r => {
+  rpc('fish_cast', { p_scene: fishKey() }).then(r => {
     if (!fishing || fishing.id !== id) return;
     fishing.phase = 'wait'; fishing.bite = +r.bite_ms; fishing.win = +r.window_ms;
     netFish({ a: 1, x, y });

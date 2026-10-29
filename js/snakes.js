@@ -1,12 +1,12 @@
 'use strict';
 /* 蛇梯棋（廣場左上角）—— 雷克斯農場。所有檔案共用同一個全域範圍，載入順序見 index.html。 */
-/* ---------- 蛇梯棋：1～4 人（單人也能玩，可加電腦），外觀是「秋楓橘」6×6 棋盤，佔廣場 (1,1)～(6,6) ----------
+/* ---------- 蛇梯棋：1～4 人（單人也能玩，可加電腦），外觀是「秋楓橘」6×6 棋盤，在廣場上縮成 4×4 格，放在地圖左上角 (2,2)～(5,5) ----------
    沒有後端：靠廣場的即時頻道（事件 snl）同步。房主（開桌的人）是唯一的裁判：擲骰、移動都由房主算，
    其他人只送「我要擲骰／加入／離開」，收到的狀態一律當作不可信資料先檢查再用。 */
 const SN_COLS = ['#ff6a8a', '#5ab0f0', '#ffd34d', '#7ad66a'];
 const SN_LAD = [[2, 14], [22, 34], [8, 20]], SN_SNK = [[24, 12], [33, 9], [30, 18]];
 const SN_LINK = {}; SN_LAD.forEach(([a, b]) => { SN_LINK[a] = b; }); SN_SNK.forEach(([a, b]) => { SN_LINK[a] = b; });
-const SN_X = 14, SN_Y = 14;                       // 棋盤圖在廣場的像素位置（格子正好對齊 tile 1..6）
+const SN_X = 2 * 16, SN_Y = 2 * 16, SN_PX = 64;   // 棋盤在廣場上的像素位置與大小：縮成 4×4 格（tile 2..5），整張圖由 100×100 縮小；點開來玩時還是原大小
 const SN_STEP = 220, SN_SLIDE = 650, SN_TURN_MS = 45000;
 const SN_D = { 0: '111101101101111', 1: '010110010010111', 2: '111001111100111', 3: '111001111001111', 4: '101101111001001', 5: '111100111001111', 6: '111100111101111', 7: '111001001001001', 8: '111101111101111', 9: '111101111001111' };
 function snDisc(g2, cx, cy, rad, col) { g2.fillStyle = col; cx = Math.round(cx); cy = Math.round(cy); for (let y = -rad; y <= rad; y++) for (let x = -rad; x <= rad; x++) if (x * x + y * y <= rad * rad + rad * 0.6) g2.fillRect(cx + x, cy + y, 1, 1); }
@@ -265,8 +265,12 @@ function snTokens(g2, ox, oy, now) {
   });
 }
 function drawSnakeBoard(now) {
-  ctx.drawImage(snBuildArt(), SN_X, SN_Y);
-  snTokens(ctx, SN_X, SN_Y, now);
+  ctx.save();
+  ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';   // 縮小的圖用平滑，數字才不會碎掉
+  ctx.drawImage(snBuildArt(), SN_X, SN_Y, SN_PX, SN_PX);
+  ctx.translate(SN_X, SN_Y); ctx.scale(SN_PX / 100, SN_PX / 100);
+  snTokens(ctx, 0, 0, now);
+  ctx.restore();
 }
 
 /* ---------- 介面 ---------- */

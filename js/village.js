@@ -46,8 +46,8 @@ const worldKey = () => scene === 'tarot' ? 't' : scene === 'house' ? 'h' : 'p';
 const syncScene = () => scene === 'plaza' || scene === 'tarot' || (scene === 'house' && !!net);
 const hereRp = rp => (rp.w || 'p') === worldKey();
 const worldOf = w => w === 't' ? 't' : w === 'h' ? 'h' : 'p';
-const worldW = w => w === 't' ? RMW : w === 'h' ? houseMapW() : BW;
-const worldH = w => w === 't' ? RMH : w === 'h' ? houseMapH() : BH;
+const worldW = w => w === 't' ? RMW : w === 'h' ? houseMapW() : PLW;
+const worldH = w => w === 't' ? RMH : w === 'h' ? houseMapH() : PLH;
 const WORLD_IN = { p: '來到廣場', t: '進了塔羅屋', h: '來到屋子裡' };
 const remoteAt = (x, y) => {
   let hit = null;
@@ -183,7 +183,7 @@ function onFish(p) {
   const rp = typeof p.i === 'string' ? remotes.get(p.i) : null;
   if (!rp) return;
   if (p.a !== 1) { rp.fish = null; return; }
-  const x = intIn(p.x, 0, BW - 1, -1), y = intIn(p.y, 0, BH - 1, -1);
+  const x = intIn(p.x, 0, PLW - 1, -1), y = intIn(p.y, 0, PLH - 1, -1);
   if (x < 0 || y < 0 || pkind[y][x] !== WA) { rp.fish = null; return; }
   const bite = p.b === 1;
   if (rp.fish && rp.fish.x === x && rp.fish.y === y) rp.fish.phase = bite ? 'bite' : rp.fish.phase;
@@ -261,9 +261,9 @@ function startNet(rm, priv) {
   });
 }
 function enterPlaza(info) {
-  roomInfo = info; scene = 'plaza'; K = pkind; pose = null;
+  roomInfo = info; scene = 'plaza'; K = pkind; W = PLW; H = PLH; pose = null;
   remotes.clear(); vLog.innerHTML = ''; myBubble = null; myShow = null; lastPosKey = ''; posAcc = 0;
-  pl.x = pl.sx = 10; pl.y = pl.sy = 11; pl.prog = 1; pl.face = 'up'; pressed.length = 0;
+  pl.x = pl.sx = PXO + 10; pl.y = pl.sy = PLH - 3; pl.prog = 1; pl.face = 'up'; pressed.length = 0; view.snap = true; fitView();
   vPanel.hidden = false; renderVillage();
   addSys(info.kind === 'public' ? '歡迎來到公開廣場，和路過的朋友打個招呼吧。' : '私人村的邀請碼是 ' + info.code + '，把它傳給朋友就能進來。');
   startNet(info.room, true);
@@ -284,7 +284,7 @@ function leaveVillage(silent) {
   leaveLekcus(true);
   pAct = null; pIn = null; hidePactBox(); sayBye(); stopNet(); clearInterval(pingTimer); if (pose && (pose.bench || pose.ground)) pose = null;
   const was = scene === 'plaza';
-  scene = 'farm'; K = kind; roomInfo = null; remotes.clear(); myBubble = null; myShow = null;
+  scene = 'farm'; K = kind; W = BW; H = BH; roomInfo = null; remotes.clear(); myBubble = null; myShow = null;
   vPanel.hidden = true;
   if (sb && ready) rpc('village_leave').catch(() => {});
   if (was) {

@@ -66,7 +66,7 @@ const fromServer = j => ({ crop: j.crop || null, grown: +j.grown || 0, tick: +j.
 /* ---------- 地圖規則（要和 schema.sql 的 _farmable 一致） ---------- */
 /* 農場右邊多一道村莊大門，通往公共廣場 */
 const GT = 7, FR = 8, BN = 9, TS = 10, BD = 11, BR = 12, RK = 13, NP = 14, HB = 15, FG = 16, WL = 17, TG = 18;   // HB 建築 FG 小村通往農場的門 WL 水井 TG 農場通往小村的門
-const SB = 60;   // 廣場左上角的蛇梯棋棋盤（js/snakes.js），佔 (1,1)～(6,6)，走不進去，面向它按動作鍵開始
+const SB = 60;   // 廣場左上角的蛇梯棋棋盤（js/snakes.js），縮成 4×4 格，放在廣場左上角 (2,2)～(5,5)，走不進去，面向它按動作鍵開始
 const CS = 29, BS = 30, FS = 31, RS = 32, WK = 33;   // WK 村長家（園藝工坊）的門   // RS 牧場小屋的門（室內場景 'stylist' 的 ranch 房間）   // CS 裁縫鋪的門  BS 造型店的門  FS 家具店的門（走進去是室內場景 'stylist'）
 const FW = 40, FE = 41, CV = 42, CW = 43, CX = 44;   // CW 山洞岩壁  CX 山洞出口   // FW 小村通往西邊森林的門  FE 森林回小村的門  CV 森林北邊的山洞入口
    // BD：委託布告欄（農場）   // TS：塔羅小攤（3×2 格，不能走進去，面向它按動作鍵占卜）
@@ -156,23 +156,38 @@ const NPC_TALK = {
 };
 const merchantDay = () => Math.floor((srvNow() + 8 * 3600000) / 86400000);
 const merchantHere = () => [5, 6, 0].includes((merchantDay() % 7 + 4) % 7);   // 和 SQL _merchant_here 一致
-/* 廣場地圖：中央噴水池、十字步道、長椅，下方是回農場的門 */
-const pkind = Array.from({ length: H }, () => Array(W).fill(G));
-for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (x === 0 || y === 0 || x === W - 1 || y === H - 1) pkind[y][x] = TR;
-for (let x = 1; x <= 18; x++) pkind[7][x] = P;
-for (let y = 1; y <= 12; y++) pkind[y][10] = P;
-for (let x = 8; x <= 12; x++) for (let y = 5; y <= 9; y++) if (x === 8 || x === 12 || y === 5 || y === 9) pkind[y][x] = P;
-for (let x = 9; x <= 11; x++) for (let y = 6; y <= 8; y++) pkind[y][x] = FR;
-pkind[7][10] = WA;
-[[14, 4], [6, 10], [14, 10]].forEach(([x, y]) => { pkind[y][x] = BN; });   // 左上的長椅 (6,4) 讓位給蛇梯棋
-for (let y = 9; y <= 12; y++) for (let x = 15; x <= 18; x++) {
-  const dx = (x - 16.5) / 2.4, dy = (y - 10.6) / 2.4;
-  if (dx * dx + dy * dy + hash(x, y, 9) * 0.25 <= 1) pkind[y][x] = WA;
+/* 廣場地圖（30×20，鏡頭跟隨）：中央噴水池、十字步道、長椅，下方是回農場的門。
+   原本 20×14 的廣場整組往右下平移 (PXO, PYO)，四周多出一圈空地；萬聖節、路燈、塔羅攤等舊座標都是「舊廣場座標」，畫的時候加上位移。 */
+const PLW = 30, PLH = 20, PXO = 5, PYO = 3;
+const pkind = Array.from({ length: PLH }, () => Array(PLW).fill(G));
+for (let y = 0; y < PLH; y++) for (let x = 0; x < PLW; x++) if (x === 0 || y === 0 || x === PLW - 1 || y === PLH - 1) pkind[y][x] = TR;
+{
+  const ps = (x, y, k) => { pkind[y + PYO][x + PXO] = k; };   // 用舊廣場座標放東西
+  for (let x = 1; x <= PLW - 2; x++) pkind[PYO + 7][x] = P;                 // 東西向的大路一路通到兩邊
+  for (let y = PYO + 3; y <= PLH - 2; y++) pkind[y][PXO + 10] = P;          // 南北向的直路：塔羅攤下面一路通到大門
+  for (let x = 8; x <= 12; x++) for (let y = 5; y <= 9; y++) if (x === 8 || x === 12 || y === 5 || y === 9) ps(x, y, P);
+  for (let x = 9; x <= 11; x++) for (let y = 6; y <= 8; y++) ps(x, y, FR);
+  ps(10, 7, WA);
+  [[6, 10]].forEach(([x, y]) => ps(x, y, BN));   // 水池旁的兩張、大路上方的單人椅都拿掉了
+  for (let y = 8; y <= 14; y++) for (let x = 13; x <= 21; x++) {   // 右下的大水池（放大版：新地圖約 7×5 格，和大路中間隔一排草地）
+    const dx = (x - 17) / 3.3, dy = (y - 11) / 2.8;
+    if (dx * dx + dy * dy + hash(x, y, 9) * 0.25 <= 1) ps(x, y, WA);
+  }
+  [[16, 3], [3, 10], [2, 11], [15, 2], [17, 8]].forEach(([x, y]) => ps(x, y, TR));
+  for (let y = 1; y <= 2; y++) for (let x = 9; x <= 11; x++) ps(x, y, TS);   // 直路最北端的塔羅攤
+  [[3, 9], [4, 11], [21, 9], [22, 9]].forEach(([x, y]) => { pkind[y][x] = BN; });   // 外圍長椅（新座標）；(21,9)(22,9) 兩格相連是一張雙人長椅，在大路上方
+  for (let y = 2; y <= 5; y++) for (let x = 2; x <= 5; x++) pkind[y][x] = SB;   // 蛇梯棋縮小成 4×4 格，放在整張地圖的左上角
+  /* 新增的外圈空地：零星種樹（路、水、長椅旁和大門前面留空） */
+  for (let y = 1; y < PLH - 1; y++) for (let x = 1; x < PLW - 1; x++) {
+    if (pkind[y][x] !== G) continue;
+    if (x >= PXO && x < PXO + BW && y >= PYO && y < PYO + BH) continue;   // 舊廣場範圍內維持原樣
+    if (x >= PXO + 8 && x <= PXO + 12 && y >= PLH - 5) continue;           // 大門前面
+    let near = false;
+    for (let j = -1; j <= 1; j++) for (let i = -1; i <= 1; i++) { const q = pkind[y + j] && pkind[y + j][x + i]; if (q !== undefined && q !== G && q !== TR) near = true; }
+    if (!near && hash(x, y, 53) < 0.16) pkind[y][x] = TR;
+  }
 }
-[[16, 3], [3, 10], [2, 11], [15, 2], [17, 8]].forEach(([x, y]) => { pkind[y][x] = TR; });   // 左上角原本的 3 棵樹 (3,3) (5,2) (2,6) 移掉了
-for (let y = 1; y <= 6; y++) for (let x = 1; x <= 6; x++) pkind[y][x] = SB;
-for (let y = 1; y <= 2; y++) for (let x = 9; x <= 11; x++) pkind[y][x] = TS;   // 直路最北端，緊貼上方樹籬的正中間
-pkind[13][10] = GT;
+pkind[PLH - 1][PXO + 10] = GT;
 let scene = 'farm', K = kind;
 const farmBase = (x, y) => x >= 2 && x <= 13 && y >= 6 && y <= 12 && kind[y][x] === G;
 const plv = () => lv ? lv.pl : 99;

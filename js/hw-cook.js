@@ -11,9 +11,9 @@ Object.assign(DISHC, { hw_pudding: '#e8a040', hw_soup: '#8ad850', hw_special: '#
 
 const hwEl = $('hwm'), hwCard = $('hwcard');
 let hwMode = '', hwData = null, hwBusy = false, hwBoilUntil = 0;
-const HW_STALL = [[13, 1], [14, 1], [13, 2], [14, 2]];
-const hwAtStall = (x, y) => HW_STALL.some(a => a[0] === x && a[1] === y);
-const hwAtCauld = (x, y) => x === HW_CAULD[0] && y === HW_CAULD[1];
+const HW_STALL = [[-3, 4], [-2, 4], [-3, 5], [-2, 5]];   // 糖果攤（舊廣場座標，A2 放在左側）
+const hwAtStall = (x, y) => HW_STALL.some(a => a[0] + PXO === x && a[1] + PYO === y);
+const hwAtCauld = (x, y) => x === HW_CAULD[0] + PXO && y === HW_CAULD[1] + PYO;
 function hwHint(x, y) {   // 面向時的提示文字（ui.js 用）
   if (scene !== 'plaza' || !hwOn()) return '';
   if (hwAtCauld(x, y)) return '魔女鍋：按動作鍵煮萬聖節料理、吃料理。';
@@ -97,7 +97,7 @@ function hwCookStart(key) {
   const rc = { key: it.key, name: it.name, ing: it.ing, hw: true };
   hwClose();
   const p = ckPlan(rc), now = Date.now();
-  cooking = { id: ++cookSeq, rc, T: p.T, plan: p.plan, maxMiss: p.maxMiss, miss: 0, done: 0, i: 0, hit: 0, itId: 0, host: null, fx: HW_CAULD[0], fy: HW_CAULD[1], hw: true, scene, phase: 'wait', t0: now, at: now + 900, ok: true, heat: 0, lt: now, msg: '', needRel: false };
+  cooking = { id: ++cookSeq, rc, T: p.T, plan: p.plan, maxMiss: p.maxMiss, miss: 0, done: 0, i: 0, hit: 0, itId: 0, host: null, fx: HW_CAULD[0] + PXO, fy: HW_CAULD[1] + PYO, hw: true, scene, phase: 'wait', t0: now, at: now + 900, ok: true, heat: 0, lt: now, msg: '', needRel: false };
 }
 
 /* ---------- 夜行（鬼火＋夜晚變快）與提燈（身邊一圈暖光）：畫在夜色濾鏡之後，sky.js 呼叫 ---------- */
