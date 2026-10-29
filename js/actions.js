@@ -28,6 +28,7 @@ function canOne(x, y) {
   act2('water', { p_x: x, p_y: y }); qAdd('water'); return true;
 }
 function act() {
+  if (vfOn) { vfPress(); return; }                 // 出海團拉扯小遊戲：動作鍵＝切換收線
   if (fpOpen()) { closeFriendPop(); return; }   // 互動浮窗開著時再按動作鍵＝收起來
   if (pose) { standUp(); return; }
   if (cooking) { cookAct(); return; }
@@ -45,6 +46,8 @@ function act() {
     else if (k2 === SB) openSnakes();
     else if (rp) openFriendPop(rp);
     else if (k2 === TS) enterLekcus();
+    else if (k2 === CPT) openCaptain();
+    else if (k2 === BB) openBuild('');
     return;
   }
   if (scene === 'house') {
@@ -66,6 +69,7 @@ function act() {
     else if (hit) pop(x, y, (defOf(hit.k) || {}).name || '', '#fff3b0');
     return;
   }
+  if (scene === 'boat') { boatAct(x, y); return; }
   if (scene === 'tarot') { const rpT = remoteAt(x, y); if (rpT) { openFriendPop(rpT); return; } lekcusRoomAct(x, y); return; }
   if (scene === 'town') { townAct(x, y); return; }
   if (scene === 'forest') { forestAct(x, y); return; }
@@ -73,6 +77,7 @@ function act() {
   if (scene === 'barn') { barnAct(x, y); return; }
   if (scene === 'stylist') { stylistAct(x, y); return; }
   const k = K[y][x], key = pk(x, y), p = plots.get(key), t = curTool();
+  if (yardMode && scene === 'farm' && !visiting && (grassTile(x, y) || yardMap.has(pk(x, y)))) { yardAct(x, y); return; }   // 庭院佈置模式：動作鍵＝擺放／收回
   if (k === GT) { openVMenu(); return; }
   if (k === DR) { enterHouse(); return; }
   if (k === SH) { openShop(); return; }
@@ -106,7 +111,7 @@ function act() {
   if (t.id === 'rod') { pop(x, y, '面向池塘才能釣魚', '#cfe8f7'); return; }
   if (t.id === 'net') { swingNet(x, y); return; }
   if (t.id === 'pick') { pop(x, y, '面向礦石才敲得動', '#ffffff'); return; }
-  if (t.id === 'yard') { yardAct(x, y); return; }
+  if (t.id === 'axe') { pop(x, y, '到西邊森林面向樹才砍得動', '#ffffff'); return; }
   if (t.id === 'fert') { fertAct(x, y, p); return; }
   if (t.id === 'hoe') {
     if (p && p.crop) pop(x, y, '還沒長好', '#ffffff');

@@ -119,7 +119,7 @@ window.addEventListener('pagehide', coverSave);
 document.addEventListener('visibilitychange', () => { if (document.hidden) coverSave(); });
 function showAuth() {
   coverSave();
-  leaveLekcus(true); leaveVillage(true); leaveHouse(true); leaveStylist(true); leaveCave(true); leaveForest(true); leaveTown(true); leaveBarn(true); stopPresence(); closeFriends(); fr = { friends: [], incoming: [], outgoing: [], max: 50 }; house = null; ready = false; authOpen = true; closeMaker(); closeShop(); closeVMenu(); closeGM(); closeFShop(); closeDex(); closeBag();
+  voyageStop(); leaveLekcus(true); leaveVillage(true); leaveHouse(true); leaveStylist(true); leaveCave(true); leaveForest(true); leaveTown(true); leaveBarn(true); stopPresence(); closeFriends(); fr = { friends: [], incoming: [], outgoing: [], max: 50 }; house = null; ready = false; authOpen = true; closeMaker(); closeShop(); closeVMenu(); closeGM(); closeFShop(); closeDex(); closeBag();
   bootEl.hidden = true; authEl.hidden = false; me = null; refreshHud(); drawCover(); coverStart();
   closeBoard(); closeKitchen(); closeRanch(); closeMerchant(); closeDlg();
   closeQuests(); qs = { day: 0, c: {}, claimed: {} }; qBadge();

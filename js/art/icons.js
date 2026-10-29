@@ -5,8 +5,8 @@ function drawIcon(c2d, i) {
   g = c2d;
   g.clearRect(0, 0, 16, 16);
   if (i === 0) {
-    for (let k = 0; k < 9; k++) { r('#8c5b3c', 2 + k, 14 - k, 2, 2); r('#c08a62', 2 + k, 14 - k, 2, 1); }
-    ob('#dfe7ee', '#8e9db0', 9, 1, 6, 4); ob('#dfe7ee', '#8e9db0', 12, 1, 3, 8);
+    for (let k = 0; k < 10; k++) { r('#6a4a2c', 2 + k, 14 - k, 2, 2); r('#a07850', 2 + k, 14 - k, 2, 1); }
+    r('#8e9db0', 10, 1, 5, 2); r('#8e9db0', 13, 1, 2, 6); r('#cfe0f0', 10, 1, 4, 1); r('#7a5a3a', 12, 9, 3, 1); r('#7a5a3a', 11, 10, 1, 1);
   } else if (i === 1) {
     ob('#8fd3f4', '#4aa3d4', 3, 6, 9, 8);
     r('#ffffff', 5, 8, 2, 2);
@@ -25,6 +25,9 @@ function drawIcon(c2d, i) {
   } else if (TOOLS[i].id === 'pick') {
     for (let k = 0; k < 9; k++) { r('#8c5b3c', 3 + k, 14 - k, 2, 2); r('#c08a62', 3 + k, 14 - k, 2, 1); }
     ob('#dfe7ee', '#6f7f93', 2, 2, 12, 3); r('#6f7f93', 2, 4, 2, 3); r('#6f7f93', 12, 4, 2, 3);
+  } else if (TOOLS[i].id === 'axe') {
+    for (let k = 0; k < 11; k++) { r('#b0463c', 2 + k, 14 - k, 2, 2); r('#e07a62', 2 + k, 14 - k, 2, 1); }
+    ob('#cfe0f0', '#4a6a8c', 6, 1, 8, 7); r('#4a6a8c', 6, 3, 2, 3); r('#ffffff', 9, 2, 3, 1); r('#8fb0d0', 10, 4, 3, 3);
   } else if (TOOLS[i].id === 'yard') {
     ob('#e8b27a', '#9b6a44', 1, 7, 14, 3); ob('#e8b27a', '#9b6a44', 1, 12, 14, 3);
     [2, 7, 12].forEach(x0 => ob('#fff0d4', '#9b6a44', x0, 3, 3, 12)); r('#ff8fa8', 7, 1, 2, 2);
@@ -70,6 +73,7 @@ function drawFish(c2d, key, dim) {
     r(col('#5a3a28'), 5, 12, 9, 1); r(col('#d9c7a8'), 6, 4, 3, 1); r(col('#d9c7a8'), 6, 6, 3, 1);
     g = ctx; return;
   }
+  if (typeof A.draw === 'function') { A.draw(col); g = ctx; return; }   // 出海團的海魚有自己的畫法（js/art/boat.js）
   const cx = 8.5, cy = 8, eel = A.shape === 'eel';
   const wv = x => eel ? Math.sin(x * 0.75) * 1.7 : 0;
   const tail = (x, y) => {

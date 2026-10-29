@@ -107,6 +107,7 @@ function startFish(x, y) {
 }
 function fishCancel() {
   if (!fishing) return;
+  if (fishing.boat) { if (fishing.phase === 'fight') vfClose(); fishing = null; fishCool = Date.now() + 500; netFish({ a: 0 }); return; }   // 出海團：沒有 fish_cancel，下次拋竿伺服器會直接覆蓋
   const ph = fishing.phase; fishing = null; fishCool = Date.now() + 500;
   netFish({ a: 0 });
   if (ph === 'wait' || ph === 'bite') rpc('fish_cancel').catch(() => {});
@@ -134,11 +135,13 @@ async function fishReel(f) {
 }
 function fishAct() {
   const f = fishing;
+  if (f.boat) { boatHook(f); return; }
   if (f.phase === 'cast' || f.phase === 'reel') return;
   fishReel(f);
 }
 function fishTick() {
   if (!fishing) return;
+  if (fishing.boat && (fishing.phase === 'fight' || fishing.phase === 'reel')) { if (fishing.scene !== scene) { vfAbort(); fishing = null; } return; }
   if (fishing.scene !== scene || paused() || pressed.length) { fishCancel(); return; }
   if (fishing.phase === 'wait' && srvNow() >= fishing.bite) {
     fishing.phase = 'bite'; splash(fishing.x, fishing.y); netFish({ a: 1, x: fishing.x, y: fishing.y, b: 1 });
@@ -158,14 +161,15 @@ function drawRod(px, py, face, f, now) {
     const u = clamp((Date.now() - f.t0) / 380, 0, 1);
     bx = tx + (bx - tx) * u; by = ty + (by - ty) * u - Math.sin(u * Math.PI) * 14;
   } else if (f.phase === 'bite') { bx += Math.sin(now / 45) * 1.2; by += Math.abs(Math.sin(now / 80)) * 3; }
+  else if (f.phase === 'fight') { bx += Math.sin(now / 35) * 1.6; by += Math.abs(Math.sin(now / 60)) * 4; }
   else { by += Math.sin(t * 2.4) * 0.9; }
   const n = 12;
   for (let k = 1; k < n; k++) {
     const u = k / n, sag = Math.sin(u * Math.PI) * (f.phase === 'bite' ? 1 : 3);
     r('rgba(255,255,255,.85)', Math.round(tx + (bx - tx) * u), Math.round(ty + (by - ty) * u + sag), 1, 1);
   }
-  if (f.phase === 'wait' || f.phase === 'bite') {
-    const rad = (f.phase === 'bite' ? now / 90 : now / 420) % 1;
+  if (f.phase === 'wait' || f.phase === 'bite' || f.phase === 'fight') {
+    const rad = (f.phase !== 'wait' ? now / 90 : now / 420) % 1;
     ctx.globalAlpha = (1 - rad) * 0.7;
     const rw = 3 + rad * 7;
     r('#ffffff', Math.round(f.x * T + 8 - rw), Math.round(by + 1), 1, 1); r('#ffffff', Math.round(f.x * T + 8 + rw), Math.round(by + 1), 1, 1);

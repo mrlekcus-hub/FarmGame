@@ -24,7 +24,8 @@ const TOOLS = [
   { id: 'seed', crop: 'melon', n: '蜜瓜種子' },
   { id: 'pick', n: '鎬子' },
   { id: 'fert', n: '肥料' },
-  { id: 'yard', n: '庭院佈置' }
+  { id: 'yard', n: '庭院佈置' },
+  { id: 'axe', n: '斧頭' }   // 放最後：快捷列存的是編號，新增只能往後加
 ];
 const CAN_MAX = 12;
 

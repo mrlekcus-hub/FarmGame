@@ -1021,3 +1021,79 @@ body.imm .camhint{display:block}
 .vlog-h{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
 .vlog-h small,.vlog-a small{color:#8a6a6a;font-size:12px}
 .vlog-a{display:flex;gap:8px;font-size:13px;line-height:1.5;padding-left:6px}
+
+/* ---------- 出海團 ---------- */
+#voynote{position:absolute;right:8px;top:44px;z-index:30;display:flex;flex-direction:column;gap:6px;width:min(190px,46%);line-height:1.25;pointer-events:none}
+#voynote[hidden]{display:none}
+.voyc{pointer-events:auto;display:flex;flex-direction:column;gap:4px;padding:6px 8px;background:var(--panel);border:3px solid var(--edge);border-radius:14px;box-shadow:0 3px 0 var(--edge);color:var(--ink);font-size:12px;animation:voyin .35s ease-out}
+.voyc.off{opacity:.55;filter:grayscale(.7)}
+.voyc img{width:100%;height:auto;image-rendering:pixelated;border-radius:8px;background:#9fd8ff;display:block}
+.voyc-b{display:flex;flex-direction:column;gap:2px}
+.voyc-b b{font-size:13px}.voyc-b small{opacity:.75}
+.voyc-dots{display:flex;gap:3px;margin:2px 0}
+.voyc-dots i{width:9px;height:9px;border-radius:50%;border:2px solid var(--edge);background:#fff}
+.voyc-dots i.on{background:#ffb347}
+.voyc-btns{display:flex;gap:6px;margin-top:3px}.voyc-btns .btn{flex:1;min-height:30px;padding:4px 6px}
+@keyframes voyin{from{transform:translateX(120%);opacity:0}to{transform:none;opacity:1}}
+#voyhud{position:absolute;left:50%;top:8px;transform:translateX(-50%);z-index:30;padding:5px 14px;border-radius:999px;background:rgba(255,255,255,.92);border:3px solid var(--edge);color:var(--ink);font:700 13px/1.2 var(--f-body,sans-serif);white-space:nowrap;box-shadow:0 3px 0 var(--edge);pointer-events:none}
+#voyhud[hidden]{display:none}
+#voypanel .v-quick{display:flex;flex-wrap:wrap;gap:6px}
+#voypanel .rdy{font-weight:800;opacity:.45}#voypanel .rdy.on{color:#2f9d54;opacity:1}
+#voypanel .pchip.host{border-color:#ffb347}
+#voypanel .pkick{margin-left:2px;border:0;background:#f6d6d2;color:#b4443a;border-radius:50%;width:22px;height:22px;font-size:12px;cursor:pointer}
+.voy-note{margin:0;font-size:13px;opacity:.8}
+.voyport{display:flex;gap:10px;align-items:center;margin-bottom:6px}
+.voyport canvas{width:128px;height:80px;image-rendering:pixelated;border-radius:10px;border:3px solid var(--edge);background:#9fd8ff;flex:none}
+.voyport .lkline{margin:0;font-size:14px}
+.voysum{border:2px solid #f0dcc8;border-radius:12px;background:#fff;padding:6px 8px;margin:6px 0}.voysum.me{border-color:#ffb347}
+.voysum-h{display:flex;justify-content:space-between;gap:8px;font-size:13px}
+.voysum-i{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.voyfish{display:inline-flex;align-items:center;gap:2px;font-size:12px}.voyfish canvas{width:32px;height:32px;image-rendering:pixelated}
+#vf{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);z-index:40;display:flex;flex-direction:column;align-items:center;gap:8px;width:min(92%,300px);line-height:1}
+#vf[hidden]{display:none}
+#vf-cv{width:100%;height:auto;border-radius:12px;border:3px solid var(--edge);image-rendering:pixelated;background:#14202f}
+#vf-hold{width:100%;min-height:64px;border-radius:18px;border:3px solid var(--edge);background:#ffd36b;color:var(--ink);font:800 20px/1 var(--f-display,sans-serif);box-shadow:0 5px 0 var(--edge);touch-action:none;user-select:none;-webkit-user-select:none;cursor:pointer}
+#vf-hold.on{background:#ff9f5a;transform:translateY(3px);box-shadow:0 2px 0 var(--edge)}
+@media (prefers-reduced-motion:reduce){.voyc{animation:none}}
+/* 出海排行榜（結算畫面） */
+.voysumbar{display:flex;margin:6px 0;padding:5px 4px;border:3px solid var(--edge);border-radius:14px;background:#fff;line-height:1.3}
+.voysumbar>div{flex:1;text-align:center;min-width:0}.voysumbar small{display:block;font-size:10px;opacity:.7}.voysumbar b{font-size:14px}
+.voyrank{display:flex;align-items:center;gap:6px;padding:5px 8px;margin:4px 0;border:2px solid #f0dcc8;border-radius:12px;background:#fff;line-height:1.3}
+.voyrank.me{border-color:#ffb347;background:#fff3d6}
+.voyrk{width:24px;text-align:center;font-size:13px}.voyrk.top{font-size:18px}
+.voyrb{flex:1;min-width:0}.voyrn{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.voybar{position:relative;height:14px;border-radius:7px;background:#f3e6d6;overflow:hidden;margin-top:2px}.voybar i{display:block;height:100%}
+.voybar span{position:absolute;left:6px;top:0;font-size:10px;line-height:14px;font-weight:700}
+.voytag{background:#ffd36b;border:2px solid var(--edge);border-radius:7px;padding:0 4px;font-size:9px;margin-left:3px;white-space:nowrap;font-weight:700}
+.voyfx{display:flex;flex:none}.voyfx canvas{width:28px;height:28px;image-rendering:pixelated}
+
+/* 庭院佈置模式 */
+.dockbtn.on{background:#ffe3ea;border-color:#ff9bb3;box-shadow:0 3px 0 #ff9bb3}
+.yardbar{position:absolute;left:50%;transform:translateX(-50%);bottom:10px;width:min(560px,calc(100% - 90px));z-index:4;background:rgba(255,250,240,.97);border:3px solid var(--edge);border-radius:18px;padding:8px 10px;box-shadow:0 4px 0 var(--edge);line-height:1.25}
+.yardbar[hidden]{display:none}
+.yb-h{display:flex;align-items:center;gap:8px;margin-bottom:6px}.yb-h b{font-size:15px;white-space:nowrap}.yb-h span{flex:1;font-size:11px;opacity:.7;min-width:0}
+.yb-g{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}.yb-g::-webkit-scrollbar{display:none}
+.yb-i{flex:none;width:58px;position:relative;text-align:center;padding:4px 0 3px;background:#fff;border:2px solid #ecd5bd;border-radius:12px;cursor:pointer;color:var(--ink)}
+.yb-i.on{border-color:#ff9bb3;background:#fff0f3}.yb-i canvas{width:32px;height:32px;image-rendering:pixelated;display:block;margin:0 auto}
+.yb-i small{display:block;font-size:11px}.yb-i i{position:absolute;right:3px;top:2px;font-size:10px;font-style:normal;opacity:.7}
+.yb-e{margin:4px 0;font-size:12px;opacity:.8}
+
+/* 出海碼頭建造 */
+.bldsteps{display:flex;align-items:center;justify-content:center;gap:4px;margin:6px 0 8px;font-size:12px}
+.bldsteps span{display:flex;align-items:center;gap:3px;opacity:.55;white-space:nowrap}.bldsteps span.on,.bldsteps span.ok{opacity:1}
+.bldsteps i{display:inline-block;width:18px;height:18px;line-height:15px;text-align:center;font-style:normal;font-size:11px;border:2px solid var(--edge);border-radius:50%;background:#fff}
+.bldsteps .on i{background:#ffd36b}.bldsteps .ok i{background:#6fcf7a;color:#fff}
+.bldsteps u{flex:1;min-width:6px;max-width:22px;height:2px;background:var(--edge);opacity:.4}
+.bldrow{display:flex;align-items:center;gap:8px;padding:6px 8px;margin:5px 0;border:2px solid #f0dcc8;border-radius:12px;background:#fff}
+.bldrow canvas{width:32px;height:32px;image-rendering:pixelated;flex:none}.bldmid{flex:1;min-width:0}
+.bldnm{display:flex;justify-content:space-between;font-size:13px;margin-bottom:2px}.bldnm span{font-size:12px;opacity:.8}
+.bldmid small{font-size:11px;opacity:.7}.bldbtn{display:flex;gap:4px;flex:none}
+
+.bldclosed{margin:6px 0;padding:6px 10px;border:2px solid #ffb3a8;border-radius:12px;background:#fff0ee;font-size:12px;color:#a8453a}
+
+/* 更新通告 */
+.an-card{max-height:86vh;overflow:auto;width:min(480px,92vw)}
+.an-sec{margin:8px 0}.an-t{display:inline-block;padding:1px 9px;border:2px solid var(--edge);border-radius:10px;font-size:12px;margin-bottom:3px}
+.an-t.new{background:#ffe3a8}.an-t.chg{background:#cfe8f7}.an-t.fix{background:#d7f0c8}
+.an-sec ul{margin:2px 0 0;padding-left:18px;font-size:13px;line-height:1.55}.an-sec li{margin:2px 0}
+.an-ver{font-size:13px;opacity:.75;margin:0 0 4px}

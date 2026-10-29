@@ -178,6 +178,7 @@ const nearRemote = rp => !!rp && hereRp(rp) && Math.abs(rp.tx - pl.x) + Math.abs
 async function pactInvite(uid, act) {
   const P = PACTS[act], rp = remotes.get(uid);
   if (!P || !ready || !me) return;
+  if (scene === 'boat') { toast('船上不能做雙人動作', 1800); return; }
   if (!syncScene() || !net || !net.ok) { toast('要連上即時連線才能做雙人動作（廣場、塔羅屋、屋子裡都可以）', 2600); return; }
   if (!rp || !nearRemote(rp)) { toast('距離不夠：走到對方的上、下、左或右一格，面對面才能邀請', 3200); return; }
   if (fishing || cooking) { toast((cooking ? '烹飪' : '釣魚') + '的時候不能互動', 1800); return; }
@@ -467,6 +468,7 @@ function drawLying(it, ch, slot) {
 let visiting = null, ownHouse = null;
 async function visitHouse(uid, name) {
   if (!ready || !me || enterBusy || dsOpen) return;
+  if (scene === 'boat') { toast('出海中，下船後再去拜訪', 2200); return; }
   enterBusy = true;
   try {
     const d = await withTimeout(rpc('house_visit', { p_uid: uid }).then(x => houseDoorOf(x, uid)), 12000);

@@ -58,6 +58,7 @@ function forestAct(x, y) {
   if (k === NP) { openNpc(NPCS.indexOf(npcAt(x, y))); return; }
   if (k === WA) { if (t.id === 'rod') startFish(x, y); else pop(x, y, '這是森林的池塘（換成釣竿就能釣魚）', '#cfe8f7'); return; }
   if (t.id === 'net') { swingNet(x, y); return; }
+  if (k === TC) { chopTree(x, y); return; }
   if (k === TR) { pop(x, y, '一棵大樹', '#ffffff'); return; }
 }
 
@@ -179,4 +180,43 @@ function drawBldg(b, now, lit) {
     ob('#6fb7e8', '#3f7fae', dx + 8, oy + h - 8, 5, 4);
   }
   if (b.t === 'chief') { ob('#e9a98b', '#c97f6a', ox + w - 14, oy - 4, 7, 9); for (let i = 0; i < 2; i++) { const ph = ((now / 1100) + i / 2) % 1; g.globalAlpha = .8 * (1 - ph); rr('#ffffff', ox + w - 13 + Math.round(Math.sin(ph * 6 + i) * 2), oy - 7 - Math.round(ph * 10), 4, 3); } g.globalAlpha = 1; }
+}
+
+/* ---------- 出海團：船上的場景（js/voyage.js 管流程，這裡只負責進出）---------- */
+function quietToFarm() {                 // 從任何場景安靜地回到農場（地圖大小各不相同，不先離開的話離開後尺寸會停在錯的值）
+  if (scene === 'plaza' || scene === 'tarot') leaveVillage(true);
+  if (scene === 'house') leaveHouse(true);
+  if (scene === 'stylist') leaveStylist(true);
+  if (scene === 'cave') leaveCave(true);
+  if (scene === 'forest') leaveForest(true);
+  if (scene === 'town') leaveTown(true);
+  if (scene === 'barn') leaveBarn(true);
+}
+function enterBoat(v, back) {
+  if (!v || !v.id) return;
+  if (typeof closeFriendPop === 'function') closeFriendPop();
+  quietToFarm();
+  hideCatch(); fishing = null; cooking = null;
+  pose = null; scene = 'boat'; K = dkind; W = BTW; H = BTH;
+  critters.length = 0; critSlot = -1;
+  remotes.clear(); vLog.innerHTML = ''; myBubble = null; myShow = null; lastPosKey = ''; posAcc = 0;
+  const idx = Math.max(0, (v.members || []).findIndex(m => m.uid === myUid)), sl = DECK_SLOTS[idx % DECK_SLOTS.length];
+  pl.x = pl.sx = sl[0]; pl.y = pl.sy = sl[1]; pl.prog = 1; pl.face = 'up'; pressed.length = 0;
+  view.snap = true; fitView();
+  vPanel.hidden = false; renderVillage();
+  addSys('歡迎上船！站在欄杆邊，面向海面按動作鍵拋竿。');
+  startNet('boat-' + v.id, true);
+  voyEntered(v, back);
+  syncBgm();
+}
+function leaveBoat(silent, noRejoin) {
+  if (scene !== 'boat') { voyLeft(); return; }
+  const back = (voy.back || {}).scene;
+  stopNet(); remotes.clear(); myBubble = null; myShow = null; vPanel.hidden = true; fishing = null; vfClose();
+  scene = 'farm'; K = kind; W = BW; H = BH;
+  pl.x = pl.sx = 18; pl.y = pl.sy = 5; pl.prog = 1; pl.face = 'left'; pressed.length = 0;
+  view.snap = true; fitView();
+  voyLeft();
+  if (!silent) toast('回到農場了');
+  if (!silent && !noRejoin && back === 'plaza') joinVillage('public');
 }

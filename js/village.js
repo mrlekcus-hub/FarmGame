@@ -42,13 +42,13 @@ function typingBubble(cx, cy, now) {
 const typingOn = rp => !!rp.typing && performance.now() - rp.typing < 6000;   // 對方每 3 秒會補送一次，超過 6 秒沒更新就當作沒在輸入了
 /* 同步的「世界」：p 廣場、t 塔羅屋、h 屋子（拜訪朋友或自己的家，各屋子有自己的頻道）。
    廣場和塔羅屋共用同一條村頻道，靠位置訊息裡的 w 分開；只有和自己同一個世界的人才會畫出來。 */
-const worldKey = () => scene === 'tarot' ? 't' : scene === 'house' ? 'h' : 'p';
-const syncScene = () => scene === 'plaza' || scene === 'tarot' || (scene === 'house' && !!net);
+const worldKey = () => scene === 'tarot' ? 't' : scene === 'house' ? 'h' : scene === 'boat' ? 'b' : 'p';
+const syncScene = () => scene === 'plaza' || scene === 'tarot' || scene === 'boat' || (scene === 'house' && !!net);
 const hereRp = rp => (rp.w || 'p') === worldKey();
-const worldOf = w => w === 't' ? 't' : w === 'h' ? 'h' : 'p';
-const worldW = w => w === 't' ? RMW : w === 'h' ? houseMapW() : PLW;
-const worldH = w => w === 't' ? RMH : w === 'h' ? houseMapH() : PLH;
-const WORLD_IN = { p: '來到廣場', t: '進了塔羅屋', h: '來到屋子裡' };
+const worldOf = w => w === 't' ? 't' : w === 'h' ? 'h' : w === 'b' ? 'b' : 'p';
+const worldW = w => w === 't' ? RMW : w === 'h' ? houseMapW() : w === 'b' ? BTW : PLW;
+const worldH = w => w === 't' ? RMH : w === 'h' ? houseMapH() : w === 'b' ? BTH : PLH;
+const WORLD_IN = { p: '來到廣場', t: '進了塔羅屋', h: '來到屋子裡', b: '上船了' };
 const remoteAt = (x, y) => {
   let hit = null;
   remotes.forEach(rp => { if (rp.tx === x && rp.ty === y && hereRp(rp)) hit = rp; });
@@ -74,11 +74,16 @@ const addSys = text => addLog('', text, false, true);
 
 function renderVillage() {
   const inHouse = scene === 'house' && !!net;          // 在屋子裡：同一個聊天欄，標題改成屋子，沒有邀請碼，也沒有「離開廣場」
-  if (!roomInfo && !inHouse) return;
+  const onBoat = scene === 'boat';                     // 在船上：標題「出海團」，離開靠船上的面板
+  if (!roomInfo && !inHouse && !onBoat) return;
   const n = remotes.size + 1;
-  $('v-input').placeholder = inHouse ? '對屋子裡的朋友說點什麼' : '對廣場上的朋友說點什麼';
-  $('v-leave').hidden = inHouse;
-  if (inHouse) {
+  $('v-input').placeholder = onBoat ? '對船上的朋友說點什麼' : inHouse ? '對屋子裡的朋友說點什麼' : '對廣場上的朋友說點什麼';
+  $('v-leave').hidden = inHouse || onBoat;
+  if (onBoat) {
+    $('v-title').textContent = '出海團';
+    $('v-count').textContent = n + '/8 人';
+    $('v-copy').hidden = true;
+  } else if (inHouse) {
     $('v-title').textContent = visiting ? visiting.name + ' 的家' : '我的家';
     $('v-count').textContent = n + ' 人';
     $('v-copy').hidden = true;
@@ -182,9 +187,11 @@ function onFish(p) {
   if (!p || typeof p !== 'object') return;
   const rp = typeof p.i === 'string' ? remotes.get(p.i) : null;
   if (!rp) return;
-  if (p.a !== 1) { rp.fish = null; return; }
-  const x = intIn(p.x, 0, PLW - 1, -1), y = intIn(p.y, 0, PLH - 1, -1);
-  if (x < 0 || y < 0 || pkind[y][x] !== WA) { rp.fish = null; return; }
+  if (p.a !== 1 && p.a !== 2) { rp.fish = null; return; }
+  const bt = scene === 'boat';
+  const x = intIn(p.x, 0, (bt ? BTW : PLW) - 1, -1), y = intIn(p.y, 0, (bt ? BTH : PLH) - 1, -1);
+  if (x < 0 || y < 0 || (bt ? dkind : pkind)[y][x] !== WA) { rp.fish = null; return; }
+  if (p.a === 2) { if (bt) rp.fish = { x, y, phase: 'fight', t0: Date.now() }; return; }     // 出海團：對方正在跟魚拉扯
   const bite = p.b === 1;
   if (rp.fish && rp.fish.x === x && rp.fish.y === y) rp.fish.phase = bite ? 'bite' : rp.fish.phase;
   else rp.fish = { x, y, phase: bite ? 'bite' : 'cast', t0: Date.now() };
@@ -319,7 +326,7 @@ function sendPos(dt) {
 /* 看門狗：頻道連上後如果掉線又沒自己恢復，就整條重建；回到前景、網路恢復時也會檢查 */
 function netWatch(force) {
   if (!ready || !sb) return;
-  if (net && (scene === 'plaza' || scene === 'tarot' || scene === 'house')) {
+  if (net && (scene === 'plaza' || scene === 'tarot' || scene === 'house' || scene === 'boat')) {
     const st = net.ch.state;
     if (st === 'joined') { net.bad = 0; if (!net.ok) { net.ok = true; trackSelf(); } }
     else if (net.wasOk && (force || ++net.bad >= 2)) { addSys('連線中斷，重新連線中…'); startNet(net.room, net.priv); return; }
@@ -337,7 +344,7 @@ document.addEventListener('visibilitychange', () => {
 });
 window.addEventListener('online', () => setTimeout(() => netWatch(true), 3000));
 function netFish(p) {
-  if (scene !== 'plaza' || !net || !net.ok) return;
+  if ((scene !== 'plaza' && scene !== 'boat') || !net || !net.ok) return;
   try { net.ch.send({ type: 'broadcast', event: 'fish', payload: { i: myUid, ...p } }); } catch (e) { /* 略過 */ }
 }
 let lastShow = 0;

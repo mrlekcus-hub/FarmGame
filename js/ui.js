@@ -31,7 +31,7 @@ const hotKey = () => 'dewfarm_hot_' + authUser;
 /* 同一組裡物品不重複（不同組可以放一樣的，例如每組都放鋤頭） */
 function hotClean(v) {
   const seen = new Set();
-  return v.map(x => (Number.isInteger(x) && x >= 0 && x < TOOLS.length && !seen.has(x) && seen.add(x)) ? x : -1);
+  return v.map(x => (Number.isInteger(x) && x >= 0 && x < TOOLS.length && TOOLS[x].id !== 'yard' && !seen.has(x) && seen.add(x)) ? x : -1);
 }
 function hotLoad() {
   hotSets = [DEFHOT.slice(), Array(6).fill(-1), Array(6).fill(-1)]; hotPage = 0;
@@ -104,6 +104,10 @@ function updateTip() {
   let s = '走到田邊，面向一塊草地，按動作鍵。';
   if (cooking) {
     s = cookTip();
+  } else if (vfOn) {
+    s = voyToggleReel ? '點動作鍵切換收線／放鬆，讓張力停在綠區！' : '按住動作鍵收線，放開放鬆；張力停在綠區進度才會增加！';
+  } else if (scene === 'boat' && !fishing) {
+    s = voy.cur && voy.cur.status === 'sailing' ? '站在欄杆邊，面向海面按動作鍵拋竿。' : '集合中：按面板上的「準備」，等船長出發。';
   } else if (fishing) {
     s = fishing.phase === 'bite' ? '魚咬鉤了！快按動作鍵拉竿！' : fishing.phase === 'cast' ? '拋竿…' : fishing.phase === 'reel' ? '拉起來…' : '等魚上鉤…看到「!」立刻按動作鍵。太早拉會嚇跑魚。';
   } else if (scene === 'house') {
@@ -160,10 +164,11 @@ function updateTip() {
     if (x >= 0 && y >= 0 && x < W && y < H) {
       const k = K[y][x];
       if (k === CX) s = '洞口：按動作鍵回森林。';
-      else if (k === RK) s = plv() < featNeed.mine ? '礦石：玩家 Lv.' + featNeed.mine + ' 解鎖採礦。' : curTool().id === 'pick' ? '礦石：按動作鍵敲開，每顆每 2 小時恢復一次。' : '礦石：換成鎬子才敲得動。';
+      else if (k === RK) s = plv() < featNeed.mine ? '礦石：玩家 Lv.' + featNeed.mine + ' 解鎖採礦。' : curTool().id === 'pick' ? '礦石：按動作鍵敲開，每顆每天 0 點恢復一次。' : '礦石：換成鎬子才敲得動。';
     }
   } else if (scene === 'forest') {
     s = '西邊森林：草叢裡有蟲蝶，池塘可以釣魚；往北走有一個山洞（玩家 Lv.' + featNeed.cave + ' 才能進入），礦石在裡面。';
+    if (x >= 0 && y >= 0 && x < W && y < H && K[y][x] === TC) s = curTool().id === 'axe' ? '樹：按一下動作鍵就砍倒，掉木頭，砍倒後隔天 0 點長回來。' : '有金色星點的樹可以砍：換成斧頭（背包裡）再動手。';
     if (x >= 0 && y >= 0 && x < W && y < H) {
       const k = K[y][x];
       if (k === FE) s = '森林出口：按動作鍵回小村。';
@@ -215,10 +220,10 @@ function updateTip() {
     else if (k === GT) s = '村莊大門：去公共廣場和朋友見面。';
     else if (k === DR) s = '房子的門：按動作鍵進屋，可以布置你的家。';
     else if (k === SH) s = '柴犬雜貨攤：買種子、賣作物。';
-      else if (curTool().id === 'yard' && k === G) s = yardMap.has(pk(x, y)) ? '庭院佈置：按動作鍵收回這件裝飾。' : '庭院佈置：按動作鍵在這格擺裝飾（要空草地）。';
+      else if (yardMode && k === G) s = yardMap.has(pk(x, y)) ? '庭院佈置：點一下（或按動作鍵）收回這件裝飾。' : '庭院佈置：點一下（或按動作鍵）在這格擺裝飾（要空草地）。';
       else if (k === TG) s = plv() < featNeed.town ? '西邊的出口：玩家 Lv.' + featNeed.town + ' 才能進入雷克斯小村。' : '西邊的出口：按動作鍵前往雷克斯小村（村民、布告欄、旅行商人都在那裡）。';
       else if (k === BR) s = plv() < featNeed.ranch ? '穀倉：玩家 Lv.' + featNeed.ranch + ' 解鎖動物牧場。' : '穀倉：按動作鍵走進去，看看養的雞、牛、羊。';
-      else if (k === RK) s = plv() < featNeed.mine ? '礦石：玩家 Lv.' + featNeed.mine + ' 解鎖採礦。' : curTool().id === 'pick' ? '礦石：按動作鍵敲開，每顆每 2 小時恢復一次。' : '礦石：換成鎬子才敲得動。';
+      else if (k === RK) s = plv() < featNeed.mine ? '礦石：玩家 Lv.' + featNeed.mine + ' 解鎖採礦。' : curTool().id === 'pick' ? '礦石：按動作鍵敲開，每顆每天 0 點恢復一次。' : '礦石：換成鎬子才敲得動。';
       else if (fgList.some(f => f.x === x && f.y === y && !forTaken.has(f.slot + ':' + f.i))) s = plv() < featNeed.forage ? '野外採集物：玩家 Lv.' + featNeed.forage + ' 解鎖採集。' : '野外採集物：按動作鍵撿起來。';
     else if (k === WA) s = curTool().id === 'rod' ? '池塘：按動作鍵拋竿釣魚。' : '池塘。（換成釣竿就能釣魚）';
     else if (k === G) s = farmable(x, y) ? '空地：用鋤頭翻成田（' + plots.size + '/' + (lv ? plotCap() : '—') + '）。' : '這裡不能耕種，田地在房子下方的草地。';

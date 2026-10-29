@@ -192,7 +192,7 @@ shopCard.addEventListener('click', async e => {
     if (a === 'hexpand') { await loadHouse(); if (r.size) toast('房子擴建成 ' + r.size.w + '×' + r.size.h + ' 格了！', 3000); }
     if (r.earned) toast('賣出得到 ' + r.earned + ' G');
     if (a === 'buy' && CROPS[k]) toast('買了 ' + buyN + ' 個' + CROPS[k].n + '種子');
-    if (a === 'buyy') toast('買了 ' + (+b.dataset.n || 1) + ' 個' + itemName('y:' + k) + '，裝備「庭院佈置」工具來擺放');
+    if (a === 'buyy') toast('買了 ' + (+b.dataset.n || 1) + ' 個' + itemName('y:' + k) + '，按右側功能列的「🏡 庭院」來擺放');
     if (a === 'buym') toast('買了 ' + (+b.dataset.n || 1) + ' 個' + itemName(k));
   } catch (err) { toast(errText(err)); await resync(); }
   shopBusy = false;

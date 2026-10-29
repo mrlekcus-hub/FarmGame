@@ -28,7 +28,7 @@ function yardAct(x, y) {
   if (here) {
     yardMap.delete(pk(x, y)); inv['y:' + here] = have('y:' + here) + 1;
     pop(x, y, '收回' + itemName('y:' + here), '#fff3b0'); dust(x, y);
-    act2('yard_pick', { p_x: x, p_y: y }); refreshHud(); return;
+    act2('yard_pick', { p_x: x, p_y: y }); refreshHud(); renderYardBar(); return;
   }
   const mine = Object.keys(inv).filter(k => /^y:/.test(k) && inv[k] > 0);
   let key = yardSel && have('y:' + yardSel) > 0 ? yardSel : (mine[0] || '').slice(2);
@@ -37,8 +37,36 @@ function yardAct(x, y) {
   yardMap.set(pk(x, y), key); inv['y:' + key] = have('y:' + key) - 1;
   pop(x, y, '擺上' + itemName('y:' + key), '#c9f0a8'); dust(x, y);
   act2('yard_place', { p_key: key, p_x: x, p_y: y }, null, e => { yardMap.delete(pk(x, y)); return false; });
-  refreshHud();
+  refreshHud(); renderYardBar();
 }
+
+/* ---------- 庭院佈置模式：右側功能列的「🏡 庭院」。開著時，動作鍵（面向的格子）＝擺放選中的裝飾／收回已擺的 ---------- */
+function setYard(on) {
+  if (on && (scene !== 'farm' || visiting || !ready || !me)) { if (scene !== 'farm') toast('庭院佈置要在自己的農場上進行'); return; }
+  if (on && featLocked('yard')) return;
+  yardMode = !!on;
+  const b = $('dockyard'); if (b) { b.classList.toggle('on', yardMode); b.setAttribute('aria-pressed', yardMode ? 'true' : 'false'); }
+  renderYardBar();
+}
+const toggleYard = () => setYard(!yardMode);
+function renderYardBar() {
+  const el = $('yardbar'); if (!el) return;
+  if (!yardMode) { el.hidden = true; el.innerHTML = ''; return; }
+  const mine = Object.keys(inv).filter(k => /^y:/.test(k) && inv[k] > 0).sort();
+  if (mine.length && !mine.includes('y:' + yardSel)) yardSel = mine[0].slice(2);
+  el.innerHTML = '<div class="yb-h"><b>🏡 庭院佈置模式</b><span>點空草地擺放 · 點已擺的裝飾收回（也可面向格子按動作鍵）</span><button type="button" class="btn small" data-y="end">結束</button></div>' +
+    (mine.length ? '<div class="yb-g">' + mine.map(k => '<button type="button" class="yb-i' + (k.slice(2) === yardSel ? ' on' : '') + '" data-y="sel" data-k="' + esc(k.slice(2)) + '"><canvas width="16" height="16" data-y-ic="' + esc(k.slice(2)) + '"></canvas><small>' + esc(itemName(k)) + '</small><i>×' + inv[k] + '</i></button>').join('') + '</div>'
+      : '<p class="yb-e">還沒有庭院裝飾，到小村村長家的園藝工坊買。</p>');
+  el.querySelectorAll('canvas[data-y-ic]').forEach(c => yardIcon(c.getContext('2d'), c.dataset.yIc));
+  el.hidden = false;
+}
+$('yardbar').addEventListener('pointerdown', e => e.stopPropagation());
+$('yardbar').addEventListener('click', e => {
+  const b = e.target.closest('button[data-y]'); if (!b) return;
+  if (b.dataset.y === 'end') setYard(false);
+  else if (b.dataset.y === 'sel') { yardSel = b.dataset.k; renderYardBar(); }
+});
+setInterval(() => { if (yardMode && (scene !== 'farm' || visiting || !ready || authOpen)) setYard(false); }, 400);   // 離開農場、被叫去別處就自動結束
 
 /* ---------- 雜項物品（畜產、採集物、礦物、肥料）的像素圖與價錢 ---------- */
 function miscArt(px, py, key) {
@@ -53,6 +81,7 @@ function miscArt(px, py, key) {
     case 'berry': ob(c, o, px + 3, py + 7, 5, 5); ob(c, o, px + 8, py + 6, 5, 5); r('#5fbf6a', px + 7, py + 3, 3, 3); r('rgba(255,255,255,.55)', px + 4, py + 8, 1, 1); break;
     case 'cap': ob(c, o, px + 2, py + 3, 12, 6); r('#fff3d6', px + 4, py + 5, 2, 2); r('#fff3d6', px + 9, py + 4, 2, 2); ob('#fff3d6', o, px + 6, py + 9, 4, 5); break;
     case 'gem': ob(c, '#4a7fa8', px + 3, py + 4, 10, 8); r('#ffffff', px + 5, py + 5, 2, 2); r('#4a7fa8', px + 7, py + 7, 1, 4); r(c, px + 5, py + 12, 6, 2); break;
+    case 'log': ob('#c99a6a', '#7a5532', px + 2, py + 5, 12, 5); ob('#b98a62', '#7a5532', px + 3, py + 9, 11, 5); r('#e8c9a0', px + 3, py + 6, 2, 3); r('#e8c9a0', px + 4, py + 10, 2, 3); r('#8a5a34', px + 4, py + 7, 1, 1); break;
     case 'rock': ob(c, o, px + 2, py + 6, 12, 8); r('rgba(255,255,255,.4)', px + 4, py + 7, 3, 1); break;
     case 'ore': ob('#a8a8b0', o, px + 2, py + 6, 12, 8); r(c, px + 4, py + 8, 3, 2); r(c, px + 9, py + 10, 3, 2); r(c, px + 8, py + 7, 2, 2); break;
     default: ob(c, o, px + 4, py + 5, 8, 8); r('rgba(255,255,255,.6)', px + 5, py + 6, 2, 2);
@@ -145,7 +174,7 @@ function mineRock(x, y) {
   if (featLocked('mine', x, y)) return;
   if (t.id !== 'pick') { pop(x, y, '換成鎬子才敲得動', '#ffffff'); return; }
   if (rocksAt[idx] > srvNow()) { pop(x, y, '還在恢復中', '#ffffff'); return; }
-  rocksAt[idx] = srvNow() + 7200000;
+  rocksAt[idx] = nextDay0();
   burst(x, y, 8, ['#dfe3ec', '#b4b8c4'], -1.2, 8);
   enqueue(() => rpc('mine', { p_rock: idx })).then(r => {
     if (r.inv) Object.assign(inv, r.inv);
@@ -155,6 +184,40 @@ function mineRock(x, y) {
     if (got['m:gem']) toast('挖到水晶了！');
     refreshHud();
   }).catch(e => { delete rocksAt[idx]; toast(errText(e)); resync(); });
+}
+/* ---------- 砍樹：西邊森林的 17 棵樹，每人各自 隔天 0 點長回來 ---------- */
+function drawChopTree(px, py, tx, ty, idx) {
+  if (treesAt[idx] > srvNow()) {   // 還在長：只剩樹墩
+    drawGrass(px, py, tx, ty);
+    r('rgba(107,72,72,.16)', px + 2, py + 12, 12, 3);
+    ob('#b98a62', '#7a5532', px + 4, py + 8, 8, 6); r('#e8c9a0', px + 5, py + 9, 6, 2); r('#9a6a4a', px + 7, py + 9, 2, 1);
+    return;
+  }
+  drawTree(px, py, tx, ty);
+  r('#8a5a34', px + 5, py + 10, 6, 6); r('#5a3a1c', px + 5, py + 10, 1, 6);   // 比裝飾樹粗的樹幹
+  const tw = Math.floor(srvNow() / 500 + idx) % 2;   // 金色星點閃爍：看得出是可以砍的
+  r('#ffd34d', px + 1, py + 1, 2, 2); r('#ffd34d', px + 13, py + 3, 2, 2); if (tw) { r('#ffffff', px + 2, py + 2, 1, 1); r('#ffffff', px + 13, py + 3, 1, 1); }
+}
+const CHOP_HITS = 1;
+function chopTree(x, y) {
+  const idx = CHOPS.findIndex(q => q[0] === x && q[1] === y), t = curTool();
+  if (idx < 0) return;
+  if (t.id !== 'axe') { pop(x, y, '換成斧頭才砍得動', '#ffffff'); return; }
+  const left = (treesAt[idx] | 0) - srvNow();
+  if (left > 0) { pop(x, y, '還沒生長，每天 0 點長回來（約 ' + fmtDur(Math.ceil(left / 1000)) + ' 後）', '#ffffff'); return; }
+  const n = (chopHits[idx] | 0) + 1;
+  burst(x, y, 5, ['#8fcf7a', '#b98a62'], -1.2, 6);
+  if (n < CHOP_HITS) { chopHits[idx] = n; pop(x, y, '砍！' + n + '/' + CHOP_HITS, '#fff3b0'); return; }
+  delete chopHits[idx];
+  treesAt[idx] = nextDay0();
+  burst(x, y, 10, ['#8fcf7a', '#b98a62', '#e8c9a0'], -1.4, 8);
+  enqueue(() => rpc('chop_tree', { p_tree: idx })).then(r => {
+    if (r.inv) Object.assign(inv, r.inv);
+    treesAt[idx] = +r.ready;
+    const got = r.got || {};
+    pop(x, y, Object.keys(got).map(k => itemName(k) + '×' + got[k]).join(' '), '#fff3b0');
+    refreshHud();
+  }).catch(e => { delete treesAt[idx]; toast(errText(e)); loadTrees(); resync(); });
 }
 function fertAct(x, y, p) {
   if (!p || !p.crop) { pop(x, y, '先種下作物再施肥', '#ffffff'); return; }

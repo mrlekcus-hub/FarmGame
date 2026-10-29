@@ -13,7 +13,9 @@ const ACH = [
   { id: 'bug_half', ic: '📙', n: '蟲圖鑑過半', d: '蟲蝶圖鑑集滿一半' }, { id: 'bug_all', ic: '📕', n: '蟲圖鑑全收集', d: '蟲蝶圖鑑全部集滿' },
   { id: 'plots10', ic: '🌻', n: '田園風光', d: '擁有 10 塊田' }, { id: 'home15', ic: '🛋️', n: '溫馨小窩', d: '家裡擺 15 件家具' },
   { id: 'friend3', ic: '🤝', n: '好人緣', d: '擁有 3 位好友' },
-  { id: 'photo', ic: '📸', n: '命運之交', d: '和好友完成第一次合照' }
+  { id: 'photo', ic: '📸', n: '命運之交', d: '和好友完成第一次合照' },
+  { id: 'voy1', ic: '⛵', n: '初次出海', d: '完成 1 趟出海團' }, { id: 'voy10', ic: '🚢', n: '老水手', d: '完成 10 趟出海團' }, { id: 'voy50', ic: '⚓', n: '海上傳奇', d: '完成 50 趟出海團' },
+  { id: 'sea_all', ic: '🐙', n: '海釣圖鑑全收集', d: '海釣圖鑑全部集滿' }
 ];
 FITS.forEach((nm, i) => { if (i >= FREE_N.fits) ACH.push({ id: 'fit' + i, ic: FIT_IC[i] || '👗', n: nm + '收藏家', d: '集齊「' + nm + '」的 ' + OUTFITS.length + ' 種顏色' }); });
 /* 成就分類：成長、技能、收集、生活、服裝（服裝成就 id 都是 fit 開頭） */
@@ -22,6 +24,7 @@ const ACH_CATS = [
   { k: 's', ic: '🌾', n: '技能', ids: ['farm5', 'farm10', 'fish5', 'bug5'] },
   { k: 'c', ic: '📚', n: '收集', ids: ['fish100', 'bug100', 'fish_half', 'fish_all', 'bug_half', 'bug_all'] },
   { k: 'l', ic: '🏡', n: '生活', ids: ['plots10', 'home15', 'friend3', 'photo'] },
+  { k: 'v', ic: '⛵', n: '出海', ids: ['voy1', 'voy10', 'voy50', 'sea_all'] },
   { k: 'f', ic: '👗', n: '服裝', ids: ACH.filter(x => /^fit\d+$/.test(x.id)).map(x => x.id) }
 ];
 ACH_CATS.forEach(c => { c.a = c.ids.map(id => ACH.find(x => x.id === id)).filter(Boolean); });
@@ -50,7 +53,7 @@ function renderCard() {
     h += '<p class="empty">選一樣送給 ' + esc(cd.name) + '（每天最多送 3 份，一次送 1 個）</p>' + (cdMsg ? '<p class="mk-msg">' + esc(cdMsg) + '</p>' : '') +
       (items.length ? items.map(k => '<div class="giftrow"><span>' + esc(itemName(k)) + ' ×' + have(k) + '</span><button type="button" class="btn small" data-a="give" data-k="' + esc(k) + '">送出</button></div>').join('') : '<p class="empty">背包裡沒有可以送的作物、魚或蟲蝶。</p>');
   } else {
-    const st = cd.stats || {}, got = new Set(cd.ach || []), pins = (cd.badges || []).filter(x => got.has(x));
+    const st = cd.stats || {}, got = new Set((cd.ach || []).concat(cd.self ? voyAchSelf() : [])), pins = (cd.badges || []).filter(x => got.has(x));
     h += '<div class="cdav"><canvas id="cd-av" width="16" height="22"></canvas><div class="offer" style="flex:1"><p><b>' + esc(cd.name) + '</b>　<small>@' + esc(cd.username) + '</small></p>' +
       '<p>' + (pins.length ? pins.map(id => { const a = ACH.find(x => x.id === id); return a ? '<span title="' + esc(a.n) + '" style="font-size:22px">' + a.ic + '</span>' : ''; }).join(' ') : '<small style="opacity:.5">' + (cd.self ? '點下面的成就可以置頂（最多 3 個）' : '還沒有置頂成就') + '</small>') + '</p></div></div>';
     if (cd.self) {

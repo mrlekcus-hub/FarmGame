@@ -177,6 +177,7 @@ function update(dt) {
   moodAcc += dt;
   if (moodAcc > 1000) { moodAcc = 0; if (Music) { Music.setMood(darkness(world().min), scene === 'plaza'); syncBgm(); } updateBuffChip(); updateCheer(); }
   fishTick();
+  if (vfOn) { pressed.length = 0; vfTick(dt); }
   cookTick();
   if (paused()) { actQueued = false; autoPath = null; return; }
   if (anim && (pressed.length || pose || pl.prog < 1)) anim = null;   // 走動或坐下就中斷動作

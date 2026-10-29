@@ -74,7 +74,7 @@ for (let x = 15; x <= 18; x++) kind[5][x] = P;
 kind[5][19] = GT;
 /* 穀倉＋筒倉（農場上方 4×2，原本雜貨攤的位置）、礦石（順序要和 SQL mine(0~5) 對應）、旅行商人的位置（週五六日才出現） */
 for (let y = 1; y <= 2; y++) for (let x = 12; x <= 15; x++) kind[y][x] = BR;
-const ROCKS = [[3, 3], [12, 3], [5, 6], [10, 6], [3, 9], [13, 9]];   // 礦石在北邊山洞裡（順序要和 SQL mine(0~5) 對應），農場上沒有礦石
+const ROCKS = [[3, 3], [12, 3], [5, 6], [10, 6], [3, 9], [13, 9], [6, 2], [9, 2], [2, 6], [8, 6], [6, 9], [11, 9], [13, 6]];   // 礦石在北邊山洞裡，共 13 顆（順序要和 SQL mine(0~12) 對應，新增的 6~12 往後加），農場上沒有礦石
 const CAW = 16, CAH = 12;
 const cakind = Array.from({ length: CAH }, () => Array(CAW).fill(G));
 for (let y = 0; y < CAH; y++) for (let x = 0; x < CAW; x++) if (x === 0 || y === 0 || x === CAW - 1 || y === CAH - 1) cakind[y][x] = CW;
@@ -119,6 +119,8 @@ kind[5][0] = TG; for (let x = 1; x <= 3; x++) kind[5][x] = P;                 //
 
 /* ---------- 西邊森林（30×26，鏡頭跟隨）：有蟲可抓、有池塘可釣魚，北邊有山洞入口 ---------- */
 const FOW = 30, FOH = 26;
+const TC = 75;   // 可砍的樹（有金色星點）；每人各自 隔天 0 點長回來，順序要和 SQL chop_tree(0~16) 對應
+const CHOPS = [[2, 2], [4, 2], [3, 4], [6, 3], [5, 5], [2, 6], [7, 6], [4, 8], [19, 17], [21, 17], [23, 18], [20, 19], [22, 20], [25, 19], [24, 22], [26, 21], [19, 22]];
 const FOREST_BLD = [{ x: 12, y: 2, w: 5, h: 4, t: 'mine' }];   // 北邊的山洞，洞口在 (14,5)，站在 (14,6) 面向上
 const FOREST_XTRA = 0;   // 森林額外多出幾隻蟲（要伺服器 bug_catch 一起放寬 p_i 才能開，目前和農場共用同一輪的 3 隻）
 const fkind = Array.from({ length: FOH }, () => Array(FOW).fill(G));
@@ -137,9 +139,10 @@ for (let y = 0; y < FOH; y++) for (let x = 0; x < FOW; x++) if (x === 0 || y ===
     const approach = x >= 12 && x <= 16 && y <= 13;            // 山洞前面留空
     let nearWater = false;
     for (let j = -1; j <= 1; j++) for (let i = -1; i <= 1; i++) if (fkind[y + j] && fkind[y + j][x + i] === WA) nearWater = true;
-    if (!corridor && !approach && !nearWater && hash(x, y, 77) < 0.14) fkind[y][x] = TR;
+    // 森林裡不再隨機擺裝飾樹：樹都是可砍的（CHOPS），只留最外圈的邊界樹
   }
 }
+CHOPS.forEach(([x, y]) => { fkind[y][x] = TC; });
 FOREST_BLD.forEach(b => { for (let y = b.y; y < b.y + b.h; y++) for (let x = b.x; x < b.x + b.w; x++) fkind[y][x] = HB; });
 fkind[5][14] = CV;                                              // 山洞入口
 for (let x = 14; x <= FOW - 2; x++) fkind[13][x] = P;           // 從村子過來的小路
@@ -188,6 +191,35 @@ for (let y = 0; y < PLH; y++) for (let x = 0; x < PLW; x++) if (x === 0 || y ===
   }
 }
 pkind[PLH - 1][PXO + 10] = GT;
+/* 柴犬船長 NPC（出海團）：廣場右下角大水池的西岸，船停在他右邊的水面上（畫法見 js/art/boat.js）。
+   走不進去，面向它按動作鍵開啟開團面板。 */
+const CPT = 73;
+pkind[PYO + 11][PXO + 13] = CPT;
+const CPT_X = PXO + 13, CPT_Y = PYO + 11;
+/* 池塘改成一條通往大海的水道：第 12~16 列從池塘的水一路連到地圖右邊緣（原本的樹和岸邊的草都換成水），
+   中間補掉池塘邊上的小缺口，水面才是整齊的一片。 */
+for (let y = 12; y <= 16; y++) {
+  let first = -1;
+  for (let x = 1; x < PLW; x++) if (pkind[y][x] === WA) { first = x; break; }
+  if (first < 0) continue;
+  for (let x = first; x < PLW; x++) pkind[y][x] = WA;
+}
+/* 棧橋（PR）：沿著船的南側從岸邊鋪過水面，可以走，面向水面按動作鍵還是可以釣魚；棧橋下 x>=PIER_WX 是水、之前是草地 */
+const BB = 76;   // 出海碼頭的建造告示牌（全服捐材料；走不進去，面向它按動作鍵）
+pkind[13][18] = BB;
+const PR = 74, PIER_X0 = 19, PIER_X1 = 24, PIER_Y = 15, PIER_WX = 21;
+for (let x = PIER_X0; x <= PIER_X1; x++) pkind[PIER_Y][x] = PR;
+/* ---------- 出海團的船甲板（3/4 俯視，16×12 格）：上面兩排是天空，其餘是海；甲板 x 3~12、y 4~9，一圈欄杆，左上是船艙 ----------
+   BRL 欄杆（走不進去，面向它可以拋竿，魚線落在欄杆外的水面）、BCB 船艙與船頭（走不進去）、VSK 天空。海面用既有的 WA。 */
+const BRL = 70, BCB = 71, VSK = 72;
+const BTW = 16, BTH = 12;
+const dkind = Array.from({ length: BTH }, () => Array(BTW).fill(WA));
+for (let y = 0; y < 2; y++) for (let x = 0; x < BTW; x++) dkind[y][x] = VSK;
+for (let y = 3; y <= 10; y++) for (let x = 2; x <= 13; x++) dkind[y][x] = (x === 2 || x === 13 || y === 3 || y === 10) ? BRL : G;
+for (let y = 4; y <= 5; y++) for (let x = 4; x <= 8; x++) dkind[y][x] = BCB;       // 船艙
+for (let y = 5; y <= 8; y++) dkind[y][14] = BCB;                                       // 船頭
+dkind[5][11] = BCB;                                                                      // 木桶
+const DECK_SLOTS = [[4, 7], [6, 7], [8, 7], [10, 7], [4, 9], [6, 9], [8, 9], [10, 9]];   // 甲板站位：依加入順序（舉辦者第一個），最多 8 格
 let scene = 'farm', K = kind;
 const farmBase = (x, y) => x >= 2 && x <= 13 && y >= 6 && y <= 12 && kind[y][x] === G;
 const plv = () => lv ? lv.pl : 99;
@@ -197,7 +229,7 @@ const plotCap = () => lv ? PLOT_CAP[Math.min(lv.pl, 10) - 1] : 999;
 const nextCap = () => lv && lv.pl < 10 ? PLOT_CAP[lv.pl] : 0;
 const farmable = (x, y) => farmBase(x, y);
 const walkable = (x, y) => x >= 0 && y >= 0 && x < W && y < H &&
-  (K[y][x] === G || K[y][x] === P) && !hwBlocked(x, y) && !plBlocked(x, y) && (scene !== 'house' || !houseBlocked(x, y)) && !(scene === 'town' && (x === MXT || x === MXT + 1) && y === MYT && merchantHere()) && !(scene === 'farm' && yardBlocks(x, y));
+  (K[y][x] === G || K[y][x] === P || K[y][x] === PR) && !hwBlocked(x, y) && !plBlocked(x, y) && (scene !== 'house' || !houseBlocked(x, y)) && !(scene === 'town' && (x === MXT || x === MXT + 1) && y === MYT && merchantHere()) && !(scene === 'farm' && yardBlocks(x, y));
 function tryMove(dir) {
   const d = DIRS[dir];
   pl.face = dir;

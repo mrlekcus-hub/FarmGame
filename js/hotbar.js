@@ -11,6 +11,7 @@ function dockAct(k) {
   else if (k === 'quest') openQuests();
   else if (k === 'lv') openLevels();
   else if (k === 'card') openCard(null);
+  else if (k === 'yard') toggleYard();
   else if (k === 'set') openSettings();
   else if (k === 'tut') openManual();
 }

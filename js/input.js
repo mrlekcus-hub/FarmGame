@@ -7,6 +7,7 @@ const release = d => { const i = pressed.indexOf(d); if (i >= 0) pressed.splice(
 window.addEventListener('keydown', e => {
   const tg = e.target && e.target.tagName;
   if (tg === 'INPUT' || tg === 'SELECT' || tg === 'TEXTAREA') return;
+  if (e.key === 'Escape' && vyOpen) { if (voy.mode !== 'summary') closeVoyModal(); return; }
   if (e.key === 'Escape' && lkOpen) { closeLekcus(); return; }
   if (e.key === 'Escape' && bdOpen) { closeBoard(); return; }
   if (e.key === 'Escape' && ckOpen) { closeKitchen(); return; }
@@ -126,9 +127,16 @@ $('pad').addEventListener('pointerdown', e => {
 /* 畫面手勢：左半邊按住（或拖一下）＝浮動搖桿；快速點一下＝走到那一格 */
 let gest = null, gestTimer = 0;
 const gestOK = () => ready && !!me && !paused() && !(scene === 'house' && edit.on);
+function yardTap(e) {
+  if (scene !== 'farm' || visiting) return;
+  const [tx, ty] = tileFromEvent(e);
+  if (tx < 0 || ty < 0 || tx >= W || ty >= H) return;
+  if (grassTile(tx, ty) || yardMap.has(pk(tx, ty))) yardAct(tx, ty);
+}
 cv.addEventListener('pointerdown', e => {
   if (gest || dpId !== null || e.isPrimary === false || !gestOK()) return;
   if (e.pointerType === 'mouse' && e.button !== 0) return;
+  if (yardMode && e.pointerType !== 'touch') { yardTap(e); return; }   // 庭院佈置模式（電腦）：直接點格子擺放／收回
   const rc = cv.getBoundingClientRect();
   const fl = floatOn && e.pointerType !== 'mouse' && (e.clientX - rc.left) < rc.width * 0.55;
   if (!fl && !tapOn) return;
@@ -148,6 +156,7 @@ function gestEnd(e, type) {
   if (!gest || e.pointerId !== gest.id) return;
   clearTimeout(gestTimer);
   const g0 = gest; gest = null;
+  if (type === 'pointerup' && yardMode && !g0.stick && !g0.moved && performance.now() - g0.t < 450 && gestOK()) { yardTap(e); return; }   // 庭院佈置模式（手機）：點一下格子擺放／收回
   if (type === 'pointerup' && !g0.stick && !g0.moved && tapOn && performance.now() - g0.t < (g0.fl ? 200 : 450) && gestOK()) tapMove(e);
 }
 window.addEventListener('pointermove', e => { gestMove(e); if (e.pointerId === dpId) dpSet(dpDir(e)); });

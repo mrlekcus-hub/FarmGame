@@ -185,18 +185,23 @@ function draw(now) {
   else if (scene === 'stylist') drawStylistRoom(now);
   else if (scene === 'cave') drawCaveRoom(now);
   else if (scene === 'tarot') drawTarotRoom(now);
+  else if (scene === 'boat') drawBoatScene(now);
   else {
   for (let ty = 0; ty < H; ty++) for (let tx = 0; tx < W; tx++) {
     const k = K[ty][tx], px = tx * T, py = ty * T;
     if (k === WA) drawWater(px, py, tx, ty, now);
     else if (k === P) drawPath(px, py, tx, ty);
+    else if (k === PR) drawPier(px, py, tx, ty, now);
     else if (k === TR) drawTree(px, py, tx, ty);
+    else if (k === TC) drawChopTree(px, py, tx, ty, CHOPS.findIndex(q => q[0] === tx && q[1] === ty));
     else if (k === GT || k === FG || k === TG || k === FW || k === FE) { drawPath(px, py, tx, ty); drawGate(px, py, now); }
     else if (k === FR) drawRim(px, py, tx, ty);
     else {
       drawGrass(px, py, tx, ty);
       if (k === BN) drawBench(px, py, tx, ty);
       else if (k === BD) drawBoard(px, py);
+      else if (k === CPT) drawCaptain(px, py, now);
+      else if (k === BB) drawBuildBoard(px, py, now);
       else if (k === NP) drawNpc(px, py, (npcAt(tx, ty) || NPCS[0]).k, now);
       else if (k === RK) drawRock(px, py, ROCKS.findIndex(q => q[0] === tx && q[1] === ty));
       else if (k === WL) drawWell(px, py, now);
@@ -217,7 +222,7 @@ function draw(now) {
   else if (scene === 'town') TOWN_BLD.forEach(b => drawBldg(b, now, dark > 0.15));
   else if (scene === 'forest') FOREST_BLD.forEach(b => drawBldg(b, now, dark > 0.15));
   else {
-    if (scene === 'plaza') drawSnakeBoard(now);   // 蛇梯棋用新地圖座標
+    if (scene === 'plaza') { drawSnakeBoard(now); drawPlazaBoat(now); }   // 蛇梯棋用新地圖座標
     ctx.save(); ctx.translate(PXO * T, PYO * T);   // 塔羅攤、路燈、噴水池是舊廣場座標，位移後再畫
     drawTarotStall(now);
     if (scene === 'plaza') drawPlazaLamps(now);   // 廣場路燈（js/plaza-light.js）
@@ -298,6 +303,7 @@ function draw(now) {
     nameTag(rp.name, px + 8, py - (seated ? 7 : 5), '#fff3b0');
   } }));
   ents.sort((a, b) => a.y - b.y).forEach(en => en.draw());
+  if (scene === 'boat') voyDrawReady(now, rx, ry);
   if (scene === 'town' || scene === 'forest') NPCS.forEach(q => (q.sc || 'town') === scene && drawNpcMark(q.x * T, q.y * T, q.k, now));   // 任務「！」畫在最上層，不被房子遮住
   if (ready && me) snDrawMarks(now, rx, ry);   // 蛇梯棋：玩家頭上骰子、觀戰者頭上眼睛
   if (ready && myEmo) emoteBubble(myEmo, Math.round(rx * T) + 13, Math.round(ry * T) - 6, now);
@@ -327,6 +333,7 @@ function draw(now) {
   });
   ctx.globalAlpha = 1;
 
+  drawBoatFx(now, voyFogLevel(now));
   const indoors = scene === 'house' || scene === 'barn' || scene === 'tarot' || scene === 'stylist' || scene === 'cave';
   const warm = indoors ? 0 : Math.max(0, 1 - Math.abs(w.min - 1110) / 100) * 0.2;
   if (!indoors && SEA === 'autumn') r('rgba(255,170,70,.06)', 0, 0, W * T, H * T);

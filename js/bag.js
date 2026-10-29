@@ -24,7 +24,7 @@ function furnIcon(cv, key) {
 let bagEating = false;
 function bagGroups() {
   const out = [];
-  const tools = [0, 1, 5, 6, 10, 12].map(i => ({ t: 'tool', k: String(i), name: TOOLS[i].n, n: null }));
+  const tools = [0, 1, 5, 6, 10, 13].map(i => ({ t: 'tool', k: String(i), name: TOOLS[i].n, n: null }));
   const seeds = ALLK.filter(k => !CROPS[k].hy || have('s:' + k) > 0).map(k => ({ t: 'seed', k, name: CROPS[k].n + '種子', n: have('s:' + k) }));
   const crops = ALLK.filter(k => have('c:' + k) > 0).map(k => ({ t: 'crop', k, name: CROPS[k].n, n: have('c:' + k) }));
   const qcrops = [];
@@ -59,7 +59,7 @@ function bagDetail(it) {
   const a = [];
   let info = '';
   if (it.t === 'tool') {
-    info = { hoe: '翻土、把空田翻回草地。', can: '替作物澆水（晴天用；下雨下雪時免澆）。', rod: '面向池塘按動作鍵釣魚。', yard: '裝備後面向農場的空草地按動作鍵，擺上背包裡的庭院裝飾；面向已擺的裝飾再按一次就收回。想擺哪一種，到背包點那個裝飾選擇。', pick: '面向農場的礦石按動作鍵敲開，掉石頭、銅礦，偶爾有水晶。每顆礦石每 2 小時恢復一次。', net: '面向草地上的蟲或蝴蝶，按動作鍵揮網。蟲蝶會隨時段和天氣不同。' }[TOOLS[+it.k].id] || '';
+    info = { hoe: '翻土、把空田翻回草地。', can: '替作物澆水（晴天用；下雨下雪時免澆）。', rod: '面向池塘按動作鍵釣魚。', pick: '面向農場的礦石按動作鍵敲開，掉石頭、銅礦，偶爾有水晶。每顆礦石每天 0 點恢復一次。', net: '面向草地上的蟲或蝴蝶，按動作鍵揮網。蟲蝶會隨時段和天氣不同。', axe: '到西邊森林（玩家 Lv.3）面向有金色星點的樹，按一下動作鍵就砍倒，掉木頭。每棵樹砍倒後隔天 0 點長回來；木頭是出海團建造的材料。' }[TOOLS[+it.k].id] || '';
     a.push(equipRow(it));
     const tid = TOOLS[+it.k].id;
     if (tid === 'hoe' || tid === 'can') info += ' 目前 Lv.' + toolLv[tid] + '：一次處理 ' + toolN(toolLv[tid]) + ' 格（面向的方向排成一直線）。到小村的村長家（園藝工坊）可以升級。';
@@ -67,7 +67,7 @@ function bagDetail(it) {
     info = fmtDur(growSec(it.k)) + '成熟（晴天要澆水，雨雪天免澆），收成後每個賣 ' + cropPrice(it.k) + ' G' + seasonTag(it.k) + '。';
     a.push(equipRow(it));
   } else if (it.t === 'yard') {
-    info = '裝備「庭院佈置」工具後，面向農場空草地按動作鍵擺放。' + ((ycat.find(q => q.key === it.k) || {}).walk ? '可以走上去。' : '會擋住路。') + (yardSel === it.k ? '（目前選用這個）' : '');
+    info = '按右側功能列的「🏡 庭院」進入佈置模式，面向農場空草地按動作鍵擺放。' + ((ycat.find(q => q.key === it.k) || {}).walk ? '可以走上去。' : '會擋住路。') + (yardSel === it.k ? '（目前選用這個）' : '');
     a.push('<button type="button" class="btn small" data-b="ysel">擺放時用這個</button>');
   } else if (it.t === 'qcrop') info = '品質好的作物，賣價比普通的高（銀星 +25%、金星 +50%）。到雜貨攤賣，也可以做料理、交委託。每個 ' + miscPrice(it.k) + ' G。';
   else if (it.t === 'misc') {

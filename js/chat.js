@@ -5,7 +5,7 @@ const QUICK_CHAT = ['你好！', '一起來玩', '好可愛', '哈哈', '謝謝'
 const cFeed = $('cfeed'), cBar = $('cbar'), cFab = $('cfab'), cIn = $('cinput'), cForm = $('cform'), cQ = $('cq'), stageEl = document.querySelector('.stage');
 const coarseNow = () => !!(window.matchMedia && matchMedia('(pointer:coarse)').matches);
 let cOpen = false, cWas = false;
-const chatOn = () => !vPanel.hidden && ready && !!me;
+const chatOn = () => !vPanel.hidden && ready && !!me && !vfOn;
 function feedPush(name, text, mine) {
   const d = document.createElement('div'), b = document.createElement('b'), sp = document.createElement('span');
   d.className = 'cfl' + (mine ? ' me' : ''); d.dataset.t = String(performance.now());

@@ -7,7 +7,7 @@ const ERR = {
   not_authenticated: '登入已過期，請重新登入', no_profile: '還沒建立角色',
   not_farmable: '這裡不能耕種', too_many_plots: '田地數量到上限了', has_crop: '上面還有作物',
   not_tilled: '這裡還沒翻土', occupied: '這裡已經有作物', no_seed: '沒有這種種子了',
-  not_ready: '還沒長好', nothing_to_harvest: '這裡沒有作物', not_enough_coins: '金幣不夠',
+  voy_closed: '碼頭暫時關閉中，請晚一點再來', voy_unbuilt: '出海碼頭還沒蓋好，到廣場岸邊的告示牌一起捐材料吧', build_done: '碼頭已經完工了', build_full: '這項材料這個階段已經收滿了', build_lack: '背包裡沒有這個材料', bad_qty: '數量不對', tree_wait: '這棵樹還沒長回來', bad_tree: '沒有這棵樹', not_ready: '還沒長好', nothing_to_harvest: '這裡沒有作物', not_enough_coins: '金幣不夠',
   nothing_to_sell: '沒有東西可以賣', bad_qty: '數量不對', bad_crop: '沒有這種作物',
   bad_name: '名字要 1 到 8 個字', bad_look: '造型資料不對', bad_username: '帳號格式不對', username_taken: '這個帳號已經有人用了',
   bad_invite: '邀請碼無效或已被使用', not_gm: '只有 GM 可以這樣做', nothing_to_revoke: '這組邀請碼已經被使用或不存在',
@@ -15,7 +15,8 @@ const ERR = {
   no_kitchen: '家裡要先擺一台廚房灶台才能做料理', host_no_kitchen: '這個家沒有廚房灶台', visitor_limit: '你已經在這張桌上放了一份，先收回才能再放', not_enough_items: '材料不夠', bad_recipe: '沒有這道料理', not_edible: '這道菜不能吃，拿去賣或交委託吧', no_dish: '背包裡沒有這道料理了',
   order_done: '這張委託已經完成了', bad_order: '沒有這張委託', max_tool: '已經是最高等級了', bad_tool: '沒有這種工具',
   no_hay: '沒有乾草了，到村裡的牧場小屋買', nothing_to_feed: '動物都吃飽了', nothing_to_collect: '現在沒有可以收的', barn_full: '穀倉住滿了（玩家升級會變大）', rock_busy: '這顆礦石還在恢復', sold_out: '今天已經買過或賣滿了', not_on_sale: '這件家具今天沒有上架', merchant_away: '旅行商人今天不在', already_fert: '已經施過肥了', story_end: '故事暫時告一段落，之後還會有新章節', yard_full: '庭院已經擺滿 60 件了', cannot_sell: '這個不能賣', visit_closed: '現在不方便拜訪', block_full: '黑名單最多 20 人', table_full: '桌上放不下了（一格最多 10 份）', eat_limit: '今天吃了太多份了，明天再來吧', buff_full: '這個效果已經滿 60 分鐘了，晚點再吃', hw_closed: '萬聖節活動已經結束了', hw_nokey: '沒有這個東西', item_cap: '這種東西已經有 999 個了，先賣掉或用掉一些吧',
-  bad_kind: '種類不對', already_owned: '這個花紋已經買過了', not_owned: '這個花紋還沒買', bad_line: '牆和門只能畫成橫線或直線', bad_pos: '座標不對', tier_locked: '這個階段的擴建任務還沒開放', max_tier: '房子已經是最大的了'
+  bad_kind: '種類不對', already_owned: '這個花紋已經買過了', not_owned: '這個花紋還沒買', bad_line: '牆和門只能畫成橫線或直線', bad_pos: '座標不對', tier_locked: '這個階段的擴建任務還沒開放', max_tier: '房子已經是最大的了',
+  no_coins: '金幣不足', daily_max: '今天的出海次數用完了', already_aboard: '你已經在一趟出海裡了', voyage_full: '船上已經滿 8 人了', voyage_closed: '這個出海團已經出發或取消了', kicked: '船長請你下船了', not_host: '只有船長可以這樣做', crew_unready: '還有人沒按準備', not_member: '你不在這趟出海裡', not_sailing: '現在沒有在航行', cooldown: '等一下再拋竿', catch_cap: '這趟已經釣到上限了', no_cast: '魚線已經失效，再拋一次', reel_early: '太快了，這條魚不算'
 };
 const errText = e => {
   const m = String((e && (e.message || e.msg)) || e || '');
@@ -37,6 +38,9 @@ function enqueue(fn) {
     if (pending === 0 && resyncWanted) { resyncWanted = false; resync(); }
   });
   return p;
+}
+function loadTrees() {
+  rpc('tree_list').then(r => { treesAt = r || {}; }).catch(() => {});
 }
 function loadRocks() {
   rpc('rock_list').then(r => { rocksAt = r || {}; }).catch(() => {});
@@ -63,6 +67,7 @@ function applyState(d) {
   fishRec = d.fishrec || {}; if (Array.isArray(d.ycat) && d.ycat.length) ycat = d.ycat; storyDone = d.story | 0;
   yardMap = new Map(); (d.yard || []).forEach(q => yardMap.set(pk(q.x, q.y), q.k));
   forPool = d.forage || []; forTaken = new Set(d.foragetaken || []); fgSlot = -1; rocksAt = d.rocks || {};
+  loadTrees();
   if (!d.rocks) loadRocks();   // get_state 沒回傳礦石冷卻時，另外向伺服器讀（rock_list）
   inv = d.inv || {};
   plots = new Map();

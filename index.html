@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>雷克斯農場</title>
-<meta name="build" content="9042e8e091">
+<meta name="build" content="d4f0f5219f">
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="manifest" href="app/manifest.webmanifest">
@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chiron+GoRound+TC:wght@400;600;800&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap">
-<link rel="stylesheet" href="css/style.css?v=d11c38e2">
+<link rel="stylesheet" href="css/style.css?v=13626900">
 </head><body>
 
 
@@ -51,6 +51,7 @@
       </form>
     </div>
     <button type="button" class="cfab" id="cfab" aria-label="聊天與表情（X）" hidden>💬</button>
+    <div class="yardbar" id="yardbar" hidden></div>
     <div class="dock" id="dock" aria-label="快捷功能">
       <button type="button" class="dockbtn dockfold" id="dockfold" aria-label="收起快捷列" aria-expanded="true"><span class="di">▸</span><small>收起</small><i class="dbadge" id="foldbadge" hidden></i></button>
       <button type="button" class="dockbtn" data-k="bag" aria-label="背包（B）"><span class="di">🎒</span><small>背包</small></button>
@@ -60,6 +61,7 @@
       <button type="button" class="dockbtn" data-k="quest" aria-label="每日任務（Q）"><span class="di">📋</span><small>任務</small><i class="dbadge" id="questbadge" hidden></i></button>
       <button type="button" class="dockbtn" data-k="lv" aria-label="等級"><span class="di">⭐</span><small>等級</small></button>
       <button type="button" class="dockbtn" data-k="card" aria-label="我的名片"><span class="di">📇</span><small>名片</small></button>
+      <button type="button" class="dockbtn" id="dockyard" data-k="yard" aria-label="庭院佈置" aria-pressed="false"><span class="di">🏡</span><small>庭院</small></button>
       <button type="button" class="dockbtn" data-k="set" aria-label="設定"><span class="di">⚙️</span><small>設定</small></button>
       <button type="button" class="dockbtn" data-k="tut" aria-label="遊戲手冊"><span class="di">📖</span><small>手冊</small></button>
     </div>
@@ -83,6 +85,7 @@
     <button type="button" class="imi" data-k="quest"><span class="di">📋</span>任務<i class="dbadge" id="immqb" hidden></i></button>
     <button type="button" class="imi" data-k="lv"><span class="di">⭐</span>等級</button>
     <button type="button" class="imi" data-k="card"><span class="di">📇</span>名片</button>
+    <button type="button" class="imi" data-k="yard"><span class="di">🏡</span>庭院佈置</button>
     <button type="button" class="imi" data-k="set"><span class="di">⚙️</span>設定</button>
     <button type="button" class="imi" data-k="emo"><span class="di">💬</span>聊天表情</button>
     <button type="button" class="imi" data-k="tut"><span class="di">📖</span>手冊</button>
@@ -193,6 +196,8 @@
   <div class="strow" id="st-fs-row"><b>全螢幕</b><button type="button" class="btn ghost small" id="fs" hidden>全螢幕</button></div>
   <div class="strow"><b>點地面走過去</b><button type="button" class="btn ghost small" id="st-tap" aria-pressed="true">開</button></div>
   <p class="strow-hint">點一下地面，自動走過去；點到門、NPC、椅子會走到旁邊面向它。</p>
+  <div class="strow"><b>出海團通知</b><button type="button" class="btn ghost small" id="st-voy" aria-pressed="true">開</button></div>
+  <div class="strow"><b>出海拉扯：點一下切換收線</b><button type="button" class="btn ghost small" id="st-vtog" aria-pressed="false">關</button></div>
   <div class="strow"><b>門鈴通知</b><button type="button" class="btn ghost small" id="st-bell" aria-pressed="true">開</button></div>
   <div class="strow"><b>謝絕訪客</b><button type="button" class="btn ghost small" id="st-closed" aria-pressed="false">關</button></div>
   <div class="strow"><b>禁止拜訪</b><button type="button" class="btn ghost small" id="st-blk-btn">名單</button></div>
@@ -246,57 +251,61 @@
 <script src="js/core.js?v=2eb46027"></script>
 <script src="js/tools/utils.js?v=fe84d8af"></script>
 <script src="js/tools/draw.js?v=edf668db"></script>
-<script src="js/data.js?v=63d0b45d"></script>
+<script src="js/data.js?v=7a303350"></script>
 <script src="js/art/tiles.js?v=eebff733"></script>
 <script src="js/art/character.js?v=89d0c526"></script>
 <script src="js/art/style-shop.js?v=471d814d"></script>
-<script src="js/art/icons.js?v=3f81479d"></script>
-<script src="js/state.js?v=5a8253d4"></script>
-<script src="js/art/village-tiles.js?v=e7ae0135"></script>
-<script src="js/world.js?v=e583f9d4"></script>
-<script src="js/net.js?v=1022cd61"></script>
-<script src="js/actions.js?v=e8cfb499"></script>
-<script src="js/shop.js?v=86fb5d2d"></script>
-<script src="js/scenes.js?v=c848ad01"></script>
+<script src="js/art/icons.js?v=33736de8"></script>
+<script src="js/art/boat.js?v=75d5e127"></script>
+<script src="js/state.js?v=334f9ac4"></script>
+<script src="js/art/village-tiles.js?v=d43943f3"></script>
+<script src="js/world.js?v=c21f0a7c"></script>
+<script src="js/net.js?v=bf48fdf6"></script>
+<script src="js/actions.js?v=402a52d1"></script>
+<script src="js/shop.js?v=777c49f4"></script>
+<script src="js/scenes.js?v=a33d3d23"></script>
 <script src="js/npc.js?v=66a1c86b"></script>
-<script src="js/items.js?v=a6f79b30"></script>
+<script src="js/items.js?v=71da4794"></script>
 <script src="js/barn.js?v=c8897aee"></script>
-<script src="js/tarot-room.js?v=203598b2"></script>
+<script src="js/tarot-room.js?v=7f664203"></script>
 <script src="js/tarot-games.js?v=32353489"></script>
 <script src="js/ranch.js?v=594bf0fb"></script>
 <script src="js/merchant.js?v=97277b9b"></script>
 <script src="js/cooking.js?v=11e1e5d8"></script>
 <script src="js/board.js?v=f1bf518f"></script>
-<script src="js/bag.js?v=68ba8dcb"></script>
-<script src="js/dex.js?v=592be67c"></script>
+<script src="js/bag.js?v=e1ae7a6a"></script>
+<script src="js/dex.js?v=1ca4e2bc"></script>
 <script src="js/progress.js?v=e1f35775"></script>
-<script src="js/card.js?v=c35b87e5"></script>
-<script src="js/manual.js?v=f73c8227"></script>
-<script src="js/hotbar.js?v=de8dac48"></script>
-<script src="js/ui.js?v=a912fd97"></script>
-<script src="js/fishing.js?v=bb98b3fe"></script>
-<script src="js/input.js?v=f819183b"></script>
+<script src="js/card.js?v=ecc346ee"></script>
+<script src="js/manual.js?v=74f483a2"></script>
+<script src="js/hotbar.js?v=03ab7dd0"></script>
+<script src="js/ui.js?v=55f6fdee"></script>
+<script src="js/fishing.js?v=caf9f416"></script>
+<script src="js/input.js?v=fcce0377"></script>
 <script src="js/pwa.js?v=4b7d5452"></script>
-<script src="js/settings.js?v=88532bbd"></script>
+<script src="js/settings.js?v=2d95619f"></script>
 <script src="js/tv.js?v=ae56beb8"></script>
 <script src="js/piano.js?v=8996a55c"></script>
 <script src="js/tarot.js?v=e0f226d1"></script>
 <script src="js/look.js?v=a5ec1ac5"></script>
 <script src="js/auth.js?v=15a3fb48"></script>
-<script src="js/login-cover.js?v=2a30f744"></script>
-<script src="js/village.js?v=26c4529e"></script>
-<script src="js/chat.js?v=e054a3ef"></script>
-<script src="js/friends.js?v=be731b9d"></script>
+<script src="js/login-cover.js?v=56c03aa9"></script>
+<script src="js/village.js?v=1f139384"></script>
+<script src="js/announce.js?v=66448f7e"></script>
+<script src="js/voyage.js?v=4e215e3b"></script>
+<script src="js/voyage-fight.js?v=264b2bfc"></script>
+<script src="js/chat.js?v=82ef6513"></script>
+<script src="js/friends.js?v=c699d318"></script>
 <script src="js/mail.js?v=fdd9b734"></script>
-<script src="js/snakes.js?v=a340390a"></script>
-<script src="js/halloween.js?v=ab43537d"></script>
-<script src="js/plaza-light.js?v=3a97d22b"></script>
+<script src="js/snakes.js?v=cd87fa91"></script>
+<script src="js/halloween.js?v=8b11d7ae"></script>
+<script src="js/plaza-light.js?v=30ee2041"></script>
 <script src="js/gm.js?v=f8a16524"></script>
-<script src="js/bgm.js?v=428caee0"></script>
+<script src="js/bgm.js?v=2031bfb1"></script>
 <script src="js/house.js?v=51e7261e"></script>
 <script src="js/doors.js?v=d8fa98c7"></script>
-<script src="js/social.js?v=b5d902cf"></script>
-<script src="js/hw-cook.js?v=93f1b9a2"></script>
+<script src="js/social.js?v=19bdf5ad"></script>
+<script src="js/hw-cook.js?v=45b764bd"></script>
 <script src="js/decor.js?v=ca9adc6e"></script>
 <script src="js/paint.js?v=5a836248"></script>
 <script src="js/beds.js?v=f64e3549"></script>
@@ -304,8 +313,8 @@
 <script src="js/toilets.js?v=3b675ac4"></script>
 <script src="js/gym.js?v=762e5778"></script>
 <script src="js/stores.js?v=ea0b791f"></script>
-<script src="js/render.js?v=6b47937b"></script>
-<script src="js/sky.js?v=91d90c7d"></script>
+<script src="js/render.js?v=0e1e80d8"></script>
+<script src="js/sky.js?v=da844be2"></script>
 <script src="js/immersive.js?v=f1657c14"></script>
 <script src="js/update.js?v=ab556e5d"></script>
 <script src="js/furniture-fx.js?v=7304670c"></script>

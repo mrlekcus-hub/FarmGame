@@ -28,14 +28,15 @@ const MINE_FALLBACK = {
 const ITEM_FALLBACK = {
   'a:hay': { name: '乾草', shape: 'sack', color: '#e8c070' }, 'a:egg': { name: '雞蛋', shape: 'round', color: '#fff3d6' },
   'a:milk': { name: '牛奶', shape: 'bottle', color: '#ffffff' }, 'a:wool': { name: '羊毛', shape: 'cloud', color: '#f4f4f4' },
-  'x:fert': { name: '肥料', shape: 'sack', color: '#8c6a44' },
+  'x:fert': { name: '肥料', shape: 'sack', color: '#8c6a44' }, 'm:wood': { name: '木頭', shape: 'log', color: '#b98a62' },
   'h:candy': { name: '萬聖糖果', shape: 'berry', color: '#ff6a8a' }, 'h:caramel': { name: '焦糖', shape: 'gem', color: '#d89a3a' }, 'h:spice': { name: '魔女香料', shape: 'leaf', color: '#9a6ae0' },
 };
 const fallbackItem = k => ITEM_FALLBACK[k] || ITEM_FALLBACK['a:' + k] || ITEM_FALLBACK['x:' + k] || null;   // 也接受沒有前綴的寫法（egg、hay、fert2）
-let itemMeta = {}, forPool = [], forTaken = new Set(), fgSlot = -1, rocksAt = {}, fgList = [];
+let itemMeta = {}, forPool = [], forTaken = new Set(), fgSlot = -1, rocksAt = {}, fgList = [], treesAt = {}, chopHits = {}, yardMode = false, anOpen = false, bld = null, bldAt = 0;   // bld：出海碼頭建造進度（voyage_build_info）；沒讀到就當作已完工   // treesAt：每棵可砍的樹幾點長回來（毫秒）；chopHits：這一棵目前砍了幾下
 let soldToday = {}, soldDay = 0, bugTaken = new Set(), dexClaims = {};
 /* 收購飽和（要和 SQL 的 _sell_value 一致）：每種魚、蟲每天前 5 隻原價、第 6~10 隻 6 折、之後 3 折（GMT+8 凌晨重置） */
 const sellDayNow = () => Math.floor((srvNow() + 8 * 3600000) / 86400000);
+const nextDay0 = () => (sellDayNow() + 1) * 86400000 - 8 * 3600000;   // 下一個 GMT+8 凌晨 0 點（毫秒）：礦石、樹每天這時候一起刷新
 const soldOf = item => (soldDay === sellDayNow() ? (soldToday[item] | 0) : 0);
 function sellValue(sold, qty, price) {
   return Math.min(qty, Math.max(0, 5 - sold)) * price
@@ -45,7 +46,7 @@ function sellValue(sold, qty, price) {
 const pl = { x: 4, y: 4, sx: 4, sy: 4, prog: 1, face: 'down', step: 0 };
 const srvNow = () => Date.now() + offset;
 
-let bagOpen = false, shopOpen = false, makerOpen = false, authOpen = true, actQueued = false, actHeld = false, actPtr = -1, firstTime = false, vmOpen = false, gmOpen = false;
+let bagOpen = false, shopOpen = false, makerOpen = false, authOpen = true, actQueued = false, actHeld = false, actPtr = -1, firstTime = false, vmOpen = false, gmOpen = false, vyOpen = false;
 let pendingInvite = '';
 const pressed = [];
 let frOpen = false;
@@ -53,7 +54,7 @@ let hwUi = false, hwDark = 0;   // 萬聖節糖果攤／魔女鍋視窗是否開
 let lkOpen = false, bdOpen = false, ckOpen = false, rcOpen = false, mcOpen = false, dgOpen = false;
 let syOpen = false, lvOpen = false, cdOpen = false, dexOpen = false, qOpen = false, dsOpen = false, emOpen = false, stOpen = false, imm = false, sheetOpen = false, trOpen = false;
 let pnOpen = false, mnOpen = false;
-const paused = () => lkOpen || bdOpen || ckOpen || rcOpen || mcOpen || mnOpen || dgOpen || lvOpen || cdOpen || dexOpen || qOpen || dsOpen || pnOpen || stOpen || trOpen || (imm && sheetOpen) || frOpen || mlOpen || snOpen || hwUi || bagOpen || shopOpen || makerOpen || authOpen || vmOpen || gmOpen || fOpen || syOpen || !ready;
+const paused = () => anOpen || lkOpen || bdOpen || ckOpen || rcOpen || mcOpen || mnOpen || dgOpen || lvOpen || cdOpen || dexOpen || qOpen || dsOpen || pnOpen || stOpen || trOpen || (imm && sheetOpen) || frOpen || mlOpen || snOpen || hwUi || bagOpen || shopOpen || makerOpen || authOpen || vyOpen || vmOpen || gmOpen || fOpen || syOpen || !ready;
 
 /* ---------- 小提示與特效 ---------- */
 const toastEl = $('toast');

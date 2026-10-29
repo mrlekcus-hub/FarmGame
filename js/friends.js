@@ -4,7 +4,7 @@
 const frEl = $('frmenu'), frCard = $('frcard');
 let fr = { friends: [], incoming: [], outgoing: [], max: 50 }, frTarget = null, frConfirm = '', frMsg = '';
 let seenMap = {}, onlineMap = new Map(), pres = null, lastWhere = '', whereTimer = 0, frBusy = false;
-const WHERE = { farm: '在農場', plaza: '在廣場', house: '在屋子裡' };
+const WHERE = { farm: '在農場', plaza: '在廣場', house: '在屋子裡', boat: '在出海' };
 const isFriend = uid => fr.friends.some(f => f.uid === uid);
 /* ---------- 友情等級：只靠雙人互動動作升級，每對好友每天只算第一次（伺服器 friend_act_*） ---------- */
 const BOND_NEED = [0, 0, 3, 10, 25, 50];
@@ -120,7 +120,7 @@ async function loadGifts() {
     if (gs.length) { toast('🎁 收到 ' + gs.map(x => clean(x.from, 8) + ' 送的' + itemName(String(x.item))).slice(0, 3).join('、') + (gs.length > 3 ? ' 等 ' + gs.length + ' 份禮物' : '')); chime([76, 81], 0.12); refreshHud(); }
   } catch (e) { /* 伺服器還沒裝送禮功能就略過 */ }
 }
-function afterReady() { loadVisitCfg(); if (typeof vlCheck === 'function') vlCheck(); touchSeen(); loadFriends(); loadBonds(); mailLoad(true); startPresence(); loadQuests(); loadLevel(); rpc('story_get').then(d => { stData = d; }).catch(() => {}); }
+function afterReady() { loadVisitCfg(); if (typeof vlCheck === 'function') vlCheck(); touchSeen(); loadFriends(); loadBonds(); mailLoad(true); startPresence(); loadQuests(); loadLevel(); rpc('story_get').then(d => { stData = d; }).catch(() => {}); voyageInit(); }
 function notifyFriend(uid) {
   if (!pres || !pres.ok || !uid) return;
   try { pres.ch.send({ type: 'broadcast', event: 'fr', payload: { to: uid } }); } catch (e) { /* 略過 */ }

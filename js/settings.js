@@ -53,7 +53,7 @@ if (orientOK) {    // 一律先掛上，方向偏好在遊戲中途改也會生�
 function openSettings() {
   syncAppRow();
   if (!ready || !me || authOpen || paused() || stOpen) return;
-  stOpen = true; pressed.length = 0; $('st-orient-row').hidden = !orientOK; syncOrientUI(); syncCtlUI(); syncVisitUI(); loadVisitCfg(); stEl.hidden = false; stCard.focus();
+  stOpen = true; pressed.length = 0; $('st-orient-row').hidden = !orientOK; syncOrientUI(); syncCtlUI(); syncVisitUI(); voySyncUI(); loadVisitCfg(); stEl.hidden = false; stCard.focus();
 }
 function closeSettings() { stOpen = false; stEl.hidden = true; }
 $('st-close').addEventListener('click', closeSettings);
