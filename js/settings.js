@@ -9,7 +9,7 @@ function syncOrientUI() { document.querySelectorAll('#st-orient button').forEach
 async function applyOrient(interactive) {
   const so = screen.orientation;
   if (orientPref === 'auto') { try { so && so.unlock && so.unlock(); } catch (e) { /* 略過 */ } return; }
-  if (!so || !so.lock) { if (interactive) toast('這個瀏覽器不支援鎖定方向，請用手機的「自動旋轉」開關', 3200); return; }
+  if (!so || !so.lock) { if (interactive) toast('iPhone 不支援網頁鎖定方向：把手機橫放，並關閉控制中心的「直向鎖定」，遊戲就會跟著轉', 5200); return; }
   const mode = orientPref;
   try { await so.lock(mode); return; } catch (e) { /* 多數手機要先進入全螢幕才能鎖定 */ }
   if (docEl.requestFullscreen && document.fullscreenEnabled && !document.fullscreenElement) {
@@ -18,6 +18,38 @@ async function applyOrient(interactive) {
   if (interactive) toast('無法鎖定方向，請改用手機的「自動旋轉」開關', 3200);
 }
 document.addEventListener('fullscreenchange', () => { if (document.fullscreenElement && orientPref !== 'auto') applyOrient(false); });
+/* 瀏覽器不會記得方向鎖定：每次開遊戲、回到前景都要重新鎖一次。
+   已安裝的 App（standalone）通常可以直接鎖；一般網頁要先進全螢幕，需要使用者點一下，所以第一次點畫面時再補鎖一次。 */
+/* iPhone（沒有鎖定方向的功能）：方向和設定不一樣時，開遊戲、回到前景都提醒一次怎麼轉 */
+const orientCanLock = () => !!(screen.orientation && screen.orientation.lock);
+function orientHint() {
+  if (!orientOK || orientPref === 'auto' || orientCanLock()) return;
+  const portrait = window.innerHeight >= window.innerWidth;
+  if ((orientPref === 'landscape') !== portrait) return;     // 已經是想要的方向
+  toast(orientPref === 'landscape' ? '要橫向玩：請把手機橫放，並關閉控制中心的「直向鎖定」' : '要直向玩：請把手機直放，並關閉控制中心的「直向鎖定」', 6000);
+}
+if (orientOK && orientPref !== 'auto' && !orientCanLock()) {
+  setTimeout(orientHint, 3500);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) setTimeout(orientHint, 1200); });
+}
+if (orientOK) {    // 一律先掛上，方向偏好在遊戲中途改也會生效（每個處理函式裡面都會檢查是不是 auto）
+  /* 切到別的 App 再回來，系統會放掉方向鎖定（影片裡的狀況）：回到前景、視窗大小變了、取得焦點時都重鎖，
+     剛回來的瞬間可能鎖不上，所以間隔幾百毫秒多試幾次；方向已經對了就不用動 */
+  const wantPortrait = () => orientPref === 'portrait';
+  const orientOff = () => (window.innerHeight >= window.innerWidth) !== wantPortrait();
+  let relockT = [];
+  const relock = () => {
+    relockT.forEach(clearTimeout); relockT = [];
+    [0, 350, 1000, 2200].forEach(ms => relockT.push(setTimeout(() => { if (orientPref !== 'auto' && !document.hidden && orientOff()) applyOrient(false); }, ms)));
+  };
+  if (orientPref !== 'auto') applyOrient(false);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && orientPref !== 'auto') { applyOrient(false); relock(); } });
+  window.addEventListener('pageshow', () => { if (orientPref !== 'auto') relock(); });
+  window.addEventListener('focus', () => { if (orientPref !== 'auto') relock(); });
+  window.addEventListener('resize', () => { if (orientPref !== 'auto' && orientOff()) relock(); });
+  const lockOnTap = () => { if (orientPref !== 'auto' && orientOff()) applyOrient(false); };
+  window.addEventListener('pointerdown', lockOnTap, true);   // 一般網頁要先進全螢幕才鎖得住，需要使用者點一下；方向不對時每次點畫面都補一次
+}
 function openSettings() {
   syncAppRow();
   if (!ready || !me || authOpen || paused() || stOpen) return;
