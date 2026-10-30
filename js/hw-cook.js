@@ -117,24 +117,33 @@ function hwCookStart(key) {
 }
 
 /* ---------- 夜行（鬼火＋夜晚變快）與提燈（身邊一圈暖光）：畫在夜色濾鏡之後，sky.js 呼叫 ---------- */
-function drawHwBuffFx(now, dark, rx, ry, indoors) {
-  hwDark = indoors ? 0 : dark;
-  if (!ready || !me) return;
-  const night = buffOn('night') || buffOn('witch'), lan = buffOn('lantern') || buffOn('witch');
-  if (!night && !lan) return;
+/* 把自己的 buff 打包成 2 個位元（1 = 夜行鬼火、2 = 提燈）隨位置心跳送給同房的人，對方才看得到 */
+function hwBits() { return (buffOn('night') || buffOn('witch') ? 1 : 0) | (buffOn('lantern') || buffOn('witch') ? 2 : 0); }
+function hwFxAt(now, dark, rx, ry, indoors, night, lan, ph) {
   const cx = Math.round(rx * T) + 8, cy = Math.round(ry * T) + 8;
   if (lan && !indoors && dark > 0.04) {
     ctx.globalAlpha = clamp(dark * 1.6, 0, 1);
-    plDisc(ctx, cx, cy, Math.round(32 + Math.sin(now / 170) * 1.5), '255,214,120', 1.4);
+    plDisc(ctx, cx, cy, Math.round(32 + Math.sin(now / 170 + ph) * 1.5), '255,214,120', 1.4);
     ctx.globalAlpha = 1;
   }
   if (lan) {   // 手邊的小提燈
-    const lx = cx + 7, ly = cy + 1 + Math.round(Math.sin(now / 300));
+    const lx = cx + 7, ly = cy + 1 + Math.round(Math.sin(now / 300 + ph));
     r('#5a3a1a', lx, ly - 1, 3, 1); r('#ffd34d', lx, ly, 3, 3); r('#fff3b0', lx + 1, ly + 1, 1, 1); r('#5a3a1a', lx, ly + 3, 3, 1);
   }
   if (night) {   // 繞著頭轉的鬼火
-    const an = now / 600, fx = Math.round(cx + Math.cos(an) * 11), fy = Math.round(cy - 10 + Math.sin(an) * 3), fl = Math.floor(now / 140) % 2;
+    const an = now / 600 + ph, fx = Math.round(cx + Math.cos(an) * 11), fy = Math.round(cy - 10 + Math.sin(an) * 3), fl = Math.floor(now / 140) % 2;
     if (!indoors && dark > 0.04) { ctx.globalAlpha = clamp(dark * 1.5, 0, 1) * 0.9; plDisc(ctx, fx, fy, 10, '122,224,74', 1.2); ctx.globalAlpha = 1; }
     r('#7ae04a', fx, fy - (fl ? 1 : 0), 2, 3); r('#d8ff9a', fx, fy + 1 - (fl ? 1 : 0), 1, 1); r('#3a8a2a', fx, fy + 2, 2, 1);
   }
+}
+function drawHwBuffFx(now, dark, rx, ry, indoors) {
+  hwDark = indoors ? 0 : dark;
+  if (!ready || !me) return;
+  const b = hwBits();
+  if (b) hwFxAt(now, dark, rx, ry, indoors, !!(b & 1), !!(b & 2), 0);
+  if (syncScene()) remotes.forEach(rp => {   // 同房其他玩家的 buff（對方心跳帶來的 rp.hw）
+    const h = rp.hw | 0; if (!h || !hereRp(rp)) return;
+    let ph = 0; for (let k = 0; k < rp.id.length; k++) ph = (ph + rp.id.charCodeAt(k)) % 63;
+    hwFxAt(now, dark, rp.x, rp.y, indoors, !!(h & 1), !!(h & 2), ph / 10);
+  });
 }
