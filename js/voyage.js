@@ -504,10 +504,11 @@ function renderBuild() {
       }).join('');
       h += '<p class="empty">木頭到西邊森林砍樹（斧頭）、石頭和銅礦到山洞挖礦（鎬子）；樹和礦石每天 0 點刷新。</p>';
     } else if (b.done) h += '<p class="empty">碼頭已經完工，全服玩家都收到信箱通知了。到柴犬船長那裡就能開團出海！</p>';
-    const top = b.top || [];
+    const sc = t => t.score != null ? +t.score : (t.wood | 0) + (t.stone | 0) * 2 + (t.copper | 0) * 4;   // 稀有度加權：木頭 1、石頭 2、銅礦 4（伺服器有回 score 就用伺服器的）
+    const top = (b.top || []).slice().sort((x, y) => sc(y) - sc(x));
     if (top.length) {
-      h += '<p class="empty" style="margin:8px 0 2px"><b>貢獻榜</b>（共 ' + (b.donors | 0) + ' 位）</p>' + top.map((t, i) => '<div class="voyrank' + (t.uid === myUid ? ' me' : '') + '"><b class="voyrk' + (i < 3 ? ' top' : '') + '">' + (i < 3 ? ['🥇', '🥈', '🥉'][i] : i + 1) + '</b><div class="voyrb"><div class="voyrn">' + esc(clean(t.name, 8)) + (t.uid === myUid ? '（你）' : '') + '</div>' +
-        '<small>木頭 ' + t.wood + ' · 石頭 ' + t.stone + ' · 銅礦 ' + t.copper + '</small></div></div>').join('');
+      h += '<p class="empty" style="margin:8px 0 2px"><b>貢獻榜</b>（共 ' + (b.donors | 0) + ' 位）　越稀有分數越高：木頭 1、石頭 2、銅礦 4</p>' + top.map((t, i) => '<div class="voyrank' + (t.uid === myUid ? ' me' : '') + '"><b class="voyrk' + (i < 3 ? ' top' : '') + '">' + (i < 3 ? ['🥇', '🥈', '🥉'][i] : i + 1) + '</b><div class="voyrb"><div class="voyrn">' + esc(clean(t.name, 8)) + (t.uid === myUid ? '（你）' : '') + '</div>' +
+        '<small>木頭 ' + t.wood + ' · 石頭 ' + t.stone + ' · 銅礦 ' + t.copper + '</small></div><b class="voysc">' + sc(t) + ' 分</b></div>').join('');
     } else h += '<p class="empty">還沒有人捐獻，來當第一個吧！</p>';
     if (b.gm) h += '<div class="v-quick" style="margin-top:8px"><button type="button" class="btn small ghost" data-a="bgm" data-c="next">GM：完成這階段</button><button type="button" class="btn small ghost" data-a="bgm" data-c="complete">GM：直接完工</button><button type="button" class="btn small ghost" data-a="bgm" data-c="reset">GM：全部重來</button><button type="button" class="btn small ghost" data-a="bclose" data-c="' + (b.closed ? '0' : '1') + '">' + (b.closed ? 'GM：重新開放碼頭' : 'GM：暫時關閉碼頭') + '</button>' + (b.done ? '' : '<button type="button" class="btn small ghost" data-a="gmcap">GM：開團面板</button>') + '</div>';
   }

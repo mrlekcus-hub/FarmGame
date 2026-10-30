@@ -183,7 +183,7 @@ function mineRock(x, y) {
     pop(x, y, Object.keys(got).map(k => itemName(k) + '×' + got[k]).join(' '), '#fff3b0');
     if (got['m:gem']) toast('挖到水晶了！');
     refreshHud();
-  }).catch(e => { delete rocksAt[idx]; toast(errText(e)); resync(); });
+  }).catch(e => { rocksAt[idx] = srvNow() + 3000; toast(errText(e)); loadRocks(); resync(); });   // 同上：先鎖 3 秒，再向伺服器同步真實冷卻
 }
 /* ---------- 砍樹：西邊森林的 17 棵樹，每人各自 隔天 0 點長回來 ---------- */
 function drawChopTree(px, py, tx, ty, idx) {
@@ -217,7 +217,7 @@ function chopTree(x, y) {
     const got = r.got || {};
     pop(x, y, Object.keys(got).map(k => itemName(k) + '×' + got[k]).join(' '), '#fff3b0');
     refreshHud();
-  }).catch(e => { delete treesAt[idx]; toast(errText(e)); loadTrees(); resync(); });
+  }).catch(e => { treesAt[idx] = srvNow() + 3000; toast(errText(e)); loadTrees(); resync(); });   // 失敗先鎖 3 秒（連點不會狂送請求），loadTrees 回來會用伺服器的真實時間覆蓋
 }
 function fertAct(x, y, p) {
   if (!p || !p.crop) { pop(x, y, '先種下作物再施肥', '#ffffff'); return; }
