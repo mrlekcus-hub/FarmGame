@@ -20,7 +20,7 @@ window.addEventListener('keydown', e => {
   if (e.key === 'Escape' && qOpen) { closeQuests(); return; }
   if ((e.key === 'q' || e.key === 'Q') && qOpen) { closeQuests(); return; }
   if ((e.key === 'q' || e.key === 'Q') && !paused() && ready && me) { openQuests(); return; }
-  if (e.key === 'Escape' && dexOpen) { closeDex(); return; }
+  if (e.key === 'Escape' && dexOpen) { if (dexSel) closeDexDetail(); else closeDex(); return; }
   if ((e.key === 'g' || e.key === 'G') && dexOpen) { closeDex(); return; }
   if ((e.key === 'g' || e.key === 'G') && !paused()) { openDex(); return; }
   if (e.key === 'Escape' && bagOpen) { closeBag(); return; }

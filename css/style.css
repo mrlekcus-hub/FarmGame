@@ -1097,3 +1097,27 @@ body.imm .camhint{display:block}
 .an-t.new{background:#ffe3a8}.an-t.chg{background:#cfe8f7}.an-t.fix{background:#d7f0c8}
 .an-sec ul{margin:2px 0 0;padding-left:18px;font-size:13px;line-height:1.55}.an-sec li{margin:2px 0}
 .an-ver{font-size:13px;opacity:.75;margin:0 0 4px}
+
+/* 圖鑑：已解鎖的格子可以點開看出沒條件 */
+.dexc.yes{cursor:pointer}
+.dexc.yes:active{transform:scale(.97)}
+.dxmini{display:flex;justify-content:center;align-items:center;gap:2px;margin-top:2px}
+.dxmini b{width:7px;height:7px;border-radius:2px;background:#eadfd2;display:block}
+.dxmini b.on{background:var(--pink)}
+.dxmini i{font-style:normal;font-size:12px;line-height:1;margin-left:3px}
+.dexd{background:rgba(60,40,30,.45);z-index:31}
+.dexdc{width:min(380px,100%);gap:6px}
+.dxh{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.dxh canvas{width:44px;height:44px;image-rendering:pixelated;flex:none;background:#fff;border:2px solid var(--edge);border-radius:12px}
+.dxn{font:800 18px/1.2 var(--f-display);color:var(--pink-deep)}
+.dxt{display:inline-block;font:600 11px/1 var(--f-display);border:1.5px solid;border-radius:999px;padding:2px 8px;margin-left:6px;vertical-align:middle}
+.dxh small,.dxr small{font-size:12px;color:var(--muted)}
+.dxr{display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1.5px dotted var(--edge);font-size:13px;color:var(--ink)}
+.dxr>span:first-child{width:36px;flex:none;color:var(--muted);font-size:12px}
+.dxsq{display:flex;gap:4px;flex:1}
+.dxsq div{flex:1;text-align:center;padding:4px 0;border-radius:8px;background:#fff;border:1.5px solid #f0e0cc;font-size:12px;color:#c4b0a4}
+.dxsq div.on{background:var(--pink);border-color:var(--pink-deep);color:#fff}
+.dxbar{position:relative;height:14px;border-radius:7px;background:#fff;border:1.5px solid #f0e0cc}
+.dxbar div{position:absolute;top:-1.5px;bottom:-1.5px;background:var(--pink);border-radius:6px}
+.dxtk{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:2px}
+.dxch{display:inline-block;padding:3px 10px;border-radius:12px;background:#fff;border:1.5px solid var(--edge);font-size:12px}

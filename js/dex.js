@@ -3,6 +3,63 @@
 /* ---------- 圖鑑（魚類收集，隨時可開） ---------- */
 const dexEl = $('dexm'), dexCard = $('dexcard');
 let dexTab = 'fish', dexBusy = false;
+let dexSel = null;   // 目前點開詳情的 { bug: bool, key }
+/* 淡水魚出沒條件（和 SQL fish 表一致：時段、天氣、季節、地點、等級）；伺服器有回傳同名欄位時以伺服器為準 */
+const FISH_COND = {
+  amberfish: ['any', 'any', 'autumn,winter', 'forest', 5], bass: ['dusk', 'any', 'autumn,winter', 'any', 1], boot: ['any', 'any', 'any', 'any', 1],
+  carp: ['day', 'any', 'any', 'any', 1], catfish: ['night', 'any', 'summer,autumn', 'any', 1], crucian: ['any', 'any', 'any', 'any', 1],
+  eel: ['any', 'rain', 'summer,autumn', 'any', 1], koi: ['day', 'clear', 'spring,summer', 'any', 1], maplefish: ['any', 'any', 'autumn', 'forest', 5],
+  minnow: ['any', 'any', 'any', 'any', 1], moonfish: ['night', 'clear', 'autumn,winter', 'any', 1], mosstrout: ['any', 'any', 'spring,summer', 'forest', 5],
+  rainbow: ['any', 'rain', 'spring,autumn', 'any', 1], sunfish: ['day', 'clear', 'summer', 'any', 1], tilapia: ['dawn', 'any', 'spring,summer', 'any', 1]
+};
+const FISH_SZ = { amberfish: '15～35 cm', bass: '25～60 cm', boot: '20～35 cm', carp: '30～80 cm', catfish: '30～110 cm', crucian: '10～30 cm', eel: '40～100 cm', koi: '40～90 cm', maplefish: '12～30 cm', minnow: '4～10 cm', moonfish: '50～120 cm', mosstrout: '18～40 cm', rainbow: '20～60 cm', sunfish: '10～25 cm', tilapia: '15～40 cm' };
+const DEX_PH = { dawn: ['清晨', '🌅', '05～08 點', [[5, 8]]], day: ['白天', '☀️', '08～17 點', [[8, 17]]], dusk: ['黃昏', '🌇', '17～20 點', [[17, 20]]], night: ['夜晚', '🌙', '20～05 點', [[20, 24], [0, 5]]] };
+const DEX_SEA4 = ['spring', 'summer', 'autumn', 'winter'];
+function dexCond(f, isBug) {
+  const d = isBug ? [] : (FISH_COND[f.key] || []);
+  return { phase: f.phase || d[0] || 'any', weather: f.weather || d[1] || 'any', seasons: f.seasons || d[2] || 'any', zone: f.zone || d[3] || 'any', lv: +(f.min_lv || d[4] || 1) };
+}
+/* 圖鑑格子上的小標示：四個小方塊 = 春夏秋冬（亮的是會出現的季節）＋時段／天氣小圖示 */
+function dexMini(f, isBug) {
+  if (!isBug && habitatOf(f) !== 'fresh') return '';
+  const c = dexCond(f, isBug), on = c.seasons === 'any' ? DEX_SEA4 : c.seasons.split(',');
+  const sq = c.seasons === 'any' ? '' : DEX_SEA4.map(x => '<b class="' + (on.includes(x) ? 'on' : '') + '"></b>').join('');
+  const ic = (DEX_PH[c.phase] ? DEX_PH[c.phase][1] : '') + (c.weather === 'rain' ? '🌧' : c.weather === 'clear' ? '☀' : '');
+  return sq || ic ? '<span class="dxmini">' + sq + (ic ? '<i>' + ic + '</i>' : '') + '</span>' : '';
+}
+const dexdEl = document.createElement('div');
+dexdEl.className = 'maker dexd'; dexdEl.hidden = true; dexdEl.innerHTML = '<div class="card maker-card dexdc" tabindex="-1"></div>';
+dexEl.after(dexdEl);
+const dexdCard = dexdEl.firstChild;
+function closeDexDetail() { dexSel = null; dexdEl.hidden = true; }
+/* 點開某一格：只有解鎖過（釣到／抓到過）的才看得到所有資料 */
+function openDexDetail(key, isBug) {
+  const cat = isBug ? bugCat : fishCat, log = isBug ? bugLog : fishLog, f = cat.find(x => x.key === key);
+  if (!f || !((log[key] | 0) > 0)) return;
+  dexSel = { bug: isBug, key };
+  const rc = RARITY[f.rarity] || ['', '#a8a0a0'], n = log[key] | 0, sea = !isBug && habitatOf(f) !== 'fresh';
+  const c = dexCond(f, isBug), rec = !isBug && fishRec[key] ? fishRec[key].best : 0;
+  const cm = !isBug && f.min_cm !== undefined ? f.min_cm + '～' + f.max_cm + ' cm' : (!isBug && FISH_SZ[key] ? FISH_SZ[key] : '');
+  const head = '<div class="dxh"><canvas width="16" height="16" ' + (isBug ? 'data-bug' : 'data-fish') + '="' + esc(key) + '"></canvas><div><div class="dxn">' + esc(f.name) +
+    '<span class="dxt" style="color:' + rc[1] + ';border-color:' + rc[1] + '">' + rc[0] + '</span></div><small>' + f.price + ' G' + (cm ? ' · ' + cm : '') + ' · ' + (isBug ? '抓到' : '釣到') + ' ×' + n + (rec ? ' · 最大 ' + rec + ' cm' : '') + '</small></div></div>';
+  let rows = '';
+  if (sea) {
+    rows = '<div class="dxr"><span>地點</span><span class="dxch">' + (habitatOf(f) === 'mystery' ? '神秘路線限定' : '出海團的海釣') + '</span></div>';
+  } else {
+    const on = c.seasons === 'any' ? DEX_SEA4 : c.seasons.split(','), p = DEX_PH[c.phase];
+    const seg = p ? p[3].map(a => '<div style="left:' + (a[0] / 24 * 100) + '%;width:' + ((a[1] - a[0]) / 24 * 100) + '%"></div>').join('') : '<div style="left:0;width:100%"></div>';
+    const zone = isBug ? (c.zone === 'forest' ? '只在森林' : '農場、森林') : (c.zone === 'forest' ? '森林池塘、廣場魚池' : '農場池塘、森林池塘、廣場魚池');
+    rows = '<div class="dxr"><span>季節</span><div class="dxsq">' + DEX_SEA4.map(x => '<div class="' + (on.includes(x) ? 'on' : '') + '">' + SEA_SHORT[x] + '</div>').join('') + '</div></div>' +
+      '<div class="dxr"><span>時間</span><div style="flex:1"><div class="dxbar">' + seg + '</div><div class="dxtk"><span>0</span><span>6</span><span>12</span><span>18</span><span>24</span></div><small>' + (p ? p[0] + ' ' + p[2] : '全天都可以') + '</small></div></div>' +
+      '<div class="dxr"><span>天氣</span><span class="dxch">' + ({ rain: '雨天才有', clear: '晴天才有' }[c.weather] || '晴雨都可以') + '</span></div>' +
+      '<div class="dxr"><span>地點</span><span class="dxch">' + zone + '</span></div>' +
+      (c.lv > 1 ? '<div class="dxr"><span>等級</span><span class="dxch">Lv.' + c.lv + ' 以上</span></div>' : '');
+  }
+  dexdCard.innerHTML = head + rows + '<button type="button" class="btn ghost wide" data-a="dclose">關閉</button>';
+  dexdEl.hidden = false; dexdCard.focus();
+  dexdCard.querySelectorAll('canvas[data-fish]').forEach(cv => drawFish(cv.getContext('2d'), cv.dataset.fish, false));
+  dexdCard.querySelectorAll('canvas[data-bug]').forEach(cv => drawBug(cv.getContext('2d'), cv.dataset.bug, false));
+}
 function renderDex() {
   const isBug = dexTab === 'bug', isSea = dexTab === 'sea';
   const cat = isBug ? bugCat : fishCat.filter(f => (habitatOf(f) !== 'fresh') === isSea), log = isBug ? bugLog : fishLog;   // 淡水／海釣兩個分頁（海釣 = 出海團的魚）
@@ -15,9 +72,9 @@ function renderDex() {
     const hint = !n ? '還沒抓到' : '';
     const sn = f.seasons && f.seasons !== 'any' ? ' ' + f.seasons.split(',').map(x => SEA_SHORT[x]).join('') + '季' : '';
     const when = !n && (isBug || sn) ? '<small style="color:#bdada5">' + (isBug ? ({ any: '', dawn: '清晨', day: '白天', dusk: '黃昏', night: '夜晚' }[f.phase] || '') + ({ any: '', rain: ' 雨天', clear: ' 晴天' }[f.weather] || '') : '') + sn + '</small>' : '';
-    return '<div class="dexc' + (n ? '' : ' no') + '" style="' + (n ? 'border-color:' + rc[1] : '') + '"><canvas width="16" height="16" ' + dat + '="' + esc(f.key) + '"' + (n ? '' : ' data-dim="1"') + '></canvas>' +
+    return '<div class="dexc' + (n ? ' yes' : ' no') + '"' + (n ? ' role="button" tabindex="0" data-d="' + esc(f.key) + '" data-b="' + (isBug ? 1 : 0) + '"' : '') + ' style="' + (n ? 'border-color:' + rc[1] : '') + '"><canvas width="16" height="16" ' + dat + '="' + esc(f.key) + '"' + (n ? '' : ' data-dim="1"') + '></canvas>' +
       '<small><b>' + (n ? esc(f.name) : '？？？') + '</b></small><small style="color:' + (n ? rc[1] : '#bdada5') + '">' + (n ? rc[0] + ' · ' + f.price + 'G' : (isBug ? '還沒抓到' : habitatOf(f) === 'mystery' ? '神秘路線限定' : '還沒釣到')) + '</small>' +
-      (n ? '<small>' + (isBug ? '抓到' : '釣到') + ' ×' + n + (!isBug && fishRec[f.key] ? ' · 最大 ' + fishRec[f.key].best + ' cm' : '') + '</small>' : when) + '</div>';
+      (n ? '<small>' + (isBug ? '抓到' : '釣到') + ' ×' + n + (!isBug && fishRec[f.key] ? ' · 最大 ' + fishRec[f.key].best + ' cm' : '') + '</small>' + dexMini(f, isBug) : when) + '</div>';
   }).join('');
   const tabs = '<div class="v-quick" style="margin:6px 0">' + [['fish', '淡水'], ['sea', '海釣'], ['bug', '蟲與蝴蝶']].map(([k, n]) =>
     '<button type="button" class="chipbtn" data-a="tab" data-c="' + k + '" aria-pressed="' + (dexTab === k ? 'true' : 'false') + '">' + n + '</button>').join('') + '</div>';
@@ -43,8 +100,13 @@ function renderDex() {
   dexCard.querySelectorAll('canvas[data-bug]').forEach(cv => drawBug(cv.getContext('2d'), cv.dataset.bug, !!cv.dataset.dim));
 }
 function openDex() { if (!ready || !me || authOpen || paused()) return; dexOpen = true; pressed.length = 0; renderDex(); dexEl.hidden = false; dexCard.focus(); }
-function closeDex() { dexOpen = false; dexEl.hidden = true; }
+function closeDex() { dexOpen = false; dexEl.hidden = true; closeDexDetail(); }
+function dexOpenFrom(el) { if (el) openDexDetail(el.dataset.d, el.dataset.b === '1'); }
+dexCard.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { const el = e.target.closest('.dexc[data-d]'); if (el) { e.preventDefault(); dexOpenFrom(el); } } });
+dexdEl.addEventListener('click', e => { if (e.target === dexdEl || e.target.closest('button[data-a=dclose]')) closeDexDetail(); });
 dexCard.addEventListener('click', e => {
+  const cell = e.target.closest('.dexc[data-d]');
+  if (cell) { dexOpenFrom(cell); return; }
   const t = e.target.closest('button[data-a=tab]');
   if (t) { dexTab = t.dataset.c; renderDex(); return; }
   const cl = e.target.closest('button[data-a=claim]');
