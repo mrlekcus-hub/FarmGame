@@ -6,7 +6,7 @@ const VY_COOLDOWN_MS = 12000;                       // 只用來顯示冷卻倒�
 const VOY_TIER = { 1: '小航海', 2: '遠洋', 3: '大航海' };
 const voy = { cur: null, back: null, ch: null, topic: '', ok: false, tok: 0, bad: 0, notes: new Map(), busy: false, fogT0: 0, lastReelAt: 0, pollAt: 0, endChecked: 0, finishing: false, leaveAsk: 0, listAt: 0, mode: 'captain', info: null, sum: null };
 let voyNotifyOn = true, voyToggleReel = false;
-try { voyNotifyOn = localStorage.getItem('dw_voynote') !== '0'; voyToggleReel = localStorage.getItem('dw_voytog') === '1'; } catch (e) { /* 略過 */ }
+try { voyNotifyOn = localStorage.getItem('dw_voynote') !== '0'; } catch (e) { /* 略過 */ }   // 出海拉扯固定「按住收線」，不再有切換設定（舊的 dw_voytog 存檔直接忽略）
 const voyMk = (tag, id, cls) => { const e = document.createElement(tag); if (id) e.id = id; if (cls) e.className = cls; return e; };
 const voyFmt = ms => { const s = Math.max(0, Math.ceil(ms / 1000)); return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); };
 const voySleep = ms => new Promise(res => setTimeout(res, ms));
@@ -627,10 +627,9 @@ setInterval(() => { if (vyOpen && voy.mode === 'captain') renderVoyModal(); }, 1
 
 /* ---------- 設定頁：出海團通知、點一下切換收線 ---------- */
 function voySyncUI() {
-  [['st-voy', voyNotifyOn], ['st-vtog', voyToggleReel]].forEach(([id, on]) => { const b = $(id); if (!b) return; b.setAttribute('aria-pressed', on ? 'true' : 'false'); b.textContent = on ? '開' : '關'; });
+  [['st-voy', voyNotifyOn]].forEach(([id, on]) => { const b = $(id); if (!b) return; b.setAttribute('aria-pressed', on ? 'true' : 'false'); b.textContent = on ? '開' : '關'; });
 }
 if ($('st-voy')) $('st-voy').addEventListener('click', () => { voyNotifyOn = !voyNotifyOn; try { localStorage.setItem('dw_voynote', voyNotifyOn ? '1' : '0'); } catch (e) { /* 略過 */ } voySyncUI(); voyRenderNotes(); });
-if ($('st-vtog')) $('st-vtog').addEventListener('click', () => { voyToggleReel = !voyToggleReel; try { localStorage.setItem('dw_voytog', voyToggleReel ? '1' : '0'); } catch (e) { /* 略過 */ } voySyncUI(); });
 voySyncUI();
 
 /* ---------- 啟動與登出 ---------- */
