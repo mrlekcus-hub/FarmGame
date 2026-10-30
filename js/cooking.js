@@ -101,7 +101,7 @@ function cookJudge(c, now) {
 }
 function cookTick() {
   const c = cooking; if (!c || c.phase === 'serve') return;
-  const it = c.hw ? (scene === 'plaza' && hwOn() ? true : null) : scene === 'house' && house ? house.items.find(x => x.id === c.itId) : null;
+  const it = c.hw ? (scene === 'plaza' && (hwOn() || !/^hw_/.test(c.rc.key)) ? true : null) : scene === 'house' && house ? house.items.find(x => x.id === c.itId) : null;
   if (c.scene !== scene || !it || paused() || pressed.length) { cookCancel(); return; }
   const now = Date.now(), rd = c.plan[c.i], dt = Math.min(100, now - (c.lt || now)); c.lt = now;
   if (c.phase === 'wait') { if (now >= c.at) { c.phase = 'idle'; c.heat = 0; c.needRel = actHeld; } }
@@ -122,14 +122,14 @@ async function cookFinish(ok) {
   let made = false, errMsg = '', srvXp = 0;
   if (ok) {
     c.phase = 'serve'; ckBusy = true;
-    try { const r = await enqueue(() => c.hw ? rpc('hw_cook', { p_key: rc.key, p_qty: 1 }) : rpc('cook', c.host ? { p_key: rc.key, p_qty: 1, p_perfect: perfect, p_at: c.host } : { p_key: rc.key, p_qty: 1, p_perfect: perfect })); if (r.inv) Object.assign(inv, r.inv); srvXp = +r.xp || 0; made = true; }
+    try { const r = await enqueue(() => c.hw ? (/^hw_/.test(rc.key) ? rpc('hw_cook', { p_key: rc.key, p_qty: 1 }) : rpc('cauldron_cook', { p_key: rc.key, p_qty: 1, p_perfect: perfect })) : rpc('cook', c.host ? { p_key: rc.key, p_qty: 1, p_perfect: perfect, p_at: c.host } : { p_key: rc.key, p_qty: 1, p_perfect: perfect })); if (r.inv) Object.assign(inv, r.inv); srvXp = +r.xp || 0; made = true; }
     catch (err) { errMsg = errText(err); await resync(); }
     ckBusy = false; refreshHud();
   }
   if (cooking === c) cooking = null;
   ckSend(made ? 'done' : 'fail', c);
   if (made && c.host && visiting) visitLog('cook', rc.name);   // 在朋友家煮菜：記給屋主看
-  if (made && !c.hw) loadLevel();   // 伺服器已加經驗，重新抓等級（升級彈窗也在裡面）
+  if (made && !(c.hw && /^hw_/.test(rc.key))) loadLevel();   // 伺服器已加經驗，重新抓等級（升級彈窗也在裡面）
   const xp = srvXp ? ' · 烹飪經驗 +' + srvXp : '';
   dishIcon(catchCv.getContext('2d'), rc.key);
   catchT.textContent = made ? rc.name + (perfect ? '　完美！' : '') : !ok ? '糊掉了…' : '做不出來';

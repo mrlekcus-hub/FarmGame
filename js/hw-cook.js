@@ -15,13 +15,15 @@ const HW_STALL = [[-3, 4], [-2, 4], [-3, 5], [-2, 5]];   // 糖果攤（舊廣�
 const hwAtStall = (x, y) => HW_STALL.some(a => a[0] + PXO === x && a[1] + PYO === y);
 const hwAtCauld = (x, y) => x === HW_CAULD[0] + PXO && y === HW_CAULD[1] + PYO;
 function hwHint(x, y) {   // 面向時的提示文字（ui.js 用）
-  if (scene !== 'plaza' || !hwOn()) return '';
+  if (scene !== 'plaza') return '';
+  if (!hwOn()) return hwAtCauld(x, y) ? '灶台：按動作鍵煮料理。' : '';
   if (hwAtCauld(x, y)) return '魔女鍋：按動作鍵煮萬聖節料理、吃料理。';
   if (hwAtStall(x, y)) return '糖果攤：按動作鍵買萬聖節料理的材料。';
   return '';
 }
 function hwTouch(x, y) {   // act() 呼叫：面向的是糖果攤或魔女鍋就打開，回傳 true
-  if (scene !== 'plaza' || !hwOn()) return false;
+  if (scene !== 'plaza') return false;
+  if (!hwOn()) { if (hwAtCauld(x, y)) { hwOpen('stove'); return true; } return false; }   // 活動結束後：原位變成灶台
   if (hwAtCauld(x, y)) { hwOpen('cauldron'); return true; }
   if (hwAtStall(x, y)) { hwOpen('stall'); return true; }
   return false;
@@ -29,6 +31,7 @@ function hwTouch(x, y) {   // act() 呼叫：面向的是糖果攤或魔女鍋�
 async function hwOpen(mode) {
   if (!ready || !me || authOpen || paused() || hwUi) return;
   hwUi = true; hwMode = mode; hwData = null; pressed.length = 0;
+  if (mode === 'stove') { hwData = { items: [] }; hwRender(); hwEl.hidden = false; hwCard.focus(); return; }   // 灶台不用活動資料
   hwRender(); hwEl.hidden = false; hwCard.focus();
   try {
     const r = await rpc('hw_get');
@@ -42,7 +45,7 @@ const hwList = kind => (hwData ? hwData.items.filter(x => x.kind === kind) : [])
 const hwKey = it => (it.kind === 'dish' ? 'dish:' : 'h:') + it.key;
 function hwRender() {
   const coins = me ? me.coins : 0, dis = hwBusy ? ' disabled' : '';
-  const title = hwMode === 'stall' ? '糖果攤' : '魔女鍋';
+  const title = hwMode === 'stall' ? '糖果攤' : hwMode === 'stove' ? '灶台' : '魔女鍋';
   let h = '<div class="shop-h"><h2>' + title + '</h2><span class="chip gold">' + coins + ' G</span></div>';
   if (!hwData) { hwCard.innerHTML = h + '<p class="empty">讀取中…</p>'; return; }
   if (hwMode === 'stall') {
@@ -52,13 +55,25 @@ function hwRender() {
       '<button type="button" class="btn small" data-a="buy" data-k="' + esc(it.key) + '" data-n="5"' + (hwBusy || coins < it.price * 5 ? ' disabled' : '') + '>買 5 個</button></div>').join('');
   } else {
     const act_ = ['night', 'lantern', 'witch'].filter(buffOn).map(k => BUFF_N[k] + '（剩 ' + Math.ceil((buffs[k] - srvNow()) / 60000) + ' 分鐘）');
-    h += '<p class="empty">魔女鍋不用灶台，在這裡直接煮。做好的料理吃下去有萬聖節專屬效果（同一種最多累積 60 分鐘）。' + (act_.length ? '<br>目前效果：' + esc(act_.join('、')) : '') + '</p>';
-    h += hwList('dish').map(it => {
+    if (hwMode !== 'stove') h += '<p class="empty">魔女鍋不用灶台，在這裡直接煮。做好的料理吃下去有萬聖節專屬效果（同一種最多累積 60 分鐘）。' + (act_.length ? '<br>目前效果：' + esc(act_.join('、')) : '') + '</p>';
+    if (hwMode === 'stove') h += '<p class="empty">廣場的灶台：選一道料理，站在這裡就能煮，火候和烹飪等級的規則跟廚房一樣。</p>';
+    else h += hwList('dish').map(it => {
       const mx = Object.keys(it.ing).reduce((m, k) => Math.min(m, Math.floor(have(k) / it.ing[k])), 99), dn = have(hwKey(it));
       const ing = Object.keys(it.ing).map(k => esc(itemName(k)) + ' ' + have(k) + '/' + it.ing[k]).join('、');
       return '<div class="row" style="flex-wrap:wrap;gap:6px"><canvas class="fico" width="16" height="16" data-hi="' + esc(hwKey(it)) + '"></canvas><div class="meta" style="min-width:150px"><b>' + esc(it.name) + (dn ? '　持有 ' + dn : '') + '</b><small>' + ing + '</small><small>' + esc(it.descr || '') + '</small></div>' +
         '<div style="display:flex;gap:6px;flex-wrap:wrap"><button type="button" class="btn small" data-a="cook" data-k="' + esc(it.key) + '"' + (hwBusy || mx < 1 ? ' disabled' : '') + '>開始煮</button>' +
         (dn ? '<button type="button" class="btn small" data-a="eat" data-k="' + esc(it.key) + '"' + dis + '>吃一份</button>' : '') + '</div></div>';
+    }).join('');
+    // 魔女鍋也能煮所有一般料理（和廚房同一份食譜、同樣的烹飪等級限制）
+    const L = ckLv();
+    if (hwMode !== 'stove') h += '<p class="empty" style="margin-top:10px">一般料理：魔女鍋也煮得出來，火候和烹飪等級的規則跟廚房一樣。</p>';
+    h += recipes.filter(rc => !/^hw_/.test(rc.key)).map(rc => {
+      const mx = maxCook(rc), dn = have('dish:' + rc.key), T = ckTier(rc), lock = L < T;
+      const ing = Object.keys(rc.ing).map(k => esc(itemName(k)) + ' ' + have(k) + '/' + rc.ing[k]).join('、');
+      return '<div class="row" style="flex-wrap:wrap;gap:6px"><canvas class="fico" width="16" height="16" data-hi="dish:' + esc(rc.key) + '"></canvas><div class="meta" style="min-width:150px"><b>' + esc(rc.name) + (dn ? '　持有 ' + dn : '') + '</b> <span class="cg-star">' + '★'.repeat(T) + '</span><small>' + ing + '</small><small>' + esc(rc.descr || '') + '</small></div>' +
+        '<div style="display:flex;gap:6px;flex-wrap:wrap">' +
+        (lock ? '<button type="button" class="btn small" disabled>烹飪 Lv.' + T + ' 解鎖</button>' : '<button type="button" class="btn small" data-a="cook" data-k="' + esc(rc.key) + '"' + (hwBusy || mx < 1 ? ' disabled' : '') + '>開始煮</button>') +
+        (dn && rc.buff ? '<button type="button" class="btn small" data-a="eat" data-k="' + esc(rc.key) + '"' + dis + '>吃一份</button>' : '') + '</div></div>';
     }).join('');
   }
   hwCard.innerHTML = h + '<button type="button" class="btn ghost wide" data-a="close">離開</button>';
@@ -68,7 +83,7 @@ hwCard.addEventListener('click', async e => {
   const b = e.target.closest('button[data-a]'); if (!b || b.disabled) return;
   const a = b.dataset.a, k = b.dataset.k;
   if (a === 'close') { hwClose(); return; }
-  const it = hwData && hwData.items.find(x => x.key === k); if (!it) return;
+  const it = (hwData && hwData.items.find(x => x.key === k)) || recipes.find(x => x.key === k); if (!it) return;
   if (a === 'cook') { hwCookStart(k); return; }
   hwBusy = true;
   hwRender();
@@ -92,7 +107,8 @@ hwEl.addEventListener('click', e => { if (e.target === hwEl) hwClose(); });
 /* 煮料理＝和廚房灶台同一個火候條小遊戲（cooking.js）：站在鍋子前按住動作鍵加熱，指針進綠區放開，共三段；成功才扣材料（hw_cook） */
 const HW_TIER = { hw_pudding: 2, hw_soup: 2, hw_special: 3 };
 function hwCookStart(key) {
-  const it = hwData && hwData.items.find(x => x.key === key); if (!it || cooking || ckBusy) return;
+  const it = (hwData && hwData.items.find(x => x.key === key)) || recipes.find(x => x.key === key); if (!it || cooking || ckBusy) return;
+  if (!/^hw_/.test(key) && ckLv() < ckTier(it)) { toast('烹飪 Lv.' + ckTier(it) + ' 才能做這道'); return; }
   if (Object.keys(it.ing).some(k => have(k) < it.ing[k])) { toast('材料不夠'); return; }
   const rc = { key: it.key, name: it.name, ing: it.ing, hw: true };
   hwClose();

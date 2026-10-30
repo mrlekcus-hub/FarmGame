@@ -30,13 +30,14 @@ const HW_PATHSET = new Set(HW_PATH.map(a => a[0] + ',' + a[1]));
 const HW_BLK = new Set();
 HW_JACKS.forEach(a => HW_BLK.add(a[0] + ',' + a[1])); HW_PUMPS.forEach(a => HW_BLK.add(a[0] + ',' + a[1])); HW_BLK.add(HW_CAULD.join(','));
 [[0, 0], [1, 0], [0, 1], [1, 1]].forEach(a => HW_BLK.add((HW_SX + a[0]) + ',' + (HW_SY + a[1])));   // 糖果攤
-const hwBlocked = (x, y) => scene === 'plaza' && hwOn() && HW_BLK.has((x - PXO) + ',' + (y - PYO));   // 大件裝飾不能走過去（地上的落葉、糖果玉米可以）
+const hwBlocked = (x, y) => scene === 'plaza' && (hwOn() ? HW_BLK.has((x - PXO) + ',' + (y - PYO)) : (x - PXO) === HW_CAULD[0] && (y - PYO) === HW_CAULD[1]);   // 活動結束後魔女鍋變成灶台，那一格還是不能走   // 大件裝飾不能走過去（地上的落葉、糖果玉米可以）
 const hwHash = (a, b, c) => { const n = Math.sin(a * 127.1 + b * 311.7 + c * 74.7) * 43758.5453; return n - Math.floor(n); };
 const HW_SPR = {
   pump: { p: { G: '#4a7a2a', O: '#f08a24', D: '#c2571a' }, r: ['....GG....', '..OOOOOO..', '.ODOOOODO.', 'ODOOOOOODO', 'ODOOOOOODO', '.ODOOOODO.', '..OOOOOO..', '...DDDD...'] },
   jack: { p: { G: '#4a7a2a', O: '#f08a24', K: '#3a1a0a' }, r: ['....GG....', '..OOOOOO..', '.OOOOOOOO.', 'OOKKOOKKOO', 'OOKKOOKKOO', 'OOOOKKOOOO', 'OKKKKKKKKO', '.OOOOOOOO.', '..OOOOOO..'] },
   ghost: { p: { W: '#ffffff', K: '#2a1a3a' }, r: ['...WWW...', '..WWWWW..', '.WWWWWWW.', '.WKWWWKW.', '.WWWWWWW.', '.WWWKWWW.', 'WWWWWWWWW', 'WWWWWWWWW', 'WW.WWW.WW', 'WWW.W.WWW'] },
   cauld: { p: { K: '#2a2a3a', L: '#5a5a6a', G: '#7ae04a' }, r: ['..KKKKKKKK..', '.KGGGGGGGGK.', 'KKKKKKKKKKKK', 'KLLKKKKKKKKK', 'KKKKKKKKKKKK', 'KKKKKKKKKKKK', '.KKKKKKKKKK.', '..KKKKKKKK..', '..KK....KK..', '..KK....KK..'] },
+  stove: { p: { S: '#9a8e7e', D: '#6e6455', K: '#2a2a3a', L: '#5a5a6a', F: '#ff9a3a', Y: '#ffd34d', W: '#fff3d0' }, r: ['..KKKKKKKK..', '.KLLKKKKKKK.', 'KKKKKKKKKKKK', 'KKKKKKKKKKKK', '.KKKKKKKKKK.', 'SSSSSSSSSSSS', 'SDDSFFFFSDDS', 'SDDSFYYFSDDS', 'SDDSFYWFSDDS', 'DDDDDDDDDDDD'] },
   corn: { p: { W: '#ffffff', O: '#f08a24', Y: '#ffd34d' }, r: ['..W..', '.WWW.', '.OOO.', 'OOOOO', 'YYYYY', 'YYYYY'] }
 };
 function hwSpr(g, d, px, py, al) {
@@ -85,6 +86,14 @@ function hwBuild() {   // 不會動的部分先畫在一張圖上，每一幀只
 }
 const hwGhost = now => [Math.round(Math.sin(now / 2300) * 14), Math.round(Math.sin(now / 500) * 2) - 4];   // 幽靈的水平飄移、上下浮動（像素）；基準格 (-2,9)
 function drawHalloween(now) {
+  if (scene === 'plaza' && !hwOn()) {   // 活動結束：原地留下一台灶台（和家裡的廚房灶台同功能），冒一點煙
+    ctx.save(); ctx.translate(PXO * T, PYO * T);
+    ctx.fillStyle = 'rgba(60,40,20,.2)'; ctx.fillRect(HW_CAULD[0] * T - 1, HW_CAULD[1] * T + 14, 18, 3);
+    hwAt(ctx, 'stove', HW_CAULD[0], HW_CAULD[1]);
+    for (let i = 0; i < 2; i++) { const ph = (now / 900 + i * 0.5) % 1; ctx.globalAlpha = (1 - ph) * 0.5; ctx.fillStyle = '#fffaf0'; ctx.beginPath(); ctx.arc(HW_CAULD[0] * T + 8 + Math.sin(now / 300 + i * 2) * 2, HW_CAULD[1] * T + 3 - ph * 12, 1.5 + ph, 0, 6.283); ctx.fill(); }
+    ctx.globalAlpha = 1; ctx.restore();
+    return;
+  }
   if (scene !== 'plaza' || !hwOn()) return;
   if (!hwArt) hwArt = hwBuild();
   ctx.drawImage(hwArt, 0, 0);
