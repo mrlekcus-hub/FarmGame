@@ -1122,3 +1122,19 @@ body.imm .camhint{display:block}
 .dxbar div{position:absolute;top:-1.5px;bottom:-1.5px;background:var(--pink);border-radius:6px}
 .dxtk{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:2px}
 .dxch{display:inline-block;padding:3px 10px;border-radius:12px;background:#fff;border:1.5px solid var(--edge);font-size:12px}
+
+/* 畫板（畫架）：看畫、畫畫 */
+.art-frame{align-self:center;background:#9b6a44;padding:8px;border-radius:6px;border:3px solid var(--edge);max-width:100%}
+.art-frame canvas{display:block;image-rendering:pixelated;background:#fff7e0;max-width:100%;height:auto}
+.art-vp{align-self:center;overflow:auto;border:3px solid var(--edge);border-radius:8px;background:#fff7e0;max-width:100%}
+.art-vp canvas{display:block;image-rendering:pixelated;touch-action:none;cursor:crosshair}
+.art-vp{box-sizing:content-box}
+.maker-card.art-draw{width:min(calc(var(--artw,300px) + 70px),100%);min-width:min(430px,100%)}
+.art-tip{margin:0;font-size:12px;text-align:center}
+#artlp{position:fixed;width:99px;height:99px;border:3px solid var(--edge);border-radius:14px;box-shadow:0 3px 0 var(--edge);image-rendering:pixelated;z-index:40;pointer-events:none;background:#fff}
+#artlp[hidden]{display:none}
+@media (pointer:coarse),(max-width:700px){.maker-card.art-draw{padding:12px;gap:8px;border-radius:20px;min-width:0}.maker-card.art-draw h2{font-size:18px}.art-sw{width:30px;height:30px}}
+.art-lb{font-weight:700;font-size:13px}
+.art-z{min-width:34px;text-align:center}
+.art-sw{width:26px;height:26px;border-radius:7px;border:2px solid var(--edge);padding:0;cursor:pointer}
+.art-sw[aria-pressed=true]{outline:3px solid var(--pink-deep);outline-offset:1px}

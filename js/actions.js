@@ -64,6 +64,7 @@ function act() {
     else if (hit && STYLER[hit.k] && !edit.on && (!visiting || hit.k === 'mirror')) openMaker(false);
     else if (hit && hit.k === 'piano' && !edit.on) openPiano();
     else if (hit && BATH_ACT[hit.k] && !edit.on) bathAct(hit, x, y);
+    else if (hit && ART[hit.k] && !edit.on) openArt(hit);
     else if (hit && FX_ACT[hit.k] && !edit.on) fxAct(hit, x, y);
     else if (hit && SEAT[hit.k] && !edit.on) takeSeat(hit, x, y);
     else if (hit) pop(x, y, (defOf(hit.k) || {}).name || '', '#fff3b0');

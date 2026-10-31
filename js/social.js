@@ -6,7 +6,8 @@ const EMOTES = [
   { id: 'heart', ic: '❤️', n: '愛心' }, { id: 'happy', ic: '😄', n: '開心' }, { id: 'laugh', ic: '😂', n: '大笑' }, { id: 'wow', ic: '😮', n: '驚訝' },
   { id: 'angry', ic: '💢', n: '生氣' }, { id: 'sad', ic: '😢', n: '難過' }, { id: 'sleepy', ic: '💤', n: '想睡' }, { id: 'music', ic: '🎵', n: '哼歌' },
   { id: 'what', ic: '❓', n: '疑問' }, { id: 'idea', ic: '💡', n: '靈感' }, { id: 'star', ic: '✨', n: '閃亮' }, { id: 'like', ic: '👍', n: '讚' },
-  { id: 'clap', ic: '👏', n: '喝采', hide: true }   // 有人煮菜時的「喝采」按鈕用，不放進表情選單
+  { id: 'clap', ic: '👏', n: '喝采', hide: true },   // 有人煮菜時的「喝采」按鈕用，不放進表情選單
+  { id: 'paint', ic: '🎨', n: '畫畫', hide: true }   // 在畫架上畫畫時自動顯示（art.js），不放進表情選單
 ];
 const ANIMS = {
   wave: { ic: '👋', n: '揮手', dur: 1800 }, jump: { ic: '🦘', n: '跳躍', dur: 1000 }, dance: { ic: '💃', n: '跳舞', dur: 3000 },
@@ -94,6 +95,12 @@ function emoteBubble(e, cx, cy, now) {
   ctx.globalAlpha = clamp((3200 - age) / 500, 0, 1);
   ob('#ffffff', '#e0b896', cx, y, w, h);
   r('#e0b896', cx + 1, y + h, 2, 1); r('#ffffff', cx + 2, y + h - 1, 1, 1);
+  if (em.id === 'paint') {   // 調色盤：用像素畫，不靠 emoji 字型
+    ob('#e8b27a', '#9b6a44', cx + 2, y + 3, 10, 8);
+    r('#ff8fa8', cx + 4, y + 5, 2, 2); r('#8fc8f4', cx + 7, y + 5, 2, 2); r('#ffd27a', cx + 4, y + 8, 2, 2); r('#8fe09a', cx + 7, y + 8, 1, 2);
+    r('#ffffff', cx + 10, y + 8, 2, 2);
+    ctx.globalAlpha = 1; return;
+  }
   ctx.font = '9px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#000';
   ctx.fillText(em.ic, cx + w / 2, y + h / 2 + 1);
@@ -113,6 +120,14 @@ function doEmote(kind, id) {
   lastEmo = now;
   if (syncScene() && net && net.ok) {
     try { net.ch.send({ type: 'broadcast', event: 'emo', payload: { i: myUid, k: kind === 'a' ? 'a' : 'e', e: id } }); } catch (e) { /* 略過 */ }
+  }
+}
+/* 畫畫時頭上的調色盤泡泡：art.js 在畫畫期間每 2 秒呼叫一次，泡泡就一直在；別人也看得到 */
+function paintEmote() {
+  if (!ready || !me) return;
+  myEmo = { id: 'paint', at: performance.now() };
+  if (syncScene() && net && net.ok) {
+    try { net.ch.send({ type: 'broadcast', event: 'emo', payload: { i: myUid, k: 'e', e: 'paint' } }); } catch (e) { /* 略過 */ }
   }
 }
 /* 吃料理的動作：d = 料理 key、b = buff 種類（只用來決定顏色和圖示） */
