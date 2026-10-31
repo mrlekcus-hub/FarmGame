@@ -53,14 +53,39 @@ cBar.addEventListener('pointerdown', e => { if (e.target.closest('button')) e.pr
 const syncCbh = () => requestAnimationFrame(() => { if (cOpen) stageEl.style.setProperty('--cbh', cBar.offsetHeight + 'px'); });
 cIn.addEventListener('focus', () => { pressed.length = 0; document.body.classList.add('cht'); syncCbh(); });
 cIn.addEventListener('blur', () => { document.body.classList.remove('cht'); syncCbh(); });
-cIn.addEventListener('keydown', e => { if (e.key === 'Escape') { e.preventDefault(); closeChat(); } });
-cForm.addEventListener('submit', e => {
-  e.preventDefault();
+/* 送出：觸控裝置上，鍵盤的藍色「傳送」鍵在注音／拼音還沒確認時，第一下只會確認文字（鍵盤也可能收起來，輸入列跳到右下的小窗），要再按一次才送。
+   這裡改成：確認完文字就直接送出，一下搞定；電腦的輸入法維持原本的行為（Enter 先確認選字）。 */
+let enterPending = false, lastCompEnd = 0;
+cIn.addEventListener('compositionend', () => {
+  lastCompEnd = performance.now();
+  if (enterPending) { enterPending = false; setTimeout(submitChat, 0); }
+});
+cIn.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { e.preventDefault(); closeChat(); return; }
+  if (e.key !== 'Enter' || e.shiftKey || !coarseNow()) return;
+  if (e.isComposing || (e.keyCode === 229 && performance.now() - lastCompEnd > 150)) {
+    enterPending = true; setTimeout(() => { enterPending = false; }, 800);   // 等 compositionend 再送
+  } else if (e.keyCode === 229) {   // Safari：compositionend 先到、keydown 後到，文字已確認，直接送
+    e.preventDefault(); setTimeout(submitChat, 0);
+  }
+});
+function submitChat() {
   const v = cIn.value;
   if (!v.trim()) { closeChat(); return; }
   cIn.value = '';
   sendChat(v); closeChat();
-});
+}
+cForm.addEventListener('submit', e => { e.preventDefault(); submitChat(); });
+/* 觸控時「送出」鈕一按下去就送：以前要等手指放開（click），這中間鍵盤若收起來、輸入列跳到小窗，手指底下的按鈕就不見了，要再按一次 */
+let tapSendAt = 0;
+const sendBtn = cForm.querySelector('button[type="submit"]');
+if (sendBtn) {
+  sendBtn.addEventListener('pointerdown', e => {
+    if (e.pointerType === 'mouse') return;
+    e.preventDefault(); tapSendAt = performance.now(); submitChat();
+  });
+  sendBtn.addEventListener('click', e => { if (performance.now() - tapSendAt < 800) { e.preventDefault(); e.stopPropagation(); } });
+}
 cFab.addEventListener('click', () => { if (cOpen) closeChat(); else if (emOpen) closeEmote(); else openEmote(); });   // 💬 統一入口：表情、動作、快捷語；要打字從面板裡的「自己輸入」或按 /
 cFab.addEventListener('pointerdown', e => e.stopPropagation());
 document.addEventListener('pointerdown', e => { if (cOpen && !cBar.contains(e.target) && !cFab.contains(e.target)) closeChat(); });
