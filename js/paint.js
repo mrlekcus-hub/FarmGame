@@ -71,6 +71,39 @@ async function paintCommit(op) {
   }).catch(e => { paint.pend = Math.max(0, paint.pend - 1); toast(errText(e)); reloadHouse(); });   // 失敗就還原成伺服器的樣子
 }
 
+/* 一鍵清空：把目前這一層（地板／牆紙／隔間牆／門）全部擦掉，按下去會先再確認一次。
+   地板、牆紙一次用整片矩形擦；牆和門伺服器只收直線，所以一列一列擦（用伺服器回傳的結果檢查還剩哪一列）。 */
+async function paintClearAll() {
+  if (!house || paint.pend > 0) return;
+  const L = paint.layer, dr = paintDoor(), key = L === 'wall' ? 'walls' : L;
+  const mine = c => L === 'wall' ? (dr ? c >= 65 && c <= 80 : c >= 97 && c <= 112) : c !== 46;   // 46 = '.'（空格）
+  const before = paintGet(key), nm = L === 'floor' ? '地板' : L === 'wallpaper' ? '牆紙' : dr ? '門' : '隔間牆';
+  let cnt = 0; for (let i = 0; i < before.length; i++) if (mine(before.charCodeAt(i))) cnt++;
+  if (!cnt) { toast('沒有' + nm + '可以清空', 1400); return; }
+  if (!window.confirm('要清空所有「' + nm + '」嗎？\n目前有 ' + cnt + ' 格，全部會被擦掉，這個動作不能復原。')) return;
+  const kind = paint.kind;
+  paintSet(key, before.split('').map(ch => mine(ch.charCodeAt(0)) ? '.' : ch).join(''));   // 先樂觀更新畫面
+  paint.pend++;
+  enqueue(async () => {
+    let r_;
+    if (L === 'wall') {
+      let s = before;
+      for (let n = 0; n < RH + 2; n++) {
+        let at = -1; for (let i = 0; i < s.length; i++) if (mine(s.charCodeAt(i))) { at = i; break; }
+        if (at < 0) break;
+        const y = at >> 5;
+        r_ = await rpc('house_wall_line', { p_x1: 0, p_y1: y, p_x2: RW - 1, p_y2: y, p_kind: kind, p_key: null });
+        if (r_.walls === s) break;   // 伺服器沒有變：不要一直重試
+        s = r_.walls;
+      }
+      if (!r_) r_ = { walls: s };
+    } else r_ = await rpc('house_paint_rect', { p_kind: L, p_x1: 0, p_y1: 0, p_x2: RW - 1, p_y2: L === 'wallpaper' ? 1 : RH - 1, p_key: null });
+    paint.pend--;
+    if (paint.pend === 0) paintSet(key, L === 'wall' ? r_.walls : r_.cells);
+    toast('已清空' + nm, 1600);
+  }).catch(e => { paint.pend = Math.max(0, paint.pend - 1); toast(errText(e)); reloadHouse(); });
+}
+
 /* ---------- 指標操作 ---------- */
 function paintCell(ev, clampIt) {
   const [tx, ty] = tileFromEvent(ev), lx = tx - RX, ly = ty - RY, wp = paint.layer === 'wallpaper';
@@ -137,7 +170,9 @@ function renderPaintPanel() {
   if (paint.layer === 'wall') tools.push(['recolor', paint.kind === 'door' ? '換款式' : '換花紋']);
   let h = '<div class="prow">' + chips('layer', paint.layer, [['floor', '地板'], ['wallpaper', '牆紙'], ['wall', '隔間牆']]) + '</div>';
   if (paint.layer === 'wall') h += '<div class="prow">' + chips('kind', paint.kind, [['wall', '牆'], ['door', '門']]) + '</div>';
-  h += '<div class="prow">' + chips('tool', paint.tool, tools) + '</div><div class="pgrid pat">';
+  h += '<div class="prow">' + chips('tool', paint.tool, tools) + '</div>';
+  if (paint.tool === 'erase') h += '<div class="prow"><button type="button" class="chipbtn" data-clear="1">🧹 一鍵清空' + (paint.layer === 'floor' ? '地板' : paint.layer === 'wallpaper' ? '牆紙' : paintDoor() ? '門' : '隔間牆') + '</button></div>';
+  h += '<div class="pgrid pat">';
   if (paintDoor()) {
     DOORS.forEach((d, k) => {
       const own = doorOwned(k);
@@ -166,6 +201,7 @@ $('h-paint').addEventListener('click', e => {
   const b = e.target.closest('button');
   if (!b) return;
   const d = b.dataset;
+  if (d.clear) { paintClearAll(); return; }
   if (d.layer) { paint.layer = d.layer; const rg = PAT_RANGE[d.layer]; if (paint.col < rg[0] || paint.col >= rg[1]) paint.col = rg[0]; }
   else if (d.kind) paint.kind = d.kind;
   else if (d.tool) paint.tool = d.tool;
