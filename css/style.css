@@ -537,7 +537,7 @@ body{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 .qbar i{display:block;height:100%;background:var(--leaf);border-radius:3px}
 .cg-star{color:#e8a23a;font-size:11px;letter-spacing:1px}
 
-/* ---- 手機沉浸模式（觸控裝置、短邊 < 700px）：農場鋪滿、介面半透明、選單上拉 ---- */
+/* ---- 沉浸模式（觸控裝置：手機、iPad）：農場鋪滿、介面半透明、選單上拉 ---- */
 .grab,.immgrid{display:none}
 body.imm{padding:0!important;height:100dvh;overflow:hidden;overscroll-behavior:none}
 body.imm .app{position:fixed;inset:0;max-width:none;margin:0;display:block;height:auto}

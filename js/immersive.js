@@ -3,7 +3,8 @@
 /* ---------- 手機沉浸模式：畫面鋪滿、鏡頭跟隨、介面閒置時淡出、選單上拉 ---------- */
 const view = { s: S, x: 0, y: 0, snap: true, scene: '' };
 const coarseMQ = window.matchMedia ? matchMedia('(pointer:coarse)') : null;
-const wantImm = () => !!(coarseMQ && coarseMQ.matches && Math.min(window.innerWidth, window.innerHeight) < 700);
+/* 觸控裝置（手機、iPad）一律用沉浸模式；以前只限短邊 < 700px，iPad 會落到桌機版面，畫面比螢幕高、要捲動才看得完 */
+const wantImm = () => !!(coarseMQ && coarseMQ.matches);
 function fitView() {
   const want = wantImm();
   document.body.classList.toggle('imm', want);
@@ -12,7 +13,7 @@ function fitView() {
     const dpr = Math.min(window.devicePixelRatio || 1, 3), rc = cv.getBoundingClientRect();
     const w = Math.max(1, Math.round(rc.width * dpr)), h = Math.max(1, Math.round(rc.height * dpr));
     if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
-    view.s = Math.max(2, Math.round(Math.min(rc.width, rc.height) / 8 * dpr / T), Math.ceil(h / (H * T)), Math.ceil(w / (W * T)));
+    view.s = Math.max(2, Math.round(Math.min(rc.width, rc.height) / (Math.min(rc.width, rc.height) < 700 ? 8 : 10) * dpr / T), Math.ceil(h / (H * T)), Math.ceil(w / (W * T)));
   } else {
     syncCanvasRows();
     view.s = S;
