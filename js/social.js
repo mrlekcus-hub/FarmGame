@@ -357,7 +357,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape' && fpOpen()) 
 let pose = null;                                // { type: 'sit' | 'lie', id, ix, iy, ox, oy, face0, tile, sort, t }
 function takeSeat(it, x, y) {
   const d = dimsOf(it.k, it.r | 0); if (!d || pose) return;
-  if ((it.r | 0) !== 0 && SEAT[it.k] !== 'lie') { toast('轉過方向的椅子／沙發不能坐，轉回原位就可以了', 2200); return; }   // 床轉過方向也能躺
+  if ((it.r | 0) !== 0 && SEAT[it.k] !== 'lie' && it.k !== 'chair') { toast('轉過方向的椅子／沙發不能坐，轉回原位就可以了', 2200); return; }   // 床轉過方向也能躺
   let slot = 0;
   if (SEAT[it.k] === 'lie') {
     const sp = BEDS[it.k] || BEDS.bed, taken = bedTaken(it);
@@ -371,7 +371,7 @@ function takeSeat(it, x, y) {
     }
   } else if (it.k !== 'sofa' && seatTaken(it)) { toast('這個位子已經有人坐了', 1400); return; }   // 沙發可以兩個人並排坐，其他家具一次一人
   pose = { type: SEAT[it.k], id: it.id, ix: it.x, iy: it.y, ox: pl.x, oy: pl.y, face0: pl.face, tile: x - (RX + it.x), slot, sort: RY + it.y + d.h - 1 + 0.02, t: 0 };
-  pl.x = pl.sx = x; pl.y = pl.sy = y; pl.prog = 1; pl.face = 'down'; pressed.length = 0;
+  pl.x = pl.sx = x; pl.y = pl.sy = y; pl.prog = 1; pl.face = it.k === 'chair' ? chairFace(it) : 'down'; pressed.length = 0;
   if (pose.type === 'lie') pop(x, y - 0.6, 'Zzz', '#cfe8f7');
   lastPosKey = ''; posAcc = 999; trackSelf();   // 讓同一間屋子裡的人看到我坐著／躺著
 }
@@ -380,7 +380,7 @@ function seatItemAt(x, y, code) {
   if (!house || scene !== 'house') return null;
   const lx = x - RX, ly = y - RY, want = code === 4 ? 'lie' : 'sit';
   return house.items.find(it => {
-    if (SEAT[it.k] !== want || ((it.r | 0) !== 0 && want !== 'lie')) return false;
+    if (SEAT[it.k] !== want || ((it.r | 0) !== 0 && want !== 'lie' && it.k !== 'chair')) return false;
     const g_ = itemRect(it);
     return g_ && lx >= g_.x && lx < g_.x + g_.w && ly >= g_.y && ly < g_.y + g_.h;
   }) || null;
@@ -425,6 +425,17 @@ function standUp() {
 }
 /* 坐著：只畫上半身（腿被椅面擋住），再把椅面前緣蓋回去 */
 function drawSeated(px, py, it, ch, tile) {
+  const cf = it.k === 'chair' ? chairFace(it) : 'down';
+  if (cf !== 'down') {   // 側坐／背坐的椅子：椅背在人後面（側面）或在人前面（背面），椅面蓋在腿前
+    const WD = '#9b6a44', X = (lx, w) => cf === 'left' ? px + 16 - lx - w : px + lx;
+    if (cf !== 'up') ob('#e8b27a', WD, X(1, 3), py + 1, 3, 12);
+    g.save(); g.beginPath(); g.rect(px - 4, py - 14, 24, 24); g.clip();
+    drawPlayer(px, py - 2, cf, false, 0, ch);
+    g.restore();
+    if (cf === 'up') { ob('#e8b27a', WD, px + 3, py + 5, 10, 7); r(WD, px + 4, py + 12, 2, 3); r(WD, px + 10, py + 12, 2, 3); }
+    else { ob('#ffb3c6', WD, X(3, 10), py + 9, 10, 4); r(WD, X(3, 2), py + 12, 2, 3); r(WD, X(11, 2), py + 12, 2, 3); }
+    return;
+  }
   g.save(); g.beginPath(); g.rect(px - 4, py - 14, 24, 24); g.clip();
   drawPlayer(px, py - 2, 'down', false, 0, ch);
   g.restore();

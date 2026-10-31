@@ -45,7 +45,6 @@ for (let y = 8; y <= 12; y++) for (let x = 14; x <= 18; x++) {
   const dx = (x - 16) / 2.7, dy = (y - 10) / 2.7;
   if (dx * dx + dy * dy + hash(x, y, 9) * 0.25 <= 1) kind[y][x] = WA;
 }
-[[9, 2], [18, 4], [1, 7], [11, 12], [9, 7]].forEach(([x, y]) => { if (kind[y][x] === G) kind[y][x] = TR; });
 const isWater = (x, y) => x >= 0 && y >= 0 && x < W && y < H && K[y][x] === WA;
 
 /* ---------- 季節（要和 SQL 的 _season 一致：每 7 天換一季，春→夏→秋→冬，以 GMT+8 的日子計算） ---------- */

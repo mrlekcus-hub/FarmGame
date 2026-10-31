@@ -231,6 +231,22 @@ FURN.vase = (px, py, now) => {                     // 青花瓶
   ob('#fafcff', '#7a8fb8', px + 4, py + 5, 8, 10); r('#7a8fb8', px + 6, py + 1, 4, 5); r('#fafcff', px + 6, py + 2, 4, 1);
   r('#4a6fb8', px + 5, py + 8, 6, 1); r('#4a6fb8', px + 6, py + 10, 4, 1); r('#4a6fb8', px + 7, py + 12, 2, 1);
 };
+/* 椅子的朝向：轉 0~3 次 = 面向 下／左／上／右；翻轉時左右對調。椅子不用整張圖旋轉，每個朝向各畫各的（側面、背面） */
+const CHAIR_FACE = ['down', 'left', 'up', 'right'];
+const chairFace = it => { let f = CHAIR_FACE[(it.r | 0) & 3]; if (it.f && (f === 'left' || f === 'right')) f = f === 'left' ? 'right' : 'left'; return f; };
+FURN.chairDir = (px, py, face) => {
+  const W_ = '#e8b27a', WD = '#9b6a44', C = '#ffb3c6';
+  if (face === 'down') { FURN.chair(px, py); return; }
+  if (face === 'up') {   // 背面：椅背在前面，座墊在後面露出一點
+    ob(C, WD, px + 3, py + 2, 10, 5); ob(W_, WD, px + 3, py + 7, 10, 7);
+    r(WD, px + 4, py + 14, 2, 2); r(WD, px + 10, py + 14, 2, 2);
+    return;
+  }
+  const X = (lx, w) => face === 'left' ? px + 16 - lx - w : px + lx;   // 側面：面向右時椅背在左邊，面向左時鏡射
+  r(WD, X(3, 2), py + 12, 2, 3); r(WD, X(11, 2), py + 12, 2, 3);
+  ob(W_, WD, X(1, 3), py + 1, 3, 12);
+  ob(C, WD, X(3, 10), py + 9, 10, 4);
+};
 const SEAT = { chair: 'sit', sofa: 'sit', bed: 'lie' };   // 可以坐／躺的家具
 const STYLER = { wardrobe: 1, mirror: 1 };   // 按動作鍵換造型；衣櫥只能在自己家用，鏡子拜訪朋友家時也能用（換的是自己的造型）
 const DISP = { aquarium: { n: 4, kind: 'fish' }, specimen: { n: 6, kind: 'bug' } };   // 要和 SQL 的 _display_slots / _display_kind 一致
@@ -293,6 +309,7 @@ const DCONT = {
 function drawFurn(it, px, py, now) {
   const f = FURN[it.k], d = defOf(it.k);
   if (!f || !d) return;
+  if (it.k === 'chair') { FURN.chairDir(px, py, chairFace(it)); return; }   // 椅子：依朝向直接畫
   const rt = (it.r | 0) & 3;
   let ox = px, oy = py;
   g.save();
