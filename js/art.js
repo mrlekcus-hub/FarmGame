@@ -137,9 +137,9 @@ function artRenderView(it, name) {
   const a = artOf(it), own = !visiting;
   artCard.innerHTML = '<div class="shop-h"><h2>' + name + '</h2><span class="chip gold" id="arth">♥ ' + (a ? a.hearts : 0) + '</span></div>' +
     '<div class="art-frame"><canvas id="artv"></canvas></div>' +
-    '<p class="empty">' + (own ? '你的畫。朋友來拜訪時可以欣賞並送愛心；重畫會清掉目前的畫和愛心。' : esc(visiting.name) + ' 的畫。每個人對同一幅畫只能送一次愛心。') + '</p>' +
+    '<p class="empty">' + (own ? '你的畫。朋友來拜訪時可以欣賞並送愛心；可以「編輯」接著修改（大小不變），修改後重新掛上時愛心會歸零；「重畫」則是換大小從頭畫。' : esc(visiting.name) + ' 的畫。每個人對同一幅畫只能送一次愛心。') + '</p>' +
     (adNote ? '<p class="empty">' + esc(adNote) + '</p>' : '') +
-    (own ? '<button type="button" class="btn wide" data-a="redraw">重畫</button>'
+    (own ? '<button type="button" class="btn wide" data-a="edit">✏️ 編輯這幅畫</button><button type="button" class="btn ghost wide" data-a="redraw">重畫（換大小）</button>'
       : '<button type="button" class="btn wide" data-a="heart"' + (a && a.mine ? ' disabled' : '') + '>' + (a && a.mine ? '已送出愛心' : '送愛心') + '</button>') +
     '<button type="button" class="btn ghost wide" data-a="close">關閉</button>';
   if (a) artPaintCanvas($('artv'), a, 320);
@@ -288,6 +288,12 @@ function artResume() {
   const d = artDraftGet(); if (!d) return;
   adW = d.w; adH = d.h; adG = d.data.split('').map(ch => (ch === '.' ? -1 : ART_CH.indexOf(ch))); adCol = 0; adTool = 'pen'; adZ = 1; adHist = []; artMode = 'draw'; artRender(); artPaintEmoStart();
 }
+function artEdit() {                               // 把已掛上的畫讀回畫板接著改：大小不變，儲存時覆蓋原畫
+  const a = artCache[artOwner() + ':' + artId]; if (!a || visiting) return;
+  if (artDraftGet() && !window.confirm('有一份還沒畫完的草稿，編輯這幅畫會把它蓋掉。\n要繼續嗎？')) return;
+  artDraftDel();
+  adW = a.w; adH = a.h; adG = a.data.split('').map(ch => (ch === '.' ? -1 : ART_CH.indexOf(ch))); adCol = 0; adTool = 'pen'; adZ = 1; adHist = []; adNote = ''; artMode = 'draw'; artRender(); artPaintEmoStart();
+}
 function artPush() { adHist.push(adG.slice()); if (adHist.length > 40) adHist.shift(); }
 function artStart(i) {
   const s = ART[artK].sizes[i]; if (!s) return;
@@ -325,6 +331,7 @@ artCard.addEventListener('click', e => {
   else if (a === 'back') { artMode = 'view'; artRender(); }
   else if (a === 'size') { if (artDraftGet() && !window.confirm('有一份還沒畫完的草稿，重新開始會把它蓋掉。\n要重新開始嗎？')) return; artDraftDel(); artStart(+b.dataset.i); }
   else if (a === 'resume') artResume();
+  else if (a === 'edit') artEdit();
   else if (a === 'heart') artHeart();
   else if (a === 'aid') { const k = b.dataset.c; adAid[k] = !adAid[k]; try { localStorage.setItem('rf_art_aid', JSON.stringify(adAid)); } catch (e) { /* 略過 */ } b.setAttribute('aria-pressed', adAid[k]); if (!adAid.cross && !adAid.ruler) adHov = null; artSizeView(); artDrawAll(); }
   else if (a === 'zi') artZoom(1);

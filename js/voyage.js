@@ -173,8 +173,12 @@ async function voyJoin(id) {
   }
   voy.busy = false;
 }
+Object.assign(ERR, { voyage_not_open_day: '柴犬船長只在星期一、三、五開團，今天可以加入別人的團' });
+const VOY_OPEN_DAYS = [1, 3, 5];                   // 只有星期一、三、五能開團（以 GMT+8 算星期；加入別人的團不受限）
+const voyOpenDayOk = () => VOY_OPEN_DAYS.includes(new Date(srvNow() + 8 * 3600000).getUTCDay());
 async function voyOpenVoyage(tier) {
   if (!ready || !me || voy.busy) return;
+  if (!voyOpenDayOk() && !(voy.info && voy.info.gm)) { toast('柴犬船長只在星期一、三、五開團，今天可以加入別人的團喔'); return; }
   voy.busy = true; renderVoyModal();
   const back = voyBackNow();
   try {
@@ -568,9 +572,10 @@ function renderVoyModal() {
   else {
     const left = Math.max(0, i.max - i.opens), price = i.next_price, tier = Math.min(3, i.opens + 1);
     const aboard = !!i.mine || !!voy.cur;
-    h += '<p class="empty">今天已開 ' + i.opens + '/' + i.max + ' 次 · 你有 ' + i.coins + ' G<br>船票：第 1 次 ' + i.prices[0] + ' G · 第 2 次 ' + i.prices[1] + ' G · 第 3 次 ' + i.prices[2] + ' G（客人免費加入）</p>';
+    h += '<p class="empty">今天已開 ' + i.opens + '/' + i.max + ' 次 · 你有 ' + i.coins + ' G<br>開團日：星期一、三、五<br>船票：第 1 次 ' + i.prices[0] + ' G · 第 2 次 ' + i.prices[1] + ' G · 第 3 次 ' + i.prices[2] + ' G（客人免費加入）</p>';
     if (i.gm) h += '<div class="v-quick">' + [1, 2, 3].map(t => '<button type="button" class="btn small ghost" data-a="gmopen" data-t="' + t + '">GM 開 ' + VOY_TIER[t] + '</button>').join('') + '<button type="button" class="btn small ghost" data-a="bclose" data-c="' + (bld && bld.closed ? '0' : '1') + '">' + (bld && bld.closed ? 'GM：重新開放碼頭' : 'GM：暫時關閉碼頭') + '</button></div>';
     if (aboard) h += '<button type="button" class="btn wide" disabled>你已經在一趟出海團裡了</button>';
+    else if (!i.gm && !voyOpenDayOk()) h += '<button type="button" class="btn wide" disabled>今天不開團</button><p class="empty" style="margin-top:4px">柴犬船長只在<b>星期一、三、五</b>開團出海。今天可以加入別人招募的團。</p>';
     else if (left <= 0 && !i.gm) h += '<button type="button" class="btn wide" disabled>今天的船票用完了</button>';
     else if (!i.gm && i.coins < price) h += '<button type="button" class="btn wide" disabled>金幣不夠（' + price + ' G）</button>';
     else h += '<button type="button" class="btn wide" data-a="open"' + (voy.busy ? ' disabled' : '') + '>開團（' + VOY_TIER[tier] + ' · ' + (i.gm ? 0 : price) + ' G）</button>' +
