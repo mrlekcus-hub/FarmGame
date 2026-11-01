@@ -234,13 +234,15 @@ function stopNet() {
   const n = net; net = null;
   netGate = netGate.then(() => dropChannel(n.ch));
 }
-function startNet(rm, priv) {
+let privEverOk = false;                          // 這次開著遊戲期間，私人頻道有沒有成功連過；連過就代表伺服器權限沒問題，之後失敗只是暫時的（手機切到別的 App 回來，網路和登入憑證還沒恢復）
+let healAt = 0; const healN = {};                // 船上「看不到別人」的自救：每艘船最多重連 3 次、每次至少隔 30 秒
+function startNet(rm, priv, tries) {
   stopNet();
   const tok = netTok;
   netGate.then(() => {
     if (tok !== netTok) return;                // 等待期間已經離開或換房了
     const ch = sb.channel('village:' + rm, { config: { private: priv, presence: { key: myUid }, broadcast: { self: false, ack: false } } });
-    net = { ch, room: rm, priv, ok: false, wasOk: false, bad: 0, synced: false };
+    net = { ch, room: rm, priv, ok: false, wasOk: false, bad: 0, synced: false, tries: tries | 0, lonely: 0 };
     ch.on('presence', { event: 'sync' }, () => onSync(ch))
       .on('broadcast', { event: 'pos' }, m => onPos(m && m.payload))
       .on('broadcast', { event: 'bye' }, m => onBye(m && m.payload))
@@ -259,11 +261,14 @@ function startNet(rm, priv) {
       .on('broadcast', { event: 'fx' }, m => onFx(m && m.payload))
       .subscribe(status => {
         if (!net || net.ch !== ch) return;
-        if (status === 'SUBSCRIBED') { net.ok = true; net.wasOk = true; net.bad = 0; lastSendAt = 0; trackSelf(); try { fxJoined(); } catch (e) { /* 略過 */ } }
+        if (status === 'SUBSCRIBED') { net.ok = true; net.wasOk = true; net.bad = 0; lastSendAt = 0; if (priv) privEverOk = true; trackSelf(); try { fxJoined(); } catch (e) { /* 略過 */ } }
         else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
           if (net.ok || net.wasOk) { net.ok = false; return; }   // 連上後才斷線：supabase-js 會自動重連，netWatch 看門狗負責兜底
           if (status === 'CLOSED') return;
-          if (priv) startNet(rm, false);          // 備援：改用公開頻道
+          if (priv && privEverOk && net.tries < 8) {   // 私人頻道之前連得上，這次失敗只是暫時的：隔幾秒重試私人頻道。千萬不要改用公開頻道——公開頻道和別人的私人頻道是分開的，會變成只有自己一個人
+            const t = net.tries + 1; setTimeout(() => { if (net && net.ch === ch && !net.ok) startNet(rm, true, t); }, 2500); return;
+          }
+          if (priv && !privEverOk) startNet(rm, false);          // 備援：從來沒連上過私人頻道（可能權限沒設定）才改用公開頻道
           else { addSys('連不上即時連線，暫時只能看到自己。'); if (rm.indexOf('house-') !== 0) toast('廣場的即時連線失敗，請重新整理再試'); }
         }
       });
@@ -330,7 +335,14 @@ function netWatch(force) {
   if (!ready || !sb) return;
   if (net && (scene === 'plaza' || scene === 'tarot' || scene === 'house' || scene === 'boat')) {
     const st = net.ch.state;
-    if (st === 'joined') { net.bad = 0; if (!net.ok) { net.ok = true; trackSelf(); } }
+    if (st === 'joined') {
+      net.bad = 0; if (!net.ok) { net.ok = true; trackSelf(); }
+      /* 船上自救：出海團的名單有別人，但我已連上頻道卻一個人都看不到，超過 16 秒就重連（最多 3 次） */
+      if (scene === 'boat' && net.ok && voy.cur && (voy.cur.members || []).length > 1 && remotes.size === 0) {
+        net.lonely++;
+        if (net.lonely >= 4 && performance.now() - healAt > 30000 && (healN[net.room] | 0) < 3) { healAt = performance.now(); healN[net.room] = (healN[net.room] | 0) + 1; addSys('看不到其他人，重新連線中…'); startNet(net.room, true); return; }
+      } else net.lonely = 0;
+    }
     else if (net.wasOk && (force || ++net.bad >= 2)) { addSys('連線中斷，重新連線中…'); startNet(net.room, net.priv); return; }
   }
   if (pres) {
@@ -342,7 +354,9 @@ setInterval(netWatch, 4000);
 document.addEventListener('visibilitychange', () => {
   if (document.hidden || !ready) return;
   netWatch(false);
+  const nowV = performance.now(); remotes.forEach(rp => { rp.heard = nowV; });   // 剛回到前景：別人不是離開了，是我這邊斷線期間沒收到，給大家重新計時，免得全部被清掉
   setTimeout(() => { if (net && net.ok) { lastSendAt = 0; trackSelf(); } if (pres && pres.ok) trackWhere(true); }, 600);   // 回到前景：重新宣告自己的位置與狀態
+  setTimeout(() => { if (net && net.ch && net.ch.state !== 'joined' && net.wasOk) netWatch(true); }, 1500);   // 頻道沒有自己恢復就馬上重建，不用等看門狗
 });
 window.addEventListener('online', () => setTimeout(() => netWatch(true), 3000));
 function netFish(p) {

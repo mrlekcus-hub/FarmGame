@@ -1138,3 +1138,17 @@ body.imm .camhint{display:block}
 .art-z{min-width:34px;text-align:center}
 .art-sw{width:26px;height:26px;border-radius:7px;border:2px solid var(--edge);padding:0;cursor:pointer}
 .art-sw[aria-pressed=true]{outline:3px solid var(--pink-deep);outline-offset:1px}
+
+/* 畫板定位輔助：刻度尺、準星 */
+.art-rw{align-self:center;display:grid;grid-template-columns:22px auto;grid-template-rows:18px auto;max-width:100%}
+.art-rw.noruler{grid-template-columns:auto;grid-template-rows:auto}
+.art-rw.noruler>.art-corner,.art-rw.noruler>#artrt,.art-rw.noruler>#artrl{display:none}
+#artrt{margin-left:3px;display:block;border-radius:4px 4px 0 0}
+#artrl{margin-top:3px;display:block;border-radius:4px 0 0 4px}
+.art-cw{position:relative;width:max-content;height:max-content}
+#artx{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+#artx[hidden]{display:none}
+#artx i{position:absolute}
+#artx .ax-r,#artx .ax-c{background:rgba(255,143,168,.28)}
+#artx .ax-b{border:2px solid #e0406e;box-sizing:border-box;background:rgba(255,255,255,.25)}
+#artx .ax-t{position:absolute;background:#6b4848;color:#fff;font-size:11px;font-weight:700;padding:2px 6px;border-radius:6px;white-space:nowrap}

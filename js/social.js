@@ -193,8 +193,8 @@ const nearRemote = rp => !!rp && hereRp(rp) && Math.abs(rp.tx - pl.x) + Math.abs
 async function pactInvite(uid, act) {
   const P = PACTS[act], rp = remotes.get(uid);
   if (!P || !ready || !me) return;
-  if (scene === 'boat') { toast('船上不能做雙人動作', 1800); return; }
-  if (!syncScene() || !net || !net.ok) { toast('要連上即時連線才能做雙人動作（廣場、塔羅屋、屋子裡都可以）', 2600); return; }
+  if (scene === 'boat' && act === 'sit') { toast('船上不能坐在地上，擊掌、跳舞、擁抱、合照都可以', 2200); return; }   // 船上其他雙人動作都開放；坐在地上的姿勢靠地面位置，船上不支援
+  if (!syncScene() || !net || !net.ok) { toast('要連上即時連線才能做雙人動作（廣場、塔羅屋、屋子裡、船上都可以）', 2600); return; }
   if (!rp || !nearRemote(rp)) { toast('距離不夠：走到對方的上、下、左或右一格，面對面才能邀請', 3200); return; }
   if (fishing || cooking) { toast((cooking ? '烹飪' : '釣魚') + '的時候不能互動', 1800); return; }
   if (pose) { toast('起身後才能邀請', 1800); return; }

@@ -1,32 +1,35 @@
 'use strict';
 /* 畫板（寬幅畫架、三腳畫架）：自己畫、掛在家具上、拜訪的人可以看並送愛心 —— 雷克斯農場。所有檔案共用同一個全域範圍，載入順序見 index.html。 */
-/* 畫存成一串字元：每格 1 個字元，0~9a~f = 調色盤編號，. = 空白；列優先。格數要和 SQL 的 _art_sizes 一致。
+/* 畫存成一串字元：每格 1 個字元，0~9a~v = 調色盤編號（共 32 色，0~f 是舊的 16 色，沒動過，舊畫照常顯示），. = 空白；列優先。格數要和 SQL 的 _art_sizes 一致。
    rect = 畫在家具上的位置和大小（像素）；每種格數都和 rect 同比例，縮小顯示時不會變形。 */
 const ART = {
-  easel1: { rect: [6, 5, 20, 12], sizes: [[30, 18, '小'], [40, 24, '中'], [60, 36, '大']] },   // 寬幅畫架：5:3 橫向
-  easel2: { rect: [11, 5, 10, 15], sizes: [[16, 24, '小'], [24, 36, '中'], [32, 48, '大']] }   // 三腳畫架：2:3 直式
+  easel1: { rect: [3, 4, 25, 15], sizes: [[20, 12, '迷你'], [30, 18, '小'], [40, 24, '中', 1], [50, 30, '中大'], [60, 36, '大'], [80, 48, '特大'], [100, 60, '超大']] },   // 寬幅畫架：5:3 橫向（第 4 個欄位 1 = 推薦）
+  easel2: { rect: [8, 3, 16, 24], sizes: [[12, 18, '迷你'], [16, 24, '小'], [24, 36, '中', 1], [32, 48, '大'], [40, 60, '特大'], [48, 72, '超大'], [64, 96, '巨大']] }   // 三腳畫架：2:3 直式；格數最大 128（要和 SQL 的 _art_size_ok 一致）
 };
 const ART_PAL = ['#ff8fa8', '#ff9b7a', '#ffd27a', '#ffe08a', '#8fe09a', '#7fd08a', '#8fc8f4', '#bfe6ff', '#b99aff', '#ffb3c6', '#e8b27a', '#9b6a44', '#6b4848', '#ffffff', '#cfcfd8', '#3b3b4f'];
+/* 後 16 色（編號 16~31，字元 g~v）：黑、深灰、深綠、亮綠、深紅、紅、橘、深橘、金黃、膚色、深膚色、深咖啡、淡藍紫、深藍、紫、青 */
+ART_PAL.push('#000000', '#555566', '#1f6b2e', '#3fbf4f', '#a83232', '#e53935', '#f28c1e', '#c4600a', '#f5c400', '#f8d3a8', '#c98a5e', '#5a3516', '#9ab4f0', '#2f5fb0', '#8a4fd0', '#2fb8b8');
+const ART_CH = '0123456789abcdefghijklmnopqrstuv';   // 編號 → 字元
 const ART_PAPER = [255, 247, 224];
 const ART_RGB = ART_PAL.map(h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]);
 Object.assign(ERR, { art_own: '不能給自己的畫送愛心', art_hearted: '你已經送過愛心了', art_none: '這幅畫已經不在了', art_bad: '畫的資料不對', art_not_yours: '這不是你的畫架' });
 
 /* ---------- 家具外觀（沒有畫時只有一張空白畫布；畫好的圖由 DCONT 疊在 rect 位置） ---------- */
-FURN.easel1 = (px, py) => {                        // 寬幅畫架（2x2）：橫向畫布、地上一塊調色盤
+FURN.easel1 = (px, py) => {                        // 寬幅畫架（2x2）：橫向大畫布（畫面 25×15）、地上一塊調色盤
   r('rgba(90,60,40,.18)', px + 3, py + 29, 26, 2);
   r('#9b6a44', px + 6, py + 14, 2, 15); r('#9b6a44', px + 24, py + 14, 2, 15); r('#7d5535', px + 15, py + 16, 2, 12);
-  ob('#fff7e0', '#9b6a44', px + 4, py + 3, 24, 16);
-  r('#d9a066', px + 3, py + 19, 26, 2); r('#9b6a44', px + 3, py + 21, 26, 1);
+  ob('#fff7e0', '#9b6a44', px + 2, py + 3, 28, 18);
+  r('#d9a066', px + 1, py + 21, 30, 2); r('#9b6a44', px + 1, py + 23, 30, 1);
   ob('#e8b27a', '#9b6a44', px + 18, py + 25, 9, 4); r('#ff8fa8', px + 20, py + 26, 2, 1); r('#8fc8f4', px + 23, py + 26, 2, 1); r('#ffd27a', px + 21, py + 27, 2, 1);
 };
-FURN.easel2 = (px, py) => {                        // 三腳畫架（2x2）：直式畫布、頂端披布、兩罐顏料
+FURN.easel2 = (px, py) => {                        // 三腳畫架（2x2）：直式大畫布（畫面 16×24）、頂端披布、兩罐顏料
   r('rgba(90,60,40,.18)', px + 4, py + 29, 24, 2);
-  for (let y = 8; y <= 29; y++) { const o = Math.round((y - 8) * 0.45); r('#9b6a44', px + 15 - o, py + y, 2, 1); r('#9b6a44', px + 15 + o, py + y, 2, 1); }
-  r('#7d5535', px + 15, py + 8, 2, 20);
-  ob('#fff7e0', '#9b6a44', px + 9, py + 3, 14, 19);
-  r('#ff9b7a', px + 8, py + 1, 16, 3); r('#ff9b7a', px + 8, py + 4, 3, 4); r('#ff9b7a', px + 21, py + 4, 3, 3); r('#d9604a', px + 8, py + 3, 16, 1);
-  ob('#ff8fa8', '#c06078', px + 3, py + 25, 4, 4); r('#ffffff', px + 4, py + 24, 2, 1);
-  ob('#8fc8f4', '#5a8fb8', px + 25, py + 25, 4, 4); r('#ffffff', px + 26, py + 24, 2, 1);
+  for (let y = 10; y <= 29; y++) { const o = Math.round((y - 10) * 0.4); r('#9b6a44', px + 15 - o, py + y, 2, 1); r('#9b6a44', px + 15 + o, py + y, 2, 1); }
+  r('#7d5535', px + 15, py + 10, 2, 18);
+  ob('#fff7e0', '#9b6a44', px + 6, py + 1, 20, 28);
+  r('#ff9b7a', px + 5, py + 0, 22, 2); r('#ff9b7a', px + 5, py + 2, 3, 4); r('#ff9b7a', px + 24, py + 2, 3, 3); r('#d9604a', px + 5, py + 2, 22, 1);
+  ob('#ff8fa8', '#c06078', px + 2, py + 25, 4, 4); r('#ffffff', px + 3, py + 24, 2, 1);
+  ob('#8fc8f4', '#5a8fb8', px + 26, py + 25, 4, 4); r('#ffffff', px + 27, py + 24, 2, 1);
 };
 
 /* ---------- 資料：artCache['屋主uid:家具id'] = { id, w, h, data, hearts, mine, ver } ---------- */
@@ -37,7 +40,7 @@ const artHas = () => !!(house && house.items.some(i => ART[i.k]));
 function artClean(a) {
   if (!a || typeof a !== 'object') return null;
   const id = +a.id, w = a.w | 0, h = a.h | 0, data = String(a.data || '');
-  if (!isFinite(id) || w < 1 || h < 1 || w > 64 || h > 64 || data.length !== w * h || !/^[0-9a-f.]+$/.test(data)) return null;
+  if (!isFinite(id) || w < 1 || h < 1 || w > 128 || h > 128 || data.length !== w * h || !/^[0-9a-v.]+$/.test(data)) return null;
   return { id, w, h, data, hearts: Math.max(0, a.hearts | 0), mine: !!a.mine, ver: a.ver | 0 };
 }
 async function artLoad() {
@@ -55,21 +58,23 @@ function artSoon() {                               // 別人畫了新畫或送�
   artTimer = setTimeout(() => { artTimer = 0; artLast = Date.now(); artLoad(); }, Math.max(300, 1500 - (Date.now() - artLast)));
 }
 
-/* 縮成家具上的小圖：每個小格取對應範圍的平均色（空白當紙色） */
+/* 縮成家具上的小圖：每個小格看對應範圍的格子，取「最多的那個顏色」（不混色，邊緣不會糊成中間色）；
+   但如果有較深的顏色佔了 1/3 以上（多半是細線條），就用較深的那個，免得輪廓被吃掉。空白當紙色 */
 function artOff(a, k) {
   a.offs = a.offs || {};
   if (a.offs[k]) return a.offs[k];
   const rw = ART[k].rect[2], rh = ART[k].rect[3], cv = document.createElement('canvas');
   cv.width = rw; cv.height = rh;
-  const c = cv.getContext('2d'), im = c.createImageData(rw, rh);
+  const c = cv.getContext('2d'), im = c.createImageData(rw, rh), lum = v => v[0] * 0.3 + v[1] * 0.59 + v[2] * 0.11;
   for (let ty = 0; ty < rh; ty++) for (let tx = 0; tx < rw; tx++) {
     const x0 = Math.floor(tx * a.w / rw), x1 = Math.max(x0 + 1, Math.floor((tx + 1) * a.w / rw)), y0 = Math.floor(ty * a.h / rh), y1 = Math.max(y0 + 1, Math.floor((ty + 1) * a.h / rh));
-    let R = 0, G = 0, B = 0, n = 0;
-    for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) {
-      const ch = a.data[y * a.w + x], v = ch === '.' ? ART_PAPER : ART_RGB[parseInt(ch, 16)];
-      R += v[0]; G += v[1]; B += v[2]; n++;
-    }
-    const o = (ty * rw + tx) * 4; im.data[o] = Math.round(R / n); im.data[o + 1] = Math.round(G / n); im.data[o + 2] = Math.round(B / n); im.data[o + 3] = 255;
+    const cnt = new Map(); let n = 0;
+    for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) { const ch = a.data[y * a.w + x]; cnt.set(ch, (cnt.get(ch) || 0) + 1); n++; }
+    const rgb = ch => (ch === '.' ? ART_PAPER : ART_RGB[ART_CH.indexOf(ch)]);
+    let best = null, bc = 0;
+    cnt.forEach((v, ch) => { if (v > bc || (v === bc && lum(rgb(ch)) < lum(rgb(best)))) { best = ch; bc = v; } });
+    if (n > 1) cnt.forEach((v, ch) => { if (v / n >= 0.34 && lum(rgb(ch)) < lum(rgb(best))) best = ch; });
+    const col = rgb(best), o = (ty * rw + tx) * 4; im.data[o] = col[0]; im.data[o + 1] = col[1]; im.data[o + 2] = col[2]; im.data[o + 3] = 255;
   }
   c.putImageData(im, 0, 0);
   return (a.offs[k] = cv);
@@ -92,6 +97,9 @@ function openArt(it) {
   artMode = a ? 'view' : 'size';
   artRender(); artEl.hidden = false; artCard.focus();
 }
+/* 定位輔助：格線（每格淡線＋每 5 格粗線）、刻度尺（上、左，從 1 開始數）、準星（游標所在的行列亮起＋座標）。三個各自開關，記在這個瀏覽器裡 */
+let adAid = { grid: true, ruler: false, cross: false }, adHov = null;
+try { const o = JSON.parse(localStorage.getItem('rf_art_aid') || 'null'); if (o && typeof o === 'object') ['grid', 'ruler', 'cross'].forEach(k => { if (typeof o[k] === 'boolean') adAid[k] = o[k]; }); } catch (e) { /* 略過 */ }
 let adEmoTm = 0;
 function artPaintEmoStop() { clearInterval(adEmoTm); adEmoTm = 0; if (myEmo && myEmo.id === 'paint') myEmo = null; }
 function artPaintEmoStart() { paintEmote(); if (!adEmoTm) adEmoTm = setInterval(() => { if (artMode === 'draw' && artId != null) paintEmote(); else artPaintEmoStop(); }, 2000); }
@@ -122,7 +130,7 @@ function artPaintCanvas(cv, a, maxPx) {            // 把整幅畫畫在 cv 上�
   cv.width = a.w * cell; cv.height = a.h * cell;
   const c = cv.getContext('2d');
   for (let y = 0; y < a.h; y++) for (let x = 0; x < a.w; x++) {
-    const ch = a.data[y * a.w + x]; c.fillStyle = ch === '.' ? '#fff7e0' : ART_PAL[parseInt(ch, 16)]; c.fillRect(x * cell, y * cell, cell, cell);
+    const ch = a.data[y * a.w + x]; c.fillStyle = ch === '.' ? '#fff7e0' : ART_PAL[ART_CH.indexOf(ch)]; c.fillRect(x * cell, y * cell, cell, cell);
   }
 }
 function artRenderView(it, name) {
@@ -141,32 +149,37 @@ function artRenderSize(it, name) {
   artCard.innerHTML = '<div class="shop-h"><h2>' + name + '</h2></div>' +
     '<p class="empty">選一種畫布大小。格數越多越精細，但畫起來也越久；大的可以用 ＋／－ 放大再畫。畫好之後大小就固定了，要換大小得重畫。' + (had ? '重畫會清掉目前的畫和愛心。' : '') + '</p>' +
     (artDraftGet() ? '<button type="button" class="btn wide" data-a="resume">▶ 繼續上次的草稿（' + artDraftGet().w + '×' + artDraftGet().h + '）</button><p class="empty">選下面的大小重新開始，會蓋掉這份草稿。</p>' : '') +
-    '<div class="pn-row">' + d.sizes.map((s, i) => '<button type="button" class="btn" data-a="size" data-i="' + i + '">' + s[2] + '　' + s[0] + '×' + s[1] + (i === 1 ? '（推薦）' : '') + '</button>').join('') + '</div>' +
+    '<div class="pn-row">' + d.sizes.map((s, i) => '<button type="button" class="btn" data-a="size" data-i="' + i + '">' + s[2] + '　' + s[0] + '×' + s[1] + (s[3] ? '（推薦）' : '') + '</button>').join('') + '</div>' +
     '<button type="button" class="btn ghost wide" data-a="' + (had ? 'back' : 'close') + '">' + (had ? '回去看畫' : '取消') + '</button>';
 }
 function artBox() {                                // 畫布框最大能用多少像素：電腦最寬 920，手機幾乎整個寬度；高度扣掉標題、工具、調色盤、按鈕
   const vw = window.innerWidth, vh = window.innerHeight, mob = vw < 700;
-  return { w: Math.max(200, Math.min(mob ? vw - 48 : 920, vw - 100)), h: Math.max(160, vh - (mob ? 300 : 330)) };
+  return { w: Math.max(200, Math.min(mob ? vw - 48 : 920, vw - 100)) - (adAid.ruler ? 22 : 0), h: Math.max(160, vh - (mob ? 300 : 330)) - (adAid.ruler ? 18 : 0) };
 }
 function artBase() { const bx = artBox(); return Math.max(3, Math.floor(Math.min(bx.w / adW, bx.h / adH))); }   // 縮放 1× 時每格的螢幕像素：整幅畫剛好放滿可用空間
 function artRenderDraw(name) {
   artCard.innerHTML = '<div class="shop-h"><h2>' + name + '</h2><span class="chip">' + adW + '×' + adH + '</span></div>' +
     '<div class="pn-row"><span class="art-lb">縮放</span><button type="button" class="btn small" data-a="zo" aria-label="縮小">－</button><b id="artz" class="art-z">1×</b><button type="button" class="btn small" data-a="zi" aria-label="放大">＋</button></div>' +
+    '<div class="pn-row" id="artaid"><span class="art-lb">輔助</span>' + [['grid', '格線'], ['ruler', '刻度'], ['cross', '準星']].map(([k, n]) => '<button type="button" class="btn small" data-a="aid" data-c="' + k + '" aria-pressed="' + adAid[k] + '">' + n + '</button>').join('') + '</div>' +
     '<p class="empty art-tip">' + (matchMedia('(pointer:coarse)').matches ? '兩根手指可以縮放、移動畫面；手指按住時上方會出現放大鏡。' : '滾輪縮放；按住空白鍵（或滑鼠中鍵）拖動畫面。') + '</p>' +
-    '<div class="art-vp" id="artvp"><canvas id="artc" width="' + adW * 8 + '" height="' + adH * 8 + '"></canvas></div>' +
+    '<div class="art-rw' + (adAid.ruler ? '' : ' noruler') + '" id="artrw"><i class="art-corner"></i><canvas id="artrt"></canvas><canvas id="artrl"></canvas>' +
+    '<div class="art-vp" id="artvp"><div class="art-cw"><canvas id="artc" width="' + adW * 8 + '" height="' + adH * 8 + '"></canvas><div id="artx" hidden><i class="ax-r"></i><i class="ax-c"></i><i class="ax-b"></i><b class="ax-t"></b></div></div></div></div>' +
     '<div class="pn-row" id="arttl">' + [['pen', '畫筆'], ['erase', '橡皮擦'], ['fill', '填色'], ['pan', '移動']].map(([k, n]) => '<button type="button" class="btn small" data-a="tool" data-c="' + k + '" aria-pressed="' + (adTool === k) + '">' + n + '</button>').join('') +
     '<button type="button" class="btn small" data-a="undo">復原</button><button type="button" class="btn small" data-a="clear">清空</button></div>' +
     '<div class="pn-row" id="artpal">' + ART_PAL.map((c, i) => '<button type="button" class="art-sw" data-a="col" data-c="' + i + '" aria-label="顏色 ' + (i + 1) + '" aria-pressed="' + (adCol === i) + '" style="background:' + c + '"></button>').join('') + '</div>' +
     '<button type="button" class="btn wide" data-a="save"' + (adBusy ? ' disabled' : '') + '>完成，掛上畫架</button>' +
     '<button type="button" class="btn ghost wide" data-a="draft">💾 存草稿，下次再畫</button>' +
     '<button type="button" class="btn ghost wide" data-a="cancel">取消</button>';
-  artSizeView(); artDrawAll();
+  adHov = null; artSizeView(); artDrawAll();
+  const vp0 = $('artvp'); if (vp0) vp0.addEventListener('scroll', artRulers, { passive: true });
 }
 function artSizeView() {                           // 依縮放設定畫布的顯示大小；外框固定，放大後在框內捲動
   const b = artBase(), vp = $('artvp'), cv = $('artc'); if (!vp || !cv) return;
   vp.style.width = adW * b + 'px'; vp.style.height = adH * b + 'px';
   cv.style.width = adW * b * adZ + 'px'; cv.style.height = adH * b * adZ + 'px';
-  artCard.style.setProperty('--artw', adW * b + 'px');
+  artCard.style.setProperty('--artw', adW * b + (adAid.ruler ? 22 : 0) + 'px');
+  const rw = $('artrw'); if (rw) rw.classList.toggle('noruler', !adAid.ruler);
+  artRulers(); artCrossShow();
   $('artz').textContent = (Math.round(adZ * 10) / 10) + '×';
 }
 function artDrawAll() {
@@ -175,8 +188,60 @@ function artDrawAll() {
   for (let y = 0; y < adH; y++) for (let x = 0; x < adW; x++) {
     const v = adG[y * adW + x]; c.fillStyle = v >= 0 ? ART_PAL[v] : ((x + y) % 2 ? '#fffaf0' : '#fff3da'); c.fillRect(x * 8, y * 8, 8, 8);
   }
+  if (adAid.grid) {
+    const W8 = adW * 8, H8 = adH * 8;
+    c.fillStyle = 'rgba(107,72,72,.16)';
+    for (let i = 1; i < adW; i++) c.fillRect(i * 8, 0, 1, H8);
+    for (let j = 1; j < adH; j++) c.fillRect(0, j * 8, W8, 1);
+    c.fillStyle = 'rgba(107,72,72,.6)';
+    for (let i = 5; i < adW; i += 5) c.fillRect(i * 8 - 1, 0, 2, H8);
+    for (let j = 5; j < adH; j += 5) c.fillRect(0, j * 8 - 1, W8, 2);
+  }
   if (artMode === 'draw') artDraftSoon();
 }
+/* 刻度尺：上、左各一條，跟著捲動和縮放；標號從 1 開始，游標所在的那格會亮起來 */
+function artRulers() {
+  const rw = $('artrw'), vp = $('artvp'), rt = $('artrt'), rl = $('artrl'); if (!adAid.ruler || !rw || !vp || !rt || !rl) return;
+  const dpr = window.devicePixelRatio || 1, vw = vp.clientWidth, vh = vp.clientHeight, s = artBase() * adZ;
+  const step = s * 5 >= 30 ? 5 : s * 10 >= 30 ? 10 : 20;
+  rt.style.width = vw + 'px'; rt.style.height = '18px'; rt.width = Math.round(vw * dpr); rt.height = Math.round(18 * dpr);
+  rl.style.width = '22px'; rl.style.height = vh + 'px'; rl.width = Math.round(22 * dpr); rl.height = Math.round(vh * dpr);
+  const draw = (cv, horiz) => {
+    const c = cv.getContext('2d'); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.fillStyle = '#f6e7cc'; c.fillRect(0, 0, cv.width, cv.height);
+    const sc = horiz ? vp.scrollLeft : vp.scrollTop, n = horiz ? adW : adH, len = horiz ? vw : vh;
+    c.font = '700 10px sans-serif'; c.textBaseline = 'middle'; c.textAlign = horiz ? 'center' : 'right';
+    for (let i = Math.max(0, Math.floor(sc / s)); i < n && i * s - sc < len; i++) {
+      const p = i * s - sc, hot = adHov && (horiz ? adHov.x : adHov.y) === i, lab = i === 0 || (i + 1) % step === 0;
+      if (hot) { c.fillStyle = '#ffb3c6'; if (horiz) c.fillRect(p, 0, s, 18); else c.fillRect(0, p, 22, s); }
+      c.fillStyle = '#6b4848';
+      if (horiz) { c.fillRect(p + s / 2, lab ? 14 : 16, 1, lab ? 4 : 2); if (lab || hot) c.fillText(String(i + 1), p + s / 2, 7); }
+      else { c.fillRect(lab ? 18 : 20, p + s / 2, lab ? 4 : 2, 1); if (lab || hot) c.fillText(String(i + 1), 16, p + s / 2 + 0.5); }
+    }
+  };
+  draw(rt, true); draw(rl, false);
+}
+/* 準星：游標所在的行和列淡淡亮起，旁邊跳出座標（從 1 開始） */
+function artCrossShow() {
+  const ox = $('artx'); if (!ox) return;
+  if (!adAid.cross || !adHov) { ox.hidden = true; return; }
+  const s = artBase() * adZ, r = ox.children;
+  ox.hidden = false;
+  r[0].style.cssText = 'left:0;right:0;top:' + adHov.y * s + 'px;height:' + s + 'px';
+  r[1].style.cssText = 'top:0;bottom:0;left:' + adHov.x * s + 'px;width:' + s + 'px';
+  r[2].style.cssText = 'left:' + adHov.x * s + 'px;top:' + adHov.y * s + 'px;width:' + s + 'px;height:' + s + 'px';
+  r[3].textContent = '(' + (adHov.x + 1) + ', ' + (adHov.y + 1) + ')';
+  const flipX = (adHov.x + 1) * s + 70 > adW * s, flipY = adHov.y * s < 26;
+  r[3].style.cssText = (flipX ? 'right:' + (adW * s - adHov.x * s + 4) + 'px;' : 'left:' + ((adHov.x + 1) * s + 4) + 'px;') + (flipY ? 'top:' + ((adHov.y + 1) * s + 4) + 'px' : 'top:' + (adHov.y * s - 22) + 'px');
+}
+function artHover(e) {
+  if (artMode !== 'draw' || (!adAid.cross && !adAid.ruler)) return;
+  const cv = $('artc'); if (!cv) return;
+  const rc = cv.getBoundingClientRect(), x = Math.floor((e.clientX - rc.left) / rc.width * adW), y = Math.floor((e.clientY - rc.top) / rc.height * adH), ok = x >= 0 && y >= 0 && x < adW && y < adH;
+  const n = ok && e.target === cv ? { x, y } : null;
+  if ((n && adHov && n.x === adHov.x && n.y === adHov.y) || (!n && !adHov)) return;
+  adHov = n; artCrossShow(); artRulers();
+}
+function artHoverOff() { if (!adHov) return; adHov = null; artCrossShow(); artRulers(); }
 function artZoomTo(nz, ax, ay) {                   // 以框內 (ax, ay) 這一點為中心縮放；沒給就以框的中心
   const vp = $('artvp'); if (!vp) return;
   nz = Math.max(1, Math.min(8, nz)); if (nz === adZ) return;
@@ -204,7 +269,7 @@ const artDraftKey = () => 'rf_art_draft:' + myUid + ':' + artId;
 function artDraftGet() {
   try {
     const d = JSON.parse(localStorage.getItem(artDraftKey()) || 'null'), sz = ART[artK] && ART[artK].sizes;
-    if (!d || !sz || !sz.some(s => s[0] === d.w && s[1] === d.h) || typeof d.data !== 'string' || d.data.length !== d.w * d.h || !/^[0-9a-f.]+$/.test(d.data) || /^\.+$/.test(d.data)) return null;
+    if (!d || !sz || !sz.some(s => s[0] === d.w && s[1] === d.h) || typeof d.data !== 'string' || d.data.length !== d.w * d.h || !/^[0-9a-v.]+$/.test(d.data) || /^\.+$/.test(d.data)) return null;
     return d;
   } catch (e) { return null; }
 }
@@ -212,7 +277,7 @@ function artDraftDel() { clearTimeout(adDraftTm); adDraftTm = 0; try { localStor
 function artDraftPut() {
   clearTimeout(adDraftTm); adDraftTm = 0;
   if (artId == null || artMode !== 'draw' || !adG) return false;
-  const s = adG.map(v => (v < 0 ? '.' : v.toString(16))).join('');
+  const s = adG.map(v => (v < 0 ? '.' : ART_CH[v])).join('');
   try {
     if (/^\.+$/.test(s)) { localStorage.removeItem(artDraftKey()); return false; }
     localStorage.setItem(artDraftKey(), JSON.stringify({ k: artK, w: adW, h: adH, data: s, t: Date.now() })); return true;
@@ -221,7 +286,7 @@ function artDraftPut() {
 function artDraftSoon() { clearTimeout(adDraftTm); adDraftTm = setTimeout(artDraftPut, 1200); }   // 畫的時候自動存，意外關掉也不會白畫
 function artResume() {
   const d = artDraftGet(); if (!d) return;
-  adW = d.w; adH = d.h; adG = d.data.split('').map(ch => (ch === '.' ? -1 : parseInt(ch, 16))); adCol = 0; adTool = 'pen'; adZ = 1; adHist = []; artMode = 'draw'; artRender(); artPaintEmoStart();
+  adW = d.w; adH = d.h; adG = d.data.split('').map(ch => (ch === '.' ? -1 : ART_CH.indexOf(ch))); adCol = 0; adTool = 'pen'; adZ = 1; adHist = []; artMode = 'draw'; artRender(); artPaintEmoStart();
 }
 function artPush() { adHist.push(adG.slice()); if (adHist.length > 40) adHist.shift(); }
 function artStart(i) {
@@ -230,7 +295,7 @@ function artStart(i) {
 }
 async function artSave() {
   if (adBusy) return;
-  const s = adG.map(v => (v < 0 ? '.' : v.toString(16))).join('');
+  const s = adG.map(v => (v < 0 ? '.' : ART_CH[v])).join('');
   if (/^\.+$/.test(s)) { toast('還沒畫任何東西', 1800); return; }
   adBusy = true; artRender();
   try {
@@ -261,6 +326,7 @@ artCard.addEventListener('click', e => {
   else if (a === 'size') { if (artDraftGet() && !window.confirm('有一份還沒畫完的草稿，重新開始會把它蓋掉。\n要重新開始嗎？')) return; artDraftDel(); artStart(+b.dataset.i); }
   else if (a === 'resume') artResume();
   else if (a === 'heart') artHeart();
+  else if (a === 'aid') { const k = b.dataset.c; adAid[k] = !adAid[k]; try { localStorage.setItem('rf_art_aid', JSON.stringify(adAid)); } catch (e) { /* 略過 */ } b.setAttribute('aria-pressed', adAid[k]); if (!adAid.cross && !adAid.ruler) adHov = null; artSizeView(); artDrawAll(); }
   else if (a === 'zi') artZoom(1);
   else if (a === 'zo') artZoom(-1);
   else if (a === 'tool') { adTool = b.dataset.c; document.querySelectorAll('#arttl [data-a=tool]').forEach(x => x.setAttribute('aria-pressed', x.dataset.c === adTool)); const cv = $('artc'); if (cv) cv.style.cursor = adTool === 'pan' ? 'grab' : 'crosshair'; }
@@ -287,6 +353,7 @@ function artLpShow(e) {
     c.fillStyle = v === -2 ? '#cfcfd8' : v >= 0 ? ART_PAL[v] : ((x + y) % 2 ? '#fffaf0' : '#fff3da'); c.fillRect(i * S, j * S, S, S);
   }
   c.strokeStyle = '#d9608a'; c.lineWidth = 2; c.strokeRect(h * S + 1, h * S + 1, S - 2, S - 2);
+  if (adAid.cross && px >= 0 && py >= 0 && px < adW && py < adH) { c.fillStyle = 'rgba(107,72,72,.85)'; c.fillRect(0, 0, 50, 15); c.fillStyle = '#fff'; c.font = '700 11px sans-serif'; c.textBaseline = 'middle'; c.textAlign = 'left'; c.fillText((px + 1) + ', ' + (py + 1), 4, 8); }
   lp.style.left = Math.max(8, Math.min(window.innerWidth - 107, e.clientX - 50)) + 'px';
   lp.style.top = (e.clientY - 150 >= 8 ? e.clientY - 150 : e.clientY + 70) + 'px';
   lp.hidden = false;
@@ -308,6 +375,7 @@ artCard.addEventListener('pointerdown', e => {
   artPush(); adDown = true; artPaintAt(e); artLpShow(e);
 });
 artCard.addEventListener('pointermove', e => {
+  artHover(e);
   if (adPtrs.has(e.pointerId)) adPtrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
   if (adPinch && adPtrs.size >= 2) {
     const vp = $('artvp'), rc = vp.getBoundingClientRect(), s2 = adPs();
@@ -321,9 +389,10 @@ artCard.addEventListener('pointermove', e => {
 const artUp = e => {
   adPtrs.delete(e.pointerId); if (adPtrs.size < 2) adPinch = null;
   if (!adPtrs.size) adDown = false;
-  artLpHide();
+  artLpHide(); if (e.pointerType !== 'mouse') artHoverOff();
   if (adPan) { adPan = null; const cv = $('artc'); if (cv) cv.style.cursor = adSpace || adTool === 'pan' ? 'grab' : 'crosshair'; }
 };
+artCard.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') artHoverOff(); });
 artCard.addEventListener('pointerup', artUp); artCard.addEventListener('pointercancel', artUp);
 artCard.addEventListener('wheel', e => {            // 電腦：滾輪以游標位置為中心縮放
   const vp = e.target.closest && e.target.closest('#artvp'); if (!vp || artMode !== 'draw') return;
