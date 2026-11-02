@@ -7,10 +7,13 @@ const CROPS = {
   pumpkin: { n: '南瓜', days: 8, buy: 40, sell: 130, c: '#ffab4a' },
   beet:    { n: '甜菜', days: 1, buy: 25, sell: 85,  c: '#b0386a', hy: true },
   corn:    { n: '玉米', days: 3, buy: 45, sell: 170, c: '#ffd84a', hy: true },
-  melon:   { n: '蜜瓜', days: 5, buy: 70, sell: 280, c: '#8fd67a', hy: true }
+  melon:   { n: '蜜瓜', days: 5, buy: 70, sell: 280, c: '#8fd67a', hy: true },
+  lotus:   { n: '蓮藕', days: 1, buy: 40, sell: 140, c: '#f0c9d8', hy: true },   // 桂花婆婆用花換
+  berry:   { n: '藍莓', days: 1, buy: 30, sell: 75,  c: '#5a6fd6', hy: true },   // 小茉用野莓、蒲公英換
+  frost:   { n: '霜根', days: 1, buy: 35, sell: 100, c: '#9fe0f0', hy: true }    // 老鯉叔用冰花、冬青果換
 };
 const KEYS = ['radish', 'tomato', 'pumpkin'];            // 雜貨攤買得到的種子
-const ALLK = ['radish', 'tomato', 'pumpkin', 'beet', 'corn', 'melon'];   // 含雜交作物
+const ALLK = ['radish', 'tomato', 'pumpkin', 'beet', 'corn', 'melon', 'lotus', 'berry', 'frost'];   // 含雜交作物
 const TOOLS = [
   { id: 'hoe', n: '鋤頭' },
   { id: 'can', n: '水壺' },
@@ -25,7 +28,10 @@ const TOOLS = [
   { id: 'pick', n: '鎬子' },
   { id: 'fert', n: '肥料' },
   { id: 'yard', n: '庭院佈置' },
-  { id: 'axe', n: '斧頭' }   // 放最後：快捷列存的是編號，新增只能往後加
+  { id: 'axe', n: '斧頭' },   // 快捷列存的是編號，新增只能往後加
+  { id: 'seed', crop: 'lotus', n: '蓮藕種子' },
+  { id: 'seed', crop: 'berry', n: '藍莓種子' },
+  { id: 'seed', crop: 'frost', n: '霜根種子' }
 ];
 const CAN_MAX = 12;
 

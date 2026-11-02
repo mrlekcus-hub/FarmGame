@@ -1,7 +1,8 @@
 'use strict';
 /* 料理與烹飪小遊戲 —— 雷克斯農場。所有檔案共用同一個全域範圍，載入順序見 index.html。 */
 /* ---------- 料理：廚房灶台（家裡擺了才能用） ---------- */
-const DISHC = { rcake: '#f3d79a', stew: '#e8a05a', pie: '#f0a64a', grilled: '#c98f62', soup: '#e8c97a', escargot: '#b98a62' };
+const DISHC = { rcake: '#f3d79a', stew: '#e8a05a', pie: '#f0a64a', grilled: '#c98f62', soup: '#e8c97a', escargot: '#b98a62',
+  berryjam: '#d6455d', herbtea: '#b9d86a', hollydrink: '#e8786a', berrypie: '#7a86e0', lotussoup: '#f0d9c0', frostsoup: '#b8e8f0', lotuscake: '#f2b6cc' };
 function drawDish(x, y, k) {   // 盤子上的料理（像素）；直接畫在目前的畫布上
   ob('#fffaf0', '#c9b79a', x + 2, y + 9, 12, 5);
   ob(DISHC[k] || '#f3c77a', 'rgba(90,60,40,.5)', x + 3, y + 5, 10, 6);
@@ -37,23 +38,48 @@ function ckSkillHtml() {
   const sub = mx ? '已滿級' : atCap ? '需要玩家 Lv.' + (lv ? lv.pl + 1 : '?') + ' 才能繼續成長' : '經驗 ' + ckXpNow() + ' / ' + skillNeed(L + 1);
   return '<div class="row"><span style="font-size:24px;line-height:1">🍳</span><div class="meta"><b>烹飪 Lv.' + L + ' / 上限 ' + cap + '</b><small>' + sub + '</small>' + lvBar(skillNeed(L), skillNeed(L + 1), ckXpNow(), '') + '</div></div>';
 }
+/* ---- 廚房菜單：左側分類＋配方卡片，「只看能煮的」開關；分類在前端用名稱判斷，想指定某道料理就填 CK_KEYCAT ---- */
+let ckCat = 'all', ckOnly = false;
+/* 最近煮的：只記一道，存在這台裝置（localStorage），不用改資料庫；開廚房時排第一 */
+const ckRecent = () => { try { return localStorage.getItem('dw_ckrecent_' + myUid) || ''; } catch (e) { return ''; } };
+function ckRecentSet(k) { try { localStorage.setItem('dw_ckrecent_' + myUid, k); } catch (e) { /* 略過 */ } }
+const CK_CATS = [['recent', '最近煮的'], ['all', '全部'], ['main', '主菜'], ['soup', '湯品'], ['drink', '飲品'], ['sweet', '甜點']];
+const CK_KEYCAT = {};   // 例：{ stew: 'soup' }，值是 main／soup／drink／sweet
+function ckCatOf(rc) {
+  if (CK_KEYCAT[rc.key]) return CK_KEYCAT[rc.key];
+  const n = String(rc.name || '');
+  return /湯|羹/.test(n) ? 'soup' : /茶|飲|汁/.test(n) ? 'drink' : /派|糕|吐司|果醬|餅|布丁|甜/.test(n) ? 'sweet' : 'main';
+}
 function renderKitchen() {
+  const st = ckCard.scrollTop;
   const dis = ckBusy ? ' disabled' : '';
   const act_ = Object.keys(buffs).filter(buffOn).map(k => (BUFF_N[k] || k) + '（剩 ' + Math.ceil((buffs[k] - srvNow()) / 60000) + ' 分鐘）');
-  const L = ckLv();
-  const rows = recipes.filter(rc => !/^hw_/.test(rc.key)).map(rc => {
-    const mx = maxCook(rc), dn = have('dish:' + rc.key), T = ckTier(rc), lock = L < T;
-    const ing = Object.keys(rc.ing).map(k => esc(itemName(k)) + ' ' + have(k) + '/' + rc.ing[k]).join('、');
-    return '<div class="row" style="flex-wrap:wrap;gap:6px"><i class="dot" style="--c:' + (DISHC[rc.key] || '#f3c77a') + '"></i><div class="meta" style="min-width:150px"><b>' + esc(rc.name) + (dn ? '　持有 ' + dn : '') + '</b> <span class="cg-star">' + '★'.repeat(T) + '</span><small>' + ing + '</small><small>' +
-      esc(rc.descr) + '　賣 ' + rc.price + ' G</small></div><div style="display:flex;gap:6px;flex-wrap:wrap">' +
+  const L = ckLv(), rec = ckRecent();
+  const all = recipes.filter(rc => !/^hw_/.test(rc.key)).map(rc => {
+    const mx = maxCook(rc), T = ckTier(rc);
+    return { rc, mx, T, lock: L < T, dn: have('dish:' + rc.key), cat: ckCatOf(rc) };
+  });
+  const isRec = x => x.rc.key === rec;
+  const cnt = k => all.filter(x => k === 'all' || (k === 'recent' ? isRec(x) : x.cat === k)).length;
+  const rank = x => x.lock ? 2 : x.mx < 1 ? 1 : 0;   // 能煮的排前面，材料不夠的其次，還沒解鎖的最後
+  const list = all.map((x, i) => ({ x, i })).filter(o => (ckCat === 'all' || (ckCat === 'recent' ? isRec(o.x) : o.x.cat === ckCat)) && (!ckOnly || (!o.x.lock && o.x.mx >= 1)))
+    .sort((a, b) => (isRec(b.x) - isRec(a.x)) || (rank(a.x) - rank(b.x)) || (a.i - b.i)).map(o => o.x);
+  const cards = list.map(({ rc, mx, T, lock, dn }) => {
+    const ing = Object.keys(rc.ing).map(k => '<span class="' + (have(k) >= rc.ing[k] ? 'ck-ok' : 'ck-no') + '">' + esc(itemName(k)) + ' ' + have(k) + '/' + rc.ing[k] + '</span>').join('、');
+    return '<div class="ck-item' + (lock ? ' lock' : '') + '"><div class="ck-top"><canvas class="ck-ic" width="16" height="16" data-k="' + esc(rc.key) + '"></canvas><div class="meta"><b>' + esc(rc.name) + '</b><span class="cg-star">' + '★'.repeat(T) + '</span>' + (rec === rc.key ? '<small class="ck-rec">最近煮的</small>' : '') + (dn ? '<small>持有 ' + dn + '</small>' : '') + '</div></div>' +
+      '<small class="ck-ing">' + ing + '</small><small class="ck-d">' + esc(rc.descr) + '　賣 ' + rc.price + ' G</small><div class="ck-btns">' +
       (lock ? '<button type="button" class="btn small" disabled>烹飪 Lv.' + T + ' 解鎖</button>' :
         '<button type="button" class="btn small" data-a="cook" data-c="' + esc(rc.key) + '"' + (ckBusy || mx < 1 ? ' disabled' : '') + '>開始烹飪</button>') +
-      (dn && rc.buff ? '<button type="button" class="btn small" data-a="eat" data-c="' + esc(rc.key) + '"' + dis + '>吃一份</button>' : '') +
-      '</div></div>';
+      (dn && rc.buff ? '<button type="button" class="btn small ghost" data-a="eat" data-c="' + esc(rc.key) + '"' + dis + '>吃一份</button>' : '') + '</div></div>';
   }).join('');
+  const side = '<div class="ck-side">' + CK_CATS.map(([k, n]) => '<button type="button" class="chipbtn" data-a="cat" data-c="' + k + '" aria-pressed="' + (ckCat === k) + '">' + n + ' ' + cnt(k) + '</button>').join('') +
+    '<button type="button" class="chipbtn ck-only" data-a="only" aria-pressed="' + ckOnly + '">只看能煮的</button></div>';
   ckCard.innerHTML = '<div class="shop-h"><h2>廚房</h2><span class="chip gold">' + (me ? me.coins : 0) + ' G</span></div>' + ckSkillHtml() +
     (visiting ? '<p class="empty">你在 ' + esc(visiting.name) + ' 的廚房：用的是你自己的材料，做好的料理和烹飪經驗都是你的。</p>' : '') + '<p class="empty">選一道料理開始烹飪：會回到灶台前，鍋子上方有火候條。按住動作鍵加熱，指針進到綠區就放開定火，一共三段；太生、太大或燒焦都算失誤。失誤太多會失敗（失敗或中途走開都不會浪費材料）。做出來的料理可以賣錢、交委託，有些吃下去還有 buff（最多累積 60 分鐘）。' + (act_.length ? '<br>目前效果：' + esc(act_.join('、')) : '') + '</p>' +
-    (rows || '<p class="empty">還沒有食譜。</p>') + '<button type="button" class="btn ghost wide" data-a="close">離開</button>';
+    '<div class="ck-wrap">' + side + '<div class="ck-grid">' + (cards || '<p class="empty">' + (ckOnly ? '這個分類現在沒有材料夠、又已解鎖的料理。' : ckCat === 'recent' ? '還沒煮過料理，煮好一道就會記在這裡。' : recipes.length ? '這個分類還沒有食譜。' : '還沒有食譜。') + '</p>') + '</div></div>' +
+    '<button type="button" class="btn ghost wide" data-a="close">離開</button>';
+  ckCard.querySelectorAll('canvas.ck-ic').forEach(cv => dishIcon(cv.getContext('2d'), cv.dataset.k));
+  ckCard.scrollTop = st;
 }
 /* ---- 烹飪小遊戲（火候條）：站在灶台前，鍋子上方有火候條；按住動作鍵加熱，指針停在綠區就放開定火，一共三段 ---- */
 let cooking = null, cookSeq = 0, ckAnchor = null;
@@ -129,6 +155,7 @@ async function cookFinish(ok) {
   if (cooking === c) cooking = null;
   ckSend(made ? 'done' : 'fail', c);
   if (made && c.host && visiting) visitLog('cook', rc.name);   // 在朋友家煮菜：記給屋主看
+  if (made && !/^hw_/.test(rc.key)) ckRecentSet(rc.key);   // 記下最近煮的這一道
   if (made && !(c.hw && /^hw_/.test(rc.key))) loadLevel();   // 伺服器已加經驗，重新抓等級（升級彈窗也在裡面）
   const xp = srvXp ? ' · 烹飪經驗 +' + srvXp : '';
   dishIcon(catchCv.getContext('2d'), rc.key);
@@ -279,6 +306,8 @@ ckCard.addEventListener('click', async e => {
   if (a === 'close') { closeKitchen(); return; }
   if (a === 'cook') { ckStart(k); return; }
   if (a === 'cookback') { cgStop(); renderKitchen(); return; }
+  if (a === 'cat') { ckCat = k; renderKitchen(); return; }
+  if (a === 'only') { ckOnly = !ckOnly; renderKitchen(); return; }
   ckBusy = true; renderKitchen();
   const r = await eatDish(k);
   ckBusy = false;

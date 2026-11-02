@@ -102,7 +102,8 @@ function renderDlg() {
     btn = '<div class="v-quick"><small class="empty">需要：' + need + '<br>獎勵：' + rw + '</small></div>' +
       '<button type="button" class="btn wide" data-a="give"' + (dgBusy || !ok ? ' disabled' : '') + '>' + (ok ? '交付' : '材料還不夠') + '</button>' +
       '<button type="button" class="btn ghost wide" data-a="close">等一下再來</button>';
-  } else btn = '<button type="button" class="btn wide" data-a="close">' + (dg.mode === 'outro' ? '完成' : '再見') + '</button>';
+  } else btn = (dg.mode === 'chat' && SEED_NPC[dg.npc.k] ? '<button type="button" class="btn wide" data-a="seed"' + dis + '>用採集物換種子</button>' : '') +
+    '<button type="button" class="btn' + (dg.mode === 'chat' && SEED_NPC[dg.npc.k] ? ' ghost' : '') + ' wide" data-a="close">' + (dg.mode === 'outro' ? '完成' : '再見') + '</button>';
   dgCard.innerHTML = '<div class="shop-h"><h2>' + esc(sp.n) + '</h2>' + (dg.mode === 'quest' ? '<span class="chip">第 ' + dg.cur.ch + ' 章：' + esc(dg.cur.title) + '</span>' : '') + '</div>' +
     '<div style="display:flex;gap:12px;align-items:flex-start;margin:8px 0">' +
     (me_ ? '<canvas width="16" height="22" data-me="1" style="width:64px;height:88px;flex:none;image-rendering:pixelated"></canvas>' : '<canvas width="16" height="16" data-npc="' + sp.k + '" style="width:64px;height:64px;flex:none;image-rendering:pixelated"></canvas>') +
@@ -116,6 +117,7 @@ dgCard.addEventListener('click', async e => {
   const a = b.dataset.a;
   if (a === 'close') { closeDlg(); return; }
   if (a === 'next') { dg.i++; renderDlg(); return; }
+  if (a === 'seed') { const k = dg.npc.k; closeDlg(); openSeedTrade(k); return; }
   if (a === 'give') {
     dgBusy = true; renderDlg();
     try {

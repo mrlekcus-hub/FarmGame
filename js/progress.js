@@ -10,7 +10,7 @@ const QUESTS = [
 ];
 const QBONUS = 150;
 /* ---------- 等級：玩家等級只靠每日任務；農耕技能上限 = 玩家等級 + 2 ---------- */
-const CROP_NEED = { radish: 1, tomato: 2, pumpkin: 3, beet: 2, corn: 3, melon: 4 };
+const CROP_NEED = { radish: 1, tomato: 2, pumpkin: 3, beet: 2, corn: 3, melon: 4 };   // 蓮藕／藍莓／霜根是用採集物換來的種子，不看農耕等級，換到就能種
 const ROD_NEED = { 1: 1, 2: 2, 3: 4, 4: 6 }, BUG_NEED = { common: 1, uncommon: 2, rare: 4, legend: 6 };
 const rodLocked = l => !!lv && lv.fish < (ROD_NEED[l] || 1);
 const bugNeed = b => (b && b.need) || BUG_NEED[b && b.rarity] || 1;   // 新蟲可以在目錄裡帶 need（例如森林稀有蟲 = 5），沒有就照稀有度
